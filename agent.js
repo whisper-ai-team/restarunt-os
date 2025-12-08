@@ -18,16 +18,25 @@ const deepgram = require("@livekit/agents-plugin-deepgram");
 const elevenlabs = require("@livekit/agents-plugin-elevenlabs");
 
 // -----------------------------
-// Clover config & helper
+// Clover config & helpers
 // -----------------------------
 const CLOVER_API_KEY = process.env.CLOVER_API_KEY;
 const CLOVER_MERCHANT_ID = process.env.CLOVER_MERCHANT_ID;
 const CLOVER_BASE_URL =
   process.env.CLOVER_BASE_URL || "https://apisandbox.dev.clover.com";
 
-// We will NOT send orderType to Clover for now (it caused 400),
-// we just put it into the note/title for the kitchen.
-let cloverInventoryCache = null; // { items, nameToId }
+let cloverInventoryCache = null; // { items, nameToItem }
+
+// Format cents -> "$12.34"
+function formatCurrency(cents) {
+  if (typeof cents !== "number" || Number.isNaN(cents)) return "$0.00";
+  return `$${(cents / 100).toFixed(2)}`;
+}
+
+function normalizePhone(phone) {
+  if (!phone) return "";
+  return String(phone).replace(/\D/g, "");
+}
 
 // Minimal fetch using Node 18+ global fetch
 async function cloverRequest(path, { method = "GET", body } = {}) {
@@ -55,8 +64,7 @@ async function cloverRequest(path, { method = "GET", body } = {}) {
   return res.json();
 }
 
-// Load Clover items once and cache: both list + name->id map
-// Load Clover items once and cache: both list + name->item map
+// Load Clover items once and cache: list + name->item map (id + price)
 async function getCloverInventory() {
   if (cloverInventoryCache) return cloverInventoryCache;
 
@@ -66,11 +74,15 @@ async function getCloverInventory() {
 
   for (const item of items) {
     if (!item.name || !item.id) continue;
+
     const key = item.name.trim().toLowerCase();
     nameToItem[key] = {
       id: item.id,
-      // Clover price is in cents, may be undefined/null for variable-price items
-      price: typeof item.price === "number" ? item.price : null,
+      // Clover "price" is integer cents. May be undefined/null for variable-price items.
+      price:
+        typeof item.price === "number" && !Number.isNaN(item.price)
+          ? item.price
+          : null,
     };
   }
 
@@ -82,18 +94,17 @@ async function getCloverInventory() {
 }
 
 /**
+ * Create a Clover order from items
  * items: [{ name: "Chicken Dum Biryani", quantity: 2 }, ...]
- * orderType: "pickup" | "delivery" | "dine_in" (we only use this in note/title)
+ * orderType: "pickup" | "delivery" | "dine_in" (used only in note/title)
+ * phoneNumber: caller phone, stored in title for lookup later
  */
-/**
- * items: [{ name: "Chicken Dum Biryani", quantity: 2 }, ...]
- * orderType: "pickup" | "delivery" | "dine_in" (we only use this in note/title)
- */
-/**
- * items: [{ name: "Chicken Dum Biryani", quantity: 2 }, ...]
- * orderType: "pickup" | "delivery" | "dine_in" (we only use this in note/title)
- */
-async function createCloverOrderFromItems({ items, note, orderType }) {
+async function createCloverOrderFromItems({
+  items,
+  note,
+  orderType,
+  phoneNumber,
+}) {
   if (!Array.isArray(items) || items.length === 0) {
     throw new Error("No items passed to Clover order");
   }
@@ -104,9 +115,10 @@ async function createCloverOrderFromItems({ items, note, orderType }) {
   const noteParts = [];
   if (orderType) noteParts.push(`OrderType: ${orderType}`);
   if (note) noteParts.push(`Note: ${note}`);
+  if (phoneNumber) noteParts.push(`Phone: ${phoneNumber}`);
   const noteText = noteParts.join(" | ") || "Phone order via AI agent";
 
-  // 1) Create base order (state: open) - NO orderType field to avoid 400
+  // 1) Create base order (state: open) - NO orderType field to avoid 400s
   const orderBody = {
     state: "open",
     title: noteText,
@@ -117,28 +129,38 @@ async function createCloverOrderFromItems({ items, note, orderType }) {
     body: orderBody,
   });
 
-  // 2) Build line items using inventory map
+  // 2) Build line items using inventory map and compute total
   const unmatched = [];
+  let totalCents = 0;
+
   const bulkLineItems = {
     items: items.map((it) => {
       const name = (it.name || "").trim();
       const key = name.toLowerCase();
-      const qty = it.quantity > 0 ? it.quantity : 1;
+      const qty = it.quantity && it.quantity > 0 ? it.quantity : 1;
 
-      const inv = nameToItem[key]; // { id, price }
+      const inv = nameToItem[key]; // { id, price } or undefined
 
       if (inv && inv.id) {
-        const priceInCents = typeof inv.price === "number" ? inv.price : 0;
+        const priceInCents =
+          typeof inv.price === "number" && !Number.isNaN(inv.price)
+            ? inv.price
+            : 0;
+
+        // Add to running total (before tax)
+        totalCents += priceInCents * qty;
 
         return {
           item: { id: inv.id },
           name,
-          price: priceInCents, // MUST be integer cents
-          unitQty: qty, // integer, quantity of item
+          price: priceInCents, // cents EACH
+          unitQty: qty, // integer quantity
         };
       }
 
-      // fallback: custom item
+      // No match found: custom line item with price=0
+      unmatched.push({ name, qty });
+
       return {
         name,
         price: 0,
@@ -159,7 +181,40 @@ async function createCloverOrderFromItems({ items, note, orderType }) {
     );
   }
 
-  return order;
+  return {
+    order,
+    totalCents,
+    unmatched,
+  };
+}
+
+/**
+ * Find latest order for a phone number by searching recent orders' title/note
+ */
+async function findLatestOrderByPhone(phoneNumber) {
+  const target = normalizePhone(phoneNumber);
+  if (!target) return null;
+
+  // Pull recent orders; expand line items so the agent can read them back
+  const data = await cloverRequest("/orders?limit=50&expand=lineItems");
+  const orders = data.elements || [];
+
+  const matches = orders.filter((o) => {
+    const text = `${o.title || ""} ${o.note || ""}`;
+    const digits = normalizePhone(text);
+    return digits.includes(target);
+  });
+
+  if (!matches.length) return null;
+
+  // Most recent first
+  matches.sort(
+    (a, b) =>
+      (b.clientCreatedTime || b.createdTime || 0) -
+      (a.clientCreatedTime || a.createdTime || 0)
+  );
+
+  return matches[0];
 }
 
 // -----------------------------
@@ -185,7 +240,7 @@ console.log("CLOVER_BASE_URL:", CLOVER_BASE_URL);
 console.log("=======================================");
 
 // -----------------------------
-// Restaurant Agent with Clover tool
+// Restaurant Agent with Clover tools
 // -----------------------------
 class RestaurantAgent extends voice.Agent {
   constructor({ restaurantName, systemPromptText, menuText }) {
@@ -225,17 +280,36 @@ class RestaurantAgent extends voice.Agent {
           1) Ask what they'd like to order.
           2) For each item: confirm size (if applicable), spice level, and quantity.
           3) Ask: "Anything else for you today?" until they say they are done.
-          4) At the end, repeat the full order slowly.
-          5) Confirm pickup/delivery time and phone number if needed.
+          4) Repeat the full order slowly and ask them to confirm it's final.
+          5) Confirm pickup/delivery time and phone number.
 
-        **Clover Order Tool**
-        - When the caller says their order is final and confirmed, use the tool
-          "createCloverOrder" with a clean list of items and quantities, plus any notes.
-        - Use only dish names that match Clover menu items whenever possible.
-        - After the tool succeeds, tell the caller:
-          - That the order is placed.
-          - The main items and total count.
-          - Estimated ready time (use a simple rule, e.g. 20–25 minutes, do not fetch from API).
+        **Clover Order Tool (IMPORTANT)**
+        - You MUST use the tool "createCloverOrder" to actually place an order in Clover.
+        - When the caller confirms the order is final (after you repeat it back):
+          - Call "createCloverOrder" EXACTLY ONCE with the full list of items, quantities,
+            orderType (like "pickup"), spice notes, and phoneNumber.
+        - You are NOT allowed to say "the order is placed" or "I have placed your order"
+          until after the tool returns success: true.
+        - If the tool returns success: true:
+          - Use "formattedTotal" or "totalCents" from the tool result.
+          - Tell the caller the order is placed in the system.
+          - Say their total BEFORE tax, for example:
+            "Your total before tax is $XX.XX."
+          - Then mention an estimated ready time (e.g. 20–25 minutes).
+        - If the tool returns success: false:
+          - Apologize and say there was a technical issue placing the order.
+          - DO NOT say the order was placed.
+
+        **Existing Order Status (by Phone)**
+        - If the caller asks about a previous order ("check my order", "what's the status of my pickup?"):
+          1) Ask politely for their phone number if you don't already have it.
+          2) Call the tool "getCloverOrderStatus" with that phone number.
+        - If the tool returns found: true:
+          - Read back the key details (main items and status).
+          - Example:
+            "I see an order for one Chicken Dum Biryani, status: open, placed earlier today."
+        - If the tool returns found: false:
+          - Apologize and say you couldn't find an order under that number.
 
         **Rules**
         - Keep responses short and clear for phone audio.
@@ -244,10 +318,10 @@ class RestaurantAgent extends voice.Agent {
         ${systemPromptText}
       `,
       tools: {
-        // Tool the LLM can call to create a Clover order
+        // Tool: create Clover order
         createCloverOrder: llm.tool({
           description:
-            "Place a Clover order for the caller using a list of items and optional note.",
+            "Place a Clover order for the caller using a list of items and optional note. MUST be used to actually place the order.",
           parameters: {
             type: "object",
             properties: {
@@ -283,25 +357,98 @@ class RestaurantAgent extends voice.Agent {
                 description:
                   "Order type such as 'pickup', 'delivery', or 'dine_in'. Only used in the note/title, not sent as Clover orderType.",
               },
+              phoneNumber: {
+                type: "string",
+                description:
+                  "Caller phone number for attaching to Clover order, so it can be looked up later.",
+              },
             },
             required: ["items"],
           },
-          execute: async ({ items, note, orderType }) => {
+          execute: async ({ items, note, orderType, phoneNumber }) => {
+            console.log("🧾 createCloverOrder TOOL CALLED with:", {
+              items,
+              note,
+              orderType,
+              phoneNumber,
+            });
+
             try {
-              const order = await createCloverOrderFromItems({
-                items,
-                note,
-                orderType,
+              const { order, totalCents, unmatched } =
+                await createCloverOrderFromItems({
+                  items,
+                  note,
+                  orderType,
+                  phoneNumber,
+                });
+
+              console.log("✅ Clover order created:", {
+                orderId: order.id,
+                totalCents,
+                formattedTotal: formatCurrency(totalCents),
+                unmatched,
               });
 
               return {
                 success: true,
                 orderId: order.id,
+                totalCents,
+                formattedTotal: formatCurrency(totalCents),
+                unmatched,
               };
             } catch (err) {
               console.error("❌ Clover order failed:", err);
               return {
                 success: false,
+                error: err.message || String(err),
+              };
+            }
+          },
+        }),
+
+        // Tool: get latest order status by phone
+        getCloverOrderStatus: llm.tool({
+          description:
+            "Get the most recent Clover order for a caller by their phone number.",
+          parameters: {
+            type: "object",
+            properties: {
+              phoneNumber: {
+                type: "string",
+                description:
+                  "The caller's phone number, e.g. '201-344-4638' or '+12013444638'.",
+              },
+            },
+            required: ["phoneNumber"],
+          },
+          execute: async ({ phoneNumber }) => {
+            console.log("📦 getCloverOrderStatus TOOL CALLED with:", {
+              phoneNumber,
+            });
+
+            try {
+              const order = await findLatestOrderByPhone(phoneNumber);
+
+              if (!order) {
+                return {
+                  found: false,
+                  message: "No matching order found for this phone number.",
+                };
+              }
+
+              return {
+                found: true,
+                orderId: order.id,
+                state: order.state,
+                title: order.title || "",
+                createdTime:
+                  order.createdTime || order.clientCreatedTime || null,
+                lineItems: order.lineItems || [],
+              };
+            } catch (err) {
+              console.error("❌ getCloverOrderStatus failed:", err);
+              return {
+                found: false,
                 error: err.message || String(err),
               };
             }
