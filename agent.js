@@ -12,10 +12,12 @@ const {
   llm, // for tools
 } = livekit;
 
-// Plugin imports
+// Plugin imports (CommonJS)
 const openai = require("@livekit/agents-plugin-openai");
 const deepgram = require("@livekit/agents-plugin-deepgram");
 const elevenlabs = require("@livekit/agents-plugin-elevenlabs");
+const silero = require("@livekit/agents-plugin-silero");
+const livekitPlugins = require("@livekit/agents-plugin-livekit");
 
 // -----------------------------
 // Clover config & helpers
@@ -95,9 +97,6 @@ async function getCloverInventory() {
 
 /**
  * Create a Clover order from items
- * items: [{ name: "Chicken Dum Biryani", quantity: 2 }, ...]
- * orderType: "pickup" | "delivery" | "dine_in" (used only in note/title)
- * phoneNumber: caller phone, stored in title for lookup later
  */
 async function createCloverOrderFromItems({
   items,
@@ -122,7 +121,6 @@ async function createCloverOrderFromItems({
   const orderBody = {
     state: "open",
     title: noteText,
-    // total will be set after adding line items
   };
 
   const order = await cloverRequest("/orders", {
@@ -208,7 +206,6 @@ async function findLatestOrderByPhone(phoneNumber) {
   const target = normalizePhone(phoneNumber);
   if (!target) return null;
 
-  // Pull recent orders; expand line items so the agent can read them back
   const data = await cloverRequest("/orders?limit=50&expand=lineItems");
   const orders = data.elements || [];
 
@@ -220,7 +217,6 @@ async function findLatestOrderByPhone(phoneNumber) {
 
   if (!matches.length) return null;
 
-  // Most recent first
   matches.sort(
     (a, b) =>
       (b.clientCreatedTime || b.createdTime || 0) -
@@ -246,7 +242,6 @@ console.log("LIVEKIT_API_SECRET present?", !!process.env.LIVEKIT_API_SECRET);
 console.log("OPENAI_API_KEY present?", !!process.env.OPENAI_API_KEY);
 console.log("DEEPGRAM_API_KEY present?", !!process.env.DEEPGRAM_API_KEY);
 console.log("ELEVEN_API_KEY present?", !!process.env.ELEVEN_API_KEY);
-console.log("ELEVEN_VOICE_ID:", process.env.ELEVEN_VOICE_ID || "<missing>");
 console.log("CLOVER_API_KEY present?", !!CLOVER_API_KEY);
 console.log("CLOVER_MERCHANT_ID:", CLOVER_MERCHANT_ID || "<missing>");
 console.log("CLOVER_BASE_URL:", CLOVER_BASE_URL);
@@ -259,102 +254,66 @@ class RestaurantAgent extends voice.Agent {
   constructor({ restaurantName, systemPromptText, menuText }) {
     super({
       instructions: `
-        You are the AI receptionist for ${restaurantName}, an Indian restaurant.
-
-        **Caller & Accent**
-        - Many callers will have Indian accents.
-        - Some may mix English with Indian languages (Hindi, Telugu, Tamil, etc.).
-        - Be patient, don't over-correct, and if you don't understand, say:
-          "Sorry, the line broke a bit, can you please repeat that slowly?"
-
-        **Personality**
-        - Warm, polite, slightly informal.
-        - Speak clearly and naturally, no robotic tone.
-        - You can use simple phrases like "sure", "absolutely", "no worries".
-
-        **Restaurant Context**
-        - Cuisine: Indian (South & North), with veg, non-veg, and Indo-Chinese options.
-        - Always clarify:
-          - Veg vs Non-veg
-          - Spice level (Mild / Medium / Spicy)
-          - Dine-in, takeout, or delivery (if supported)
-
-        **Menu Handling**
-        - Use this menu context to answer questions and suggest dishes:
+          You are the efficient and polite front-desk AI for ${restaurantName}.
+  
+          **CORE BEHAVIOR**
+          - **Be Concise:** Keep responses short (1-2 sentences max). Do not lecture.
+          - **Be Polite but Direct:** Use "Sure," "No problem," and "Got it." Avoid flowery language.
+          - **Handling Accents:** Many callers have heavy Indian accents. If you are not 100% sure what they said, do NOT guess. Say: "Sorry, the line is breaking up. Could you say that again?"
+  
+          **MENU & ORDERING RULES**
+          - Use the [Live Clover Menu Items] below.
+          - If they ask for "Chicken 65" and you see "Chicken 65 (Dry)", map it.
+          - If an item is not in the list, say: "I don't see that on the menu today. We have [Closest Item]. Would you like that?"
+          - For every main dish, ALWAYS clarify:
+            1. Spice level (Mild, Medium, Spicy).
+            2. Quantity (default to 1 if not specified).
+  
+          **CONVERSATION FLOW**
+          1. Greet: "Thank you for calling ${restaurantName}. How can I help you?"
+          2. Take Order: If they order multiple items, confirm: "Got it, [Item 1] and [Item 2]. What spice level for those?"
+          3. Confirm: Read the full order back once they stop adding items.
+          4. Finalize: Ask: "Is that everything for today?"
+          5. Execute:
+             - Ask for their phone number.
+             - Call the \`createCloverOrder\` tool.
+          6. Success/Fail:
+             - If tool fails: "I'm having trouble with the system. Please hold or call back."
+             - If tool succeeds: Read total and say pickup time: "Your total is [Amount]. It will be ready in about 20 minutes. Thank you!"
+  
+          **CRITICAL RESTRICTIONS**
+          - NEVER say the order is placed until the tool returns \`success: true\`.
+          - NEVER make up prices. Use only the tool's total.
+          - NEVER ask for credit card info. Payment is at the store.
+  
+          **SYSTEM CONTEXT**
+          ${systemPromptText}
+  
+          **MENU DATA**
           ${menuText}
-        - These items are coming directly from Clover. Prefer EXACT names from this list.
-        - If caller says "butter chicken", "biryani", "tandoori", etc., map to the closest item in the Clover list.
-        - If item is not in the list, say:
-          "I don’t see that exact item in today’s menu, but we have something similar: ..."
-        - Do NOT invent items that are not in the Clover menu.
-
-        **Order Flow**
-        - For orders, follow this sequence:
-          1) Ask what they'd like to order.
-          2) For each item: confirm size (if applicable), spice level, and quantity.
-          3) Ask: "Anything else for you today?" until they say they are done.
-          4) Repeat the full order slowly and ask them to confirm it's final.
-          5) Confirm pickup/delivery time and phone number.
-
-        **Clover Order Tool (IMPORTANT)**
-        - You MUST use the tool "createCloverOrder" to actually place an order in Clover.
-        - When the caller confirms the order is final (after you repeat it back):
-          - Call "createCloverOrder" EXACTLY ONCE with the full list of items, quantities,
-            orderType (like "pickup"), spice notes, and phoneNumber.
-        - You are NOT allowed to say "the order is placed" or "I have placed your order"
-          until after the tool returns success: true.
-        - If the tool returns success: true:
-          - Use "formattedTotal" or "totalCents" from the tool result.
-          - Tell the caller the order is placed in the system.
-          - Say their total BEFORE tax, for example:
-            "Your total before tax is $XX.XX."
-          - Then mention an estimated ready time (e.g. 20–25 minutes).
-        - If the tool returns success: false:
-          - Apologize and say there was a technical issue placing the order.
-          - DO NOT say the order was placed.
-
-        **Existing Order Status (by Phone)**
-        - If the caller asks about a previous order ("check my order", "what's the status of my pickup?"):
-          1) Ask politely for their phone number if you don't already have it.
-          2) Call the tool "getCloverOrderStatus" with that phone number.
-        - If the tool returns found: true:
-          - Read back the key details (main items and status).
-          - Example:
-            "I see an order for one Chicken Dum Biryani, status: open, placed earlier today."
-        - If the tool returns found: false:
-          - Apologize and say you couldn't find an order under that number.
-
-        **Rules**
-        - Keep responses short and clear for phone audio.
-        - Never guess about prices or availability if not in context; say you'll confirm with staff.
-        - If caller sounds confused, slow down and rephrase simply.
-        ${systemPromptText}
-      `,
+        `,
       tools: {
-        // Tool: create Clover order
         createCloverOrder: llm.tool({
           description:
-            "Place a Clover order for the caller using a list of items and optional note. MUST be used to actually place the order.",
+            "Place a Clover order. REQUIRED: items, note (spice level/instructions), phoneNumber.",
           parameters: {
             type: "object",
             properties: {
               items: {
                 type: "array",
                 description:
-                  "List of order items. Use Clover-style names and correct quantities.",
+                  "List of items. Map caller's words to the closest Clover menu item names.",
                 items: {
                   type: "object",
                   properties: {
                     name: {
                       type: "string",
-                      description:
-                        "Dish name, e.g. 'Chicken Dum Biryani', 'Paneer 65'. Must map to Clover menu if possible.",
+                      description: "Exact menu item name from Clover list.",
                     },
                     quantity: {
                       type: "integer",
                       minimum: 1,
-                      description:
-                        "How many of this item. Default to 1 if caller doesn't specify.",
+                      description: "Quantity.",
                     },
                   },
                   required: ["name"],
@@ -363,26 +322,23 @@ class RestaurantAgent extends voice.Agent {
               note: {
                 type: "string",
                 description:
-                  "Any special instructions, spice levels, or clarifications for the kitchen.",
+                  "Spice levels (Mild/Med/Spicy) and special requests.",
               },
               orderType: {
                 type: "string",
-                description:
-                  "Order type such as 'pickup', 'delivery', or 'dine_in'. Only used in the note/title, not sent as Clover orderType.",
+                description: "pickup or delivery",
               },
               phoneNumber: {
                 type: "string",
-                description:
-                  "Caller phone number for attaching to Clover order, so it can be looked up later.",
+                description: "Caller phone number for the order.",
               },
             },
-            required: ["items"],
+            required: ["items", "phoneNumber"],
           },
           execute: async ({ items, note, orderType, phoneNumber }) => {
-            console.log("🧾 createCloverOrder TOOL CALLED with:", {
+            console.log("🧾 createCloverOrder TOOL CALLED", {
               items,
               note,
-              orderType,
               phoneNumber,
             });
 
@@ -391,16 +347,9 @@ class RestaurantAgent extends voice.Agent {
                 await createCloverOrderFromItems({
                   items,
                   note,
-                  orderType,
+                  orderType: orderType || "pickup",
                   phoneNumber,
                 });
-
-              console.log("✅ Clover order created:", {
-                orderId: order.id,
-                totalCents,
-                formattedTotal: formatCurrency(totalCents),
-                unmatched,
-              });
 
               return {
                 success: true,
@@ -413,57 +362,36 @@ class RestaurantAgent extends voice.Agent {
               console.error("❌ Clover order failed:", err);
               return {
                 success: false,
-                error: err.message || String(err),
+                error: "System error: " + err.message,
               };
             }
           },
         }),
 
-        // Tool: get latest order status by phone
         getCloverOrderStatus: llm.tool({
-          description:
-            "Get the most recent Clover order for a caller by their phone number.",
+          description: "Check status of an existing order by phone number.",
           parameters: {
             type: "object",
             properties: {
               phoneNumber: {
                 type: "string",
-                description:
-                  "The caller's phone number, e.g. '201-344-4638' or '+12013444638'.",
+                description: "The caller's phone number.",
               },
             },
             required: ["phoneNumber"],
           },
           execute: async ({ phoneNumber }) => {
-            console.log("📦 getCloverOrderStatus TOOL CALLED with:", {
-              phoneNumber,
-            });
-
             try {
               const order = await findLatestOrderByPhone(phoneNumber);
-
-              if (!order) {
-                return {
-                  found: false,
-                  message: "No matching order found for this phone number.",
-                };
-              }
-
+              if (!order) return { found: false };
               return {
                 found: true,
-                orderId: order.id,
-                state: order.state,
-                title: order.title || "",
-                createdTime:
-                  order.createdTime || order.clientCreatedTime || null,
-                lineItems: order.lineItems || [],
+                status: order.state, // e.g., 'open', 'paid', 'locked'
+                title: order.title,
+                total: order.total,
               };
             } catch (err) {
-              console.error("❌ getCloverOrderStatus failed:", err);
-              return {
-                found: false,
-                error: err.message || String(err),
-              };
+              return { found: false, error: err.message };
             }
           },
         }),
@@ -545,27 +473,29 @@ ${cloverMenuText}
       menuText: combinedMenuText,
     });
 
-    // Choose ElevenLabs voice
-    const voiceId = "u7bRcYbD7visSINTyAT8";
-    console.log("🎙 Using ElevenLabs voice:", voiceId || "<default>");
+    // 5) Load VAD + turn detector and configure AgentSession
+    console.log("🧠 Loading Silero VAD...");
+    const vad = await silero.VAD.load(); // uses sane defaults
+    console.log("✅ Silero VAD loaded.");
 
-    // Build safe TTS options (never pass voice: undefined)
-    const ttsOptions = {
-      model: "eleven_multilingual_v2",
-    };
-    if (voiceId) {
-      ttsOptions.voice = { id: voiceId };
-    }
+    const turnDetector = new livekitPlugins.turnDetector.MultilingualModel();
+    console.log("✅ LiveKit turn detector initialized.");
 
-    // 5) Configure the AgentSession: STT + LLM + TTS
     const session = new voice.AgentSession({
+      vad,
+      turnDetection: turnDetector,
       stt: new deepgram.STT({
-        // language: "en-IN", // uncomment if supported by your Deepgram plan
+        model: "nova-3",
       }),
       llm: new openai.LLM({
         model: "gpt-4o-mini",
       }),
-      tts: new elevenlabs.TTS(ttsOptions),
+      // 🔊 ElevenLabs TTS
+      tts: new elevenlabs.TTS(),
+      voiceOptions: {
+        // Turn OFF preemptive generation to reduce aggressive early responses
+        preemptiveGeneration: false,
+      },
     });
 
     // 6) Start the session WITH an explicit job-context wrapper
@@ -576,9 +506,10 @@ ${cloverMenuText}
         room: ctx.room,
       });
 
-      console.log("🗣️ Generating initial greeting...");
+      console.log("🗣️ Generating initial greeting (no interruptions)...");
       await session.generateReply({
         instructions: `Greet the caller, mention "${restaurantName}", and ask how you can help them.`,
+        allowInterruptions: false, // don't let greeting get cut off
       });
     });
   },
