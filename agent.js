@@ -118,10 +118,11 @@ async function createCloverOrderFromItems({
   if (phoneNumber) noteParts.push(`Phone: ${phoneNumber}`);
   const noteText = noteParts.join(" | ") || "Phone order via AI agent";
 
-  // 1) Create base order (state: open) - NO orderType field to avoid 400s
+  // 1) Create base order (state: open)
   const orderBody = {
     state: "open",
     title: noteText,
+    // total will be set after adding line items
   };
 
   const order = await cloverRequest("/orders", {
@@ -129,7 +130,7 @@ async function createCloverOrderFromItems({
     body: orderBody,
   });
 
-  // 2) Build line items using inventory map and compute total
+  // 2) Build line items using inventory map and compute subtotal
   const unmatched = [];
   let totalCents = 0;
 
@@ -147,7 +148,6 @@ async function createCloverOrderFromItems({
             ? inv.price
             : 0;
 
-        // Add to running total (before tax)
         totalCents += priceInCents * qty;
 
         return {
@@ -169,6 +169,7 @@ async function createCloverOrderFromItems({
     }),
   };
 
+  // 3) Add all line items
   await cloverRequest(`/orders/${order.id}/bulk_line_items`, {
     method: "POST",
     body: bulkLineItems,
@@ -179,6 +180,18 @@ async function createCloverOrderFromItems({
       "⚠️ Unmatched items (custom line items with price=0):",
       unmatched
     );
+  }
+
+  // 4) Update the order TOTAL so Clover shows it on the dashboard
+  try {
+    await cloverRequest(`/orders/${order.id}`, {
+      method: "POST",
+      body: {
+        total: totalCents, // subtotal before tax, in cents
+      },
+    });
+  } catch (err) {
+    console.error("⚠️ Failed to update Clover order total:", err);
   }
 
   return {
@@ -233,7 +246,7 @@ console.log("LIVEKIT_API_SECRET present?", !!process.env.LIVEKIT_API_SECRET);
 console.log("OPENAI_API_KEY present?", !!process.env.OPENAI_API_KEY);
 console.log("DEEPGRAM_API_KEY present?", !!process.env.DEEPGRAM_API_KEY);
 console.log("ELEVEN_API_KEY present?", !!process.env.ELEVEN_API_KEY);
-console.log("ELEVEN_VOICE_ID:", process.env.ELEVEN_VOICE_ID || "<default>");
+console.log("ELEVEN_VOICE_ID:", process.env.ELEVEN_VOICE_ID || "<missing>");
 console.log("CLOVER_API_KEY present?", !!CLOVER_API_KEY);
 console.log("CLOVER_MERCHANT_ID:", CLOVER_MERCHANT_ID || "<missing>");
 console.log("CLOVER_BASE_URL:", CLOVER_BASE_URL);
@@ -532,6 +545,18 @@ ${cloverMenuText}
       menuText: combinedMenuText,
     });
 
+    // Choose ElevenLabs voice
+    const voiceId = "u7bRcYbD7visSINTyAT8";
+    console.log("🎙 Using ElevenLabs voice:", voiceId || "<default>");
+
+    // Build safe TTS options (never pass voice: undefined)
+    const ttsOptions = {
+      model: "eleven_multilingual_v2",
+    };
+    if (voiceId) {
+      ttsOptions.voice = { id: voiceId };
+    }
+
     // 5) Configure the AgentSession: STT + LLM + TTS
     const session = new voice.AgentSession({
       stt: new deepgram.STT({
@@ -540,9 +565,7 @@ ${cloverMenuText}
       llm: new openai.LLM({
         model: "gpt-4o-mini",
       }),
-      tts: new elevenlabs.TTS({
-        voiceId: process.env.ELEVEN_VOICE_ID || undefined,
-      }),
+      tts: new elevenlabs.TTS(ttsOptions),
     });
 
     // 6) Start the session WITH an explicit job-context wrapper
@@ -558,8 +581,6 @@ ${cloverMenuText}
         instructions: `Greet the caller, mention "${restaurantName}", and ask how you can help them.`,
       });
     });
-
-    // After this, the session will keep handling the conversation automatically.
   },
 });
 
