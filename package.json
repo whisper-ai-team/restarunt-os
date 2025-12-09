@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "agent:dev": "node agent.js dev",
     "agent:start": "node agent.js start",
@@ -12,6 +13,9 @@
   "author": "",
   "license": "ISC",
   "description": "",
+  "engines": {
+    "node": "20.x"
+  },
   "dependencies": {
     "@livekit/agents": "^1.0.24",
     "@livekit/agents-plugin-cartesia": "^1.0.24",
