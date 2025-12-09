@@ -5,7 +5,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "agent:dev": "node agent.js dev",
-    "agent:start": "node agent.js start"
+    "agent:start": "node agent.js start",
+    "download-files": "livekit-agents download-files"
   },
   "keywords": [],
   "author": "",
@@ -13,13 +14,16 @@
   "description": "",
   "dependencies": {
     "@livekit/agents": "^1.0.24",
+    "@livekit/agents-plugin-cartesia": "^1.0.24",
     "@livekit/agents-plugin-deepgram": "^1.0.24",
     "@livekit/agents-plugin-elevenlabs": "^1.0.24",
+    "@livekit/agents-plugin-livekit": "^1.0.24",
     "@livekit/agents-plugin-openai": "^1.0.24",
     "@livekit/agents-plugin-silero": "^1.0.24",
     "body-parser": "^2.2.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "download-file": "^0.1.5",
     "express": "^5.2.1",
     "livekit-server-sdk": "^2.14.2"
   }
