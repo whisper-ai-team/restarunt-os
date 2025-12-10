@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node server.js & npm run agent:start & check_voices.js",
+    "start": "node server.js & npm run agent:start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "agent:dev": "node agent.js dev",
     "agent:start": "node agent.js start"
