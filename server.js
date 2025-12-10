@@ -19,13 +19,32 @@ const dispatchClient = new AgentDispatchClient(
   process.env.LIVEKIT_API_SECRET
 );
 
+// ✅ Helper: normalize phone so formats match
+function normalizePhone(num) {
+  if (!num) return "";
+  return String(num)
+    .replace(/^sip:/i, "") // remove leading "sip:" if present
+    .replace(/\s+/g, "") // remove spaces
+    .replace(/-/g, "") // remove dashes
+    .replace(/\(/g, "") // remove (
+    .replace(/\)/g, ""); // remove )
+}
+
 // Middleware to capture raw body for webhook verification
-app.use(bodyParser.raw({ type: "application/webhook+json" }));
+app.use(
+  bodyParser.raw({
+    type: "*/*", // accept any content-type
+  })
+);
 
 // --- THE CORE LOGIC ---
 app.post("/api/webhook", async (req, res) => {
   try {
-    // Note: For Production, uncomment the line below to verify security signatures
+    console.log("🔥 /api/webhook HIT");
+    console.log("Headers:", req.headers);
+    console.log("Raw body:", req.body?.toString());
+
+    // For Production, you can enable signature verification:
     // const event = receiver.receive(req.body, req.headers["authorization"]);
 
     // For Testing: Manual parsing
@@ -38,20 +57,26 @@ app.post("/api/webhook", async (req, res) => {
       const sipEvent = event.sip;
 
       // The number the user dialed (The Restaurant's Number)
-      const dialedNumber = sipEvent.to;
+      const dialedNumberRaw = sipEvent.to;
+      const dialedNumber = normalizePhone(dialedNumberRaw);
 
-      // CRITICAL FIX: Use the Room Name LiveKit created!
-      // The Dispatch Rule created this room. We must join IT, not create a new one.
+      // Room created by Dispatch Rule
       const existingRoomName = sipEvent.roomName;
 
-      console.log(`📞 Incoming call to: ${dialedNumber}`);
+      console.log(`📞 Incoming call to (raw): ${dialedNumberRaw}`);
+      console.log(`📞 Incoming call normalized: ${dialedNumber}`);
       console.log(`🏠 Caller is waiting in room: ${existingRoomName}`);
 
       // 3. Database Lookup (Who is this?)
       const restaurant = getRestaurantByPhone(dialedNumber);
 
       if (!restaurant) {
-        console.error("❌ Unknown Phone Number - No Config Found");
+        console.error(
+          "❌ Unknown Phone Number - No Config Found for:",
+          dialedNumber
+        );
+        // Optional: temp hardcode for testing
+        // console.error("Known numbers example: +12013444638");
         return res.status(200).send();
       }
 
@@ -59,7 +84,7 @@ app.post("/api/webhook", async (req, res) => {
 
       // 4. Create the Dispatch (Launch the Agent)
       const dispatch = await dispatchClient.createDispatch(
-        existingRoomName, // <--- CHANGED: Join the existing room
+        existingRoomName, // join existing room
         "universal-restaurant-agent",
         {
           metadata: JSON.stringify({

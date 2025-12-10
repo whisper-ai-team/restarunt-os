@@ -9,27 +9,24 @@ const {
   initializeLogger,
   voice,
   runWithJobContextAsync,
-  llm, // for tools
+  llm,
 } = livekit;
 
-// Plugin imports (CommonJS)
 const openai = require("@livekit/agents-plugin-openai");
 const deepgram = require("@livekit/agents-plugin-deepgram");
 const elevenlabs = require("@livekit/agents-plugin-elevenlabs");
 const silero = require("@livekit/agents-plugin-silero");
-const livekitPlugins = require("@livekit/agents-plugin-livekit");
 
 // -----------------------------
-// Clover config & helpers
+// 1. Clover Configuration
 // -----------------------------
 const CLOVER_API_KEY = process.env.CLOVER_API_KEY;
 const CLOVER_MERCHANT_ID = process.env.CLOVER_MERCHANT_ID;
 const CLOVER_BASE_URL =
   process.env.CLOVER_BASE_URL || "https://apisandbox.dev.clover.com";
 
-let cloverInventoryCache = null; // { items, nameToItem }
+let cloverInventoryCache = null;
 
-// Format cents -> "$12.34"
 function formatCurrency(cents) {
   if (typeof cents !== "number" || Number.isNaN(cents)) return "$0.00";
   return `$${(cents / 100).toFixed(2)}`;
@@ -37,10 +34,13 @@ function formatCurrency(cents) {
 
 function normalizePhone(phone) {
   if (!phone) return "";
-  return String(phone).replace(/\D/g, "");
+  // Removes "sip:" prefix and any non-digit characters
+  return String(phone).replace(/^sip:/, "").replace(/\D/g, "");
 }
 
-// Minimal fetch using Node 18+ global fetch
+// -----------------------------
+// 2. Clover API Helpers
+// -----------------------------
 async function cloverRequest(path, { method = "GET", body } = {}) {
   if (!CLOVER_API_KEY || !CLOVER_MERCHANT_ID) {
     throw new Error("Missing Clover credentials in env");
@@ -66,7 +66,6 @@ async function cloverRequest(path, { method = "GET", body } = {}) {
   return res.json();
 }
 
-// Load Clover items once and cache: list + name->item map (id + price)
 async function getCloverInventory() {
   if (cloverInventoryCache) return cloverInventoryCache;
 
@@ -76,11 +75,9 @@ async function getCloverInventory() {
 
   for (const item of items) {
     if (!item.name || !item.id) continue;
-
     const key = item.name.trim().toLowerCase();
     nameToItem[key] = {
       id: item.id,
-      // Clover "price" is integer cents. May be undefined/null for variable-price items.
       price:
         typeof item.price === "number" && !Number.isNaN(item.price)
           ? item.price
@@ -90,14 +87,11 @@ async function getCloverInventory() {
 
   cloverInventoryCache = { items, nameToItem };
   console.log(
-    `🧾 Loaded ${items.length} Clover items from API for merchant ${CLOVER_MERCHANT_ID}`
+    `🧾 Loaded ${items.length} Clover items for merchant ${CLOVER_MERCHANT_ID}`
   );
   return cloverInventoryCache;
 }
 
-/**
- * Create a Clover order from items
- */
 async function createCloverOrderFromItems({
   items,
   note,
@@ -110,238 +104,146 @@ async function createCloverOrderFromItems({
 
   const { nameToItem } = await getCloverInventory();
 
-  // Build title / note with order type info
   const noteParts = [];
   if (orderType) noteParts.push(`OrderType: ${orderType}`);
   if (note) noteParts.push(`Note: ${note}`);
   if (phoneNumber) noteParts.push(`Phone: ${phoneNumber}`);
   const noteText = noteParts.join(" | ") || "Phone order via AI agent";
 
-  // 1) Create base order (state: open)
-  const orderBody = {
-    state: "open",
-    title: noteText,
-  };
-
+  // Create Order
   const order = await cloverRequest("/orders", {
     method: "POST",
-    body: orderBody,
+    body: { state: "open", title: noteText },
   });
 
-  // 2) Build line items using inventory map and compute subtotal
   const unmatched = [];
   let totalCents = 0;
 
+  // Map Items
   const bulkLineItems = {
     items: items.map((it) => {
       const name = (it.name || "").trim();
       const key = name.toLowerCase();
       const qty = it.quantity && it.quantity > 0 ? it.quantity : 1;
-
-      const inv = nameToItem[key]; // { id, price } or undefined
+      const inv = nameToItem[key];
 
       if (inv && inv.id) {
         const priceInCents =
           typeof inv.price === "number" && !Number.isNaN(inv.price)
             ? inv.price
             : 0;
-
         totalCents += priceInCents * qty;
-
         return {
           item: { id: inv.id },
           name,
-          price: priceInCents, // cents EACH
-          unitQty: qty, // integer quantity
+          price: priceInCents,
+          unitQty: qty,
         };
       }
-
-      // No match found: custom line item with price=0
       unmatched.push({ name, qty });
-
-      return {
-        name,
-        price: 0,
-        unitQty: qty,
-      };
+      return { name, price: 0, unitQty: qty };
     }),
   };
 
-  // 3) Add all line items
+  // Add Items to Order
   await cloverRequest(`/orders/${order.id}/bulk_line_items`, {
     method: "POST",
     body: bulkLineItems,
   });
 
-  if (unmatched.length) {
-    console.warn(
-      "⚠️ Unmatched items (custom line items with price=0):",
-      unmatched
-    );
-  }
-
-  // 4) Update the order TOTAL so Clover shows it on the dashboard
+  // Update Total
   try {
     await cloverRequest(`/orders/${order.id}`, {
       method: "POST",
-      body: {
-        total: totalCents, // subtotal before tax, in cents
-      },
+      body: { total: totalCents },
     });
   } catch (err) {
     console.error("⚠️ Failed to update Clover order total:", err);
   }
 
-  return {
-    order,
-    totalCents,
-    unmatched,
-  };
+  return { order, totalCents, unmatched };
 }
 
-/**
- * Find latest order for a phone number by searching recent orders' title/note
- */
 async function findLatestOrderByPhone(phoneNumber) {
   const target = normalizePhone(phoneNumber);
   if (!target) return null;
-
   const data = await cloverRequest("/orders?limit=50&expand=lineItems");
   const orders = data.elements || [];
-
   const matches = orders.filter((o) => {
     const text = `${o.title || ""} ${o.note || ""}`;
     const digits = normalizePhone(text);
     return digits.includes(target);
   });
-
   if (!matches.length) return null;
-
   matches.sort(
     (a, b) =>
       (b.clientCreatedTime || b.createdTime || 0) -
       (a.clientCreatedTime || a.createdTime || 0)
   );
-
   return matches[0];
 }
 
 // -----------------------------
-// Initialize LiveKit logger
+// 3. Agent & Logger Init
 // -----------------------------
 initializeLogger({
   level: "info",
   destination: "stdout",
 });
 
-// Env sanity check
-console.log("=== ENV CHECK (agent.js) ===");
-console.log("LIVEKIT_URL:", process.env.LIVEKIT_URL || "<missing>");
-console.log("LIVEKIT_API_KEY present?", !!process.env.LIVEKIT_API_KEY);
-console.log("LIVEKIT_API_SECRET present?", !!process.env.LIVEKIT_API_SECRET);
-console.log("OPENAI_API_KEY present?", !!process.env.OPENAI_API_KEY);
-console.log("DEEPGRAM_API_KEY present?", !!process.env.DEEPGRAM_API_KEY);
-console.log("ELEVEN_API_KEY present?", !!process.env.ELEVEN_API_KEY);
-console.log("CLOVER_API_KEY present?", !!CLOVER_API_KEY);
-console.log("CLOVER_MERCHANT_ID:", CLOVER_MERCHANT_ID || "<missing>");
-console.log("CLOVER_BASE_URL:", CLOVER_BASE_URL);
-console.log("=======================================");
-
-// -----------------------------
-// Restaurant Agent with Clover tools
-// -----------------------------
 class RestaurantAgent extends voice.Agent {
   constructor({ restaurantName, systemPromptText, menuText }) {
     super({
       instructions: `
-          You are the efficient and polite front-desk AI for ${restaurantName}.
-  
-          **CORE BEHAVIOR**
-          - **Be Concise:** Keep responses short (1-2 sentences max). Do not lecture.
-          - **Be Polite but Direct:** Use "Sure," "No problem," and "Got it." Avoid flowery language.
-          - **Handling Accents:** Many callers have heavy Indian accents. If you are not 100% sure what they said, do NOT guess. Say: "Sorry, the line is breaking up. Could you say that again?"
-  
-          **MENU & ORDERING RULES**
-          - Use the [Live Clover Menu Items] below.
-          - If they ask for "Chicken 65" and you see "Chicken 65 (Dry)", map it.
-          - If an item is not in the list, say: "I don't see that on the menu today. We have [Closest Item]. Would you like that?"
-          - For every main dish, ALWAYS clarify:
-            1. Spice level (Mild, Medium, Spicy).
-            2. Quantity (default to 1 if not specified).
-  
-          **CONVERSATION FLOW**
-          1. Greet: "Thank you for calling ${restaurantName}. How can I help you?"
-          2. Take Order: If they order multiple items, confirm: "Got it, [Item 1] and [Item 2]. What spice level for those?"
-          3. Confirm: Read the full order back once they stop adding items.
-          4. Finalize: Ask: "Is that everything for today?"
-          5. Execute:
-             - Ask for their phone number.
-             - Call the \`createCloverOrder\` tool.
-          6. Success/Fail:
-             - If tool fails: "I'm having trouble with the system. Please hold or call back."
-             - If tool succeeds: Read total and say pickup time: "Your total is [Amount]. It will be ready in about 20 minutes. Thank you!"
-  
-          **CRITICAL RESTRICTIONS**
-          - NEVER say the order is placed until the tool returns \`success: true\`.
-          - NEVER make up prices. Use only the tool's total.
-          - NEVER ask for credit card info. Payment is at the store.
-  
-          **SYSTEM CONTEXT**
-          ${systemPromptText}
-  
-          **MENU DATA**
-          ${menuText}
-        `,
+        You are the efficient, polite, and Indian-accented front-desk AI for ${restaurantName}.
+
+        **CORE BEHAVIOR**
+        - Your goal is to take orders efficiently.
+        - Keep answers short (1–2 sentences max).
+        - If the user pauses, wait patiently. Do not interrupt them unless they stop speaking.
+
+        **MENU & ORDERING RULES**
+        - Use the [Live Clover Menu Items] list below.
+        - If an item is missing, apologize and suggest the closest match.
+        - ALWAYS ask for "Spice Level" and "Quantity" for main dishes.
+
+        **CONVERSATION FLOW**
+        1. Greet: "Namaste! Thank you for calling ${restaurantName}. How can I help you today?"
+        2. Take Order: Listen carefully to the items.
+        3. Confirm: Read back the order to verify.
+        4. Finalize: Ask for the customer's phone number.
+        5. Execute: Call the \`createCloverOrder\` tool.
+
+        **SYSTEM CONTEXT**
+        ${systemPromptText}
+
+        **MENU DATA**
+        ${menuText}
+      `,
       tools: {
         createCloverOrder: llm.tool({
-          description:
-            "Place a Clover order. REQUIRED: items, note (spice level/instructions), phoneNumber.",
+          description: "Place a Clover order. REQUIRED: items, phoneNumber.",
           parameters: {
             type: "object",
             properties: {
               items: {
                 type: "array",
-                description:
-                  "List of items. Map caller's words to the closest Clover menu item names.",
                 items: {
                   type: "object",
                   properties: {
-                    name: {
-                      type: "string",
-                      description: "Exact menu item name from Clover list.",
-                    },
-                    quantity: {
-                      type: "integer",
-                      minimum: 1,
-                      description: "Quantity.",
-                    },
+                    name: { type: "string" },
+                    quantity: { type: "integer" },
                   },
                   required: ["name"],
                 },
               },
-              note: {
-                type: "string",
-                description:
-                  "Spice levels (Mild/Med/Spicy) and special requests.",
-              },
-              orderType: {
-                type: "string",
-                description: "pickup or delivery",
-              },
-              phoneNumber: {
-                type: "string",
-                description: "Caller phone number for the order.",
-              },
+              note: { type: "string" },
+              orderType: { type: "string", enum: ["pickup", "delivery"] },
+              phoneNumber: { type: "string" },
             },
             required: ["items", "phoneNumber"],
           },
           execute: async ({ items, note, orderType, phoneNumber }) => {
-            console.log("🧾 createCloverOrder TOOL CALLED", {
-              items,
-              note,
-              phoneNumber,
-            });
-
             try {
               const { order, totalCents, unmatched } =
                 await createCloverOrderFromItems({
@@ -350,7 +252,6 @@ class RestaurantAgent extends voice.Agent {
                   orderType: orderType || "pickup",
                   phoneNumber,
                 });
-
               return {
                 success: true,
                 orderId: order.id,
@@ -359,24 +260,16 @@ class RestaurantAgent extends voice.Agent {
                 unmatched,
               };
             } catch (err) {
-              console.error("❌ Clover order failed:", err);
-              return {
-                success: false,
-                error: "System error: " + err.message,
-              };
+              return { success: false, error: err.message };
             }
           },
         }),
-
         getCloverOrderStatus: llm.tool({
           description: "Check status of an existing order by phone number.",
           parameters: {
             type: "object",
             properties: {
-              phoneNumber: {
-                type: "string",
-                description: "The caller's phone number.",
-              },
+              phoneNumber: { type: "string" },
             },
             required: ["phoneNumber"],
           },
@@ -386,7 +279,7 @@ class RestaurantAgent extends voice.Agent {
               if (!order) return { found: false };
               return {
                 found: true,
-                status: order.state, // e.g., 'open', 'paid', 'locked'
+                status: order.state,
                 title: order.title,
                 total: order.total,
               };
@@ -401,47 +294,27 @@ class RestaurantAgent extends voice.Agent {
 }
 
 // -----------------------------
-// Agent Definition
+// 4. Main Entry Point
 // -----------------------------
 const agent = defineAgent({
   name: "universal-restaurant-agent",
 
   entry: async (ctx) => {
-    console.log("🛰  Job received:", {
-      roomName: ctx.room?.name,
-      roomSid: ctx.room?.sid,
-    });
+    console.log("🔌 Connecting to LiveKit room...");
+    await ctx.connect();
+    console.log("✅ Agent connected to room:", ctx.room.name);
 
-    // 1) Connect to the LiveKit room (WebRTC)
-    try {
-      console.log("🔌 Connecting to LiveKit room via WebRTC...");
-      await ctx.connect();
-      console.log("✅ Agent connected to room:", ctx.room.name);
-    } catch (err) {
-      console.error("❌ ctx.connect() failed:", {
-        type: err?.type,
-        message: err?.message,
-        stack: err?.stack,
-      });
-      return;
-    }
-
-    // 2) Parse job metadata (restaurant config from dispatch)
+    // -- Config Loading --
     let config = {};
     try {
-      console.log("🎭 Raw metadata:", ctx.job.metadata);
       config = JSON.parse(ctx.job.metadata || "{}");
     } catch (e) {
-      console.error("❌ Failed to parse metadata, using defaults.", e);
       config = {};
     }
-
     const restaurantName = config.restaurantName || "Bawarchi Biryanis Miami";
-    const systemPromptText =
-      config.systemPrompt || "You are a helpful restaurant receptionist.";
-    const baseMenuText = config.menu || "Menu is not available right now.";
+    const baseMenuText = config.menu || "Menu is not available.";
 
-    // 3) Fetch Clover inventory and build menu text for the prompt
+    // -- Load Clover Menu --
     let combinedMenuText = baseMenuText;
     try {
       const { items } = await getCloverInventory();
@@ -449,81 +322,93 @@ const agent = defineAgent({
         items && items.length
           ? items.map((i) => `- ${i.name}`).join("\n")
           : "No Clover items loaded.";
-
-      combinedMenuText = `
-[Restaurant Menu Text]
-${baseMenuText}
-
-[Live Clover Menu Items]
-${cloverMenuText}
-      `;
+      combinedMenuText = `[Clover Menu Items]\n${cloverMenuText}\n\n[Base Menu]\n${baseMenuText}`;
     } catch (err) {
-      console.error("❌ Failed to load Clover menu for prompt:", err);
       combinedMenuText = baseMenuText;
     }
 
-    // 4) Wait for SIP caller to join
-    console.log("⏳ Waiting for human caller to join SIP...");
+    // -- Wait for User --
+    console.log("⏳ Waiting for human caller...");
     const participant = await ctx.waitForParticipant();
-    console.log("👤 Human Caller Detected:", participant.identity);
+
+    // Normalize SIP identity for Clover (e.g. "sip:+12345" -> "12345")
+    const callerPhone = normalizePhone(participant.identity);
+    console.log("👤 Caller Identity:", participant.identity, "->", callerPhone);
 
     const restaurantAgent = new RestaurantAgent({
       restaurantName,
-      systemPromptText,
+      systemPromptText: config.systemPrompt || "You are a helpful assistant.",
       menuText: combinedMenuText,
     });
 
-    // 5) Load VAD + turn detector and configure AgentSession
-    console.log("🧠 Loading Silero VAD...");
-    const vad = await silero.VAD.load(); // uses sane defaults
-    console.log("✅ Silero VAD loaded.");
+    // -- VAD TUNING (Anti-Cut-Off) --
+    console.log("🧠 Loading Silero VAD (Tuned for patience)...");
+    const vad = await silero.VAD.load({
+      minSpeechDuration: 0.1, // Recognize short "Yes/No" quickly
+      minSilenceDuration: 0.8, // Wait 0.8s of silence before replying (Prevents cutting off)
+      threshold: 0.5,
+    });
 
-    const turnDetector = new livekitPlugins.turnDetector.MultilingualModel();
-    console.log("✅ LiveKit turn detector initialized.");
-
+    // -- Session Setup --
+    console.log("🧪 Creating AgentSession...");
     const session = new voice.AgentSession({
       vad,
-      turnDetection: turnDetector,
-      stt: new deepgram.STT({
-        model: "nova-3",
+      // Deepgram Nova-3 is currently the fastest STT
+      stt: new deepgram.STT({ model: "nova-3" }),
+
+      // GPT-4o-mini is fastest/cheapest for simple ordering
+      llm: new openai.LLM({ model: "gpt-4o-mini" }),
+
+      // -- ELEVENLABS TUNING (Low Latency) --
+      tts: new elevenlabs.TTS({
+        // MUST use Turbo v2.5 for <1s latency
+        modelID: "eleven_turbo_v2_5",
+        // ⚠️ REPLACE THIS ID WITH YOUR CHOSEN INDIAN VOICE ID ⚠️
+        // "Raveena" or similar
+        voice: {
+          id: "9w21nMuk8CWXIME31V1S", // <--- CHANGE THIS ID
+        },
+        // Stream small chunks for faster playback start
+        chunk_length_schedule: [50, 100, 200],
       }),
-      llm: new openai.LLM({
-        model: "gpt-4o-mini",
-      }),
-      // 🔊 ElevenLabs TTS
-      tts: new elevenlabs.TTS(),
-      voiceOptions: {
-        // Turn OFF preemptive generation to reduce aggressive early responses
-        preemptiveGeneration: false,
-      },
     });
 
-    // 6) Start the session WITH an explicit job-context wrapper
-    await runWithJobContextAsync(ctx, async () => {
-      console.log("🚀 Starting AgentSession in job context...");
-      await session.start({
-        agent: restaurantAgent,
-        room: ctx.room,
-      });
+    // Log TTS errors to debug silence
+    session.on("error", (err) => console.error("🔥 Session Error:", err));
 
-      console.log("🗣️ Generating initial greeting (no interruptions)...");
-      await session.generateReply({
-        instructions: `Greet the caller, mention "${restaurantName}", and ask how you can help them.`,
-        allowInterruptions: false, // don't let greeting get cut off
+    try {
+      await runWithJobContextAsync(ctx, async () => {
+        console.log("🚀 Starting AgentSession...");
+        await session.start({
+          agent: restaurantAgent,
+          room: ctx.room,
+        });
+
+        console.log("📢 Sending Greeting...");
+        const handle = await session.generateReply({
+          instructions: `Greet the caller cheerfully using "Namaste", mention "${restaurantName}", and ask how you can help.`,
+          allowInterruptions: true,
+        });
+
+        await handle.waitForPlayout();
+        console.log("✅ Greeting finished.");
+
+        // -- KEEP-ALIVE: Don't exit until call ends --
+        await new Promise((resolve) => {
+          ctx.room.on("disconnected", () => {
+            console.log("📞 Room disconnected. Ending session.");
+            resolve();
+          });
+        });
       });
-    });
+    } catch (err) {
+      console.error("❌ Error in AgentSession:", err);
+    }
   },
 });
 
-// -----------------------------
-// Run Worker via CLI
-// -----------------------------
 if (require.main === module) {
-  const worker = new WorkerOptions({
-    agent: __filename,
-  });
-
-  cli.runApp(worker);
+  cli.runApp(new WorkerOptions({ agent: __filename }));
 }
 
 module.exports = agent;
