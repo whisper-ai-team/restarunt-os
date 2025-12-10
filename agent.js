@@ -18,39 +18,95 @@ const elevenlabs = require("@livekit/agents-plugin-elevenlabs");
 const silero = require("@livekit/agents-plugin-silero");
 
 // -----------------------------
-// 1. Clover Configuration
+// 1. CONFIGURATION & STATE
 // -----------------------------
-const CLOVER_API_KEY = process.env.CLOVER_API_KEY;
-const CLOVER_MERCHANT_ID = process.env.CLOVER_MERCHANT_ID;
-const CLOVER_BASE_URL =
-  process.env.CLOVER_BASE_URL || "https://apisandbox.dev.clover.com";
+const CONFIG = {
+  cloverApiKey: process.env.CLOVER_API_KEY,
+  cloverMerchantId: process.env.CLOVER_MERCHANT_ID,
+  cloverBaseUrl:
+    process.env.CLOVER_BASE_URL || "https://apisandbox.dev.clover.com",
+  twilioSid: process.env.TWILIO_ACCOUNT_SID,
+  twilioToken: process.env.TWILIO_AUTH_TOKEN,
+  twilioPhone: process.env.TWILIO_PHONE_NUMBER,
+  menuCacheTtl: 10 * 60 * 1000, // 10 Minutes Cache
+};
 
-let cloverInventoryCache = null;
+// Global State
+let menuCache = {
+  items: [],
+  nameToItem: {},
+  lastFetch: 0,
+};
 
+// -----------------------------
+// 2. HELPERS (Formatting & SMS)
+// -----------------------------
 function formatCurrency(cents) {
   if (typeof cents !== "number" || Number.isNaN(cents)) return "$0.00";
   return `$${(cents / 100).toFixed(2)}`;
 }
 
+// Converts 2550 -> "25 dollars and 50 cents" for clear TTS
+function formatCurrencyForSpeech(cents) {
+  if (typeof cents !== "number" || Number.isNaN(cents)) return "0 dollars";
+  const dollars = Math.floor(cents / 100);
+  const remainder = cents % 100;
+  if (remainder === 0) return `${dollars} dollars`;
+  return `${dollars} dollars and ${remainder} cents`;
+}
+
 function normalizePhone(phone) {
   if (!phone) return "";
-  // Removes "sip:" prefix and any non-digit characters
   return String(phone).replace(/^sip:/, "").replace(/\D/g, "");
 }
 
-// -----------------------------
-// 2. Clover API Helpers
-// -----------------------------
-async function cloverRequest(path, { method = "GET", body } = {}) {
-  if (!CLOVER_API_KEY || !CLOVER_MERCHANT_ID) {
-    throw new Error("Missing Clover credentials in env");
+// SMS Sender (Uses standard Fetch to avoid extra dependencies)
+async function sendSms(to, body) {
+  if (!CONFIG.twilioSid || !CONFIG.twilioToken || !CONFIG.twilioPhone) {
+    console.warn("⚠️ SMS Skipped: Missing Twilio Credentials");
+    return;
   }
 
-  const url = `${CLOVER_BASE_URL}/v3/merchants/${CLOVER_MERCHANT_ID}${path}`;
+  const url = `https://api.twilio.com/2010-04-01/Accounts/${CONFIG.twilioSid}/Messages.json`;
+  const params = new URLSearchParams({
+    To: to,
+    From: CONFIG.twilioPhone,
+    Body: body,
+  });
+
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        Authorization:
+          "Basic " +
+          Buffer.from(`${CONFIG.twilioSid}:${CONFIG.twilioToken}`).toString(
+            "base64"
+          ),
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: params,
+    });
+    if (res.ok) console.log(`✅ SMS Sent to ${to}`);
+    else console.error(`❌ SMS Failed: ${await res.text()}`);
+  } catch (err) {
+    console.error("❌ SMS Network Error:", err);
+  }
+}
+
+// -----------------------------
+// 3. CLOVER SERVICE (With Caching)
+// -----------------------------
+async function cloverRequest(path, { method = "GET", body } = {}) {
+  if (!CONFIG.cloverApiKey || !CONFIG.cloverMerchantId) {
+    throw new Error("Missing Clover credentials");
+  }
+
+  const url = `${CONFIG.cloverBaseUrl}/v3/merchants/${CONFIG.cloverMerchantId}${path}`;
   const res = await fetch(url, {
     method,
     headers: {
-      Authorization: `Bearer ${CLOVER_API_KEY}`,
+      Authorization: `Bearer ${CONFIG.cloverApiKey}`,
       "Content-Type": "application/json",
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -58,171 +114,191 @@ async function cloverRequest(path, { method = "GET", body } = {}) {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new Error(
-      `Clover error ${res.status}: ${text || res.statusText || "unknown"}`
-    );
+    throw new Error(`Clover error ${res.status}: ${text}`);
   }
-
   return res.json();
 }
 
-async function getCloverInventory() {
-  if (cloverInventoryCache) return cloverInventoryCache;
-
-  const data = await cloverRequest("/items?limit=1000");
-  const items = data.elements || [];
-  const nameToItem = {};
-
-  for (const item of items) {
-    if (!item.name || !item.id) continue;
-    const key = item.name.trim().toLowerCase();
-    nameToItem[key] = {
-      id: item.id,
-      price:
-        typeof item.price === "number" && !Number.isNaN(item.price)
-          ? item.price
-          : null,
-    };
+// Smart Menu Fetcher (Implements "Real-Time Sync")
+async function getMenu() {
+  const now = Date.now();
+  // Check Cache Validity
+  if (
+    menuCache.items.length > 0 &&
+    now - menuCache.lastFetch < CONFIG.menuCacheTtl
+  ) {
+    return menuCache;
   }
 
-  cloverInventoryCache = { items, nameToItem };
-  console.log(
-    `🧾 Loaded ${items.length} Clover items for merchant ${CLOVER_MERCHANT_ID}`
-  );
-  return cloverInventoryCache;
+  console.log("🔄 Refreshing Menu from Clover API...");
+  try {
+    const data = await cloverRequest("/items?limit=1000"); // Adjust limit as needed
+    const items = data.elements || [];
+    const nameToItem = {};
+
+    for (const item of items) {
+      if (!item.name || !item.id) continue;
+      // We could filter out "hidden" items here if Clover provides that flag
+      const key = item.name.trim().toLowerCase();
+      nameToItem[key] = {
+        id: item.id,
+        name: item.name,
+        price: typeof item.price === "number" ? item.price : 0,
+      };
+    }
+
+    menuCache = { items, nameToItem, lastFetch: now };
+    console.log(`✅ Menu Refreshed: ${items.length} items.`);
+    return menuCache;
+  } catch (err) {
+    console.error("❌ Menu Fetch Failed:", err);
+    return menuCache; // Return old cache if fail
+  }
 }
 
-async function createCloverOrderFromItems({
-  items,
-  note,
-  orderType,
-  phoneNumber,
-}) {
-  if (!Array.isArray(items) || items.length === 0) {
-    throw new Error("No items passed to Clover order");
-  }
+// -----------------------------
+// 4. ORDER LOGIC (Kitchen Printer Optimized)
+// -----------------------------
+async function createOrder({ items, note, orderType, phoneNumber }) {
+  if (!Array.isArray(items) || items.length === 0) throw new Error("No items");
+  const { nameToItem } = await getMenu();
 
-  const { nameToItem } = await getCloverInventory();
-
+  // Create Header Note
   const noteParts = [];
-  if (orderType) noteParts.push(`OrderType: ${orderType}`);
+  if (orderType) noteParts.push(`Type: ${orderType}`);
   if (note) noteParts.push(`Note: ${note}`);
   if (phoneNumber) noteParts.push(`Phone: ${phoneNumber}`);
-  const noteText = noteParts.join(" | ") || "Phone order via AI agent";
+  const headerNote = noteParts.join(" | ");
 
-  // Create Order
+  // 1. Create Open Order
   const order = await cloverRequest("/orders", {
     method: "POST",
-    body: { state: "open", title: noteText },
+    body: { state: "open", title: headerNote },
   });
 
   const unmatched = [];
   let totalCents = 0;
+  const orderSummaryLines = []; // For SMS
 
-  // Map Items
+  // 2. Map Items & Format for Kitchen Printer
   const bulkLineItems = {
     items: items.map((it) => {
-      const name = (it.name || "").trim();
-      const key = name.toLowerCase();
-      const qty = it.quantity && it.quantity > 0 ? it.quantity : 1;
+      const rawName = (it.name || "").trim();
+      const key = rawName.toLowerCase();
+      const qty = it.quantity || 1;
+      const mods = it.modifications || ""; // e.g. "Spicy, Extra Sauce"
+
       const inv = nameToItem[key];
 
+      // STRATEGY: Append mods to name so cook SEES it.
+      // e.g. "Chicken Biryani" -> "Chicken Biryani **[Spicy]**"
+      const kitchenFriendlyName = mods ? `${rawName} **[${mods}]**` : rawName;
+
+      orderSummaryLines.push(`${qty}x ${kitchenFriendlyName}`);
+
       if (inv && inv.id) {
-        const priceInCents =
-          typeof inv.price === "number" && !Number.isNaN(inv.price)
-            ? inv.price
-            : 0;
-        totalCents += priceInCents * qty;
+        totalCents += inv.price * qty;
         return {
           item: { id: inv.id },
-          name,
-          price: priceInCents,
+          name: kitchenFriendlyName, // Send modified name to Clover
+          price: inv.price,
           unitQty: qty,
         };
       }
-      unmatched.push({ name, qty });
-      return { name, price: 0, unitQty: qty };
+
+      unmatched.push({ name: rawName, qty });
+      return { name: kitchenFriendlyName, price: 0, unitQty: qty };
     }),
   };
 
-  // Add Items to Order
+  // 3. Add Lines
   await cloverRequest(`/orders/${order.id}/bulk_line_items`, {
     method: "POST",
     body: bulkLineItems,
   });
 
-  // Update Total
-  try {
-    await cloverRequest(`/orders/${order.id}`, {
-      method: "POST",
-      body: { total: totalCents },
-    });
-  } catch (err) {
-    console.error("⚠️ Failed to update Clover order total:", err);
+  // 4. Update Total
+  await cloverRequest(`/orders/${order.id}`, {
+    method: "POST",
+    body: { total: totalCents },
+  });
+
+  // 5. Send SMS Confirmation (Trust Layer)
+  if (phoneNumber) {
+    const smsBody = `Bawarchi Biryanis: Order Confirmed!\n\n${orderSummaryLines.join(
+      "\n"
+    )}\n\nTotal: ${formatCurrency(totalCents)}\nPickup in ~20 mins.`;
+    // Fire and forget (don't await)
+    sendSms(phoneNumber, smsBody);
   }
 
-  return { order, totalCents, unmatched };
-}
-
-async function findLatestOrderByPhone(phoneNumber) {
-  const target = normalizePhone(phoneNumber);
-  if (!target) return null;
-  const data = await cloverRequest("/orders?limit=50&expand=lineItems");
-  const orders = data.elements || [];
-  const matches = orders.filter((o) => {
-    const text = `${o.title || ""} ${o.note || ""}`;
-    const digits = normalizePhone(text);
-    return digits.includes(target);
-  });
-  if (!matches.length) return null;
-  matches.sort(
-    (a, b) =>
-      (b.clientCreatedTime || b.createdTime || 0) -
-      (a.clientCreatedTime || a.createdTime || 0)
-  );
-  return matches[0];
+  return { order, totalCents };
 }
 
 // -----------------------------
-// 3. Agent & Logger Init
+// 5. AGENT DEFINITION
 // -----------------------------
-initializeLogger({
-  level: "info",
-  destination: "stdout",
-});
+initializeLogger({ level: "info", destination: "stdout" });
 
 class RestaurantAgent extends voice.Agent {
-  constructor({ restaurantName, systemPromptText, menuText }) {
+  constructor({ restaurantName, systemPrompt, initialMenu, activeRoom }) {
     super({
       instructions: `
         You are the efficient, polite, and Indian-accented front-desk AI for ${restaurantName}.
 
         **CORE BEHAVIOR**
-        - Your goal is to take orders efficiently.
         - Keep answers short (1–2 sentences max).
-        - If the user pauses, wait patiently. Do not interrupt them unless they stop speaking.
+        - Wait patiently if the user pauses.
 
-        **MENU & ORDERING RULES**
-        - Use the [Live Clover Menu Items] list below.
-        - If an item is missing, apologize and suggest the closest match.
-        - ALWAYS ask for "Spice Level" and "Quantity" for main dishes.
+        **SMART MENU SEARCH**
+        - You have a list of "Popular Items" in your context.
+        - IF the user asks for something NOT in that list, use the \`searchMenu\` tool to check our full database.
+        - IF \`searchMenu\` returns nothing, apologize and say we don't have it.
 
-        **CONVERSATION FLOW**
-        1. Greet: "Namaste! Thank you for calling ${restaurantName}. How can I help you today?"
-        2. Take Order: Listen carefully to the items.
-        3. Confirm: Read back the order to verify.
-        4. Finalize: Ask for the customer's phone number.
-        5. Execute: Call the \`createCloverOrder\` tool.
+        **ORDERING RULES**
+        - Always ask for **Spice Level** (Mild/Med/Spicy) for Biryanis/Curries.
+        - Always ask for **Quantity**.
+        - When calling \`createCloverOrder\`, put the Spice Level in the 'modifications' field for that item.
+
+        **ENDING THE CALL**
+        - When \`createCloverOrder\` returns success:
+        1. Read the "Speech Total" clearly.
+        2. Say: "Order confirmed! Check your texts for a receipt. Thank you, Goodbye!"
+        3. **IMMEDIATELY** call the \`hangUp\` tool.
 
         **SYSTEM CONTEXT**
-        ${systemPromptText}
+        ${systemPrompt}
 
-        **MENU DATA**
-        ${menuText}
+        **POPULAR ITEMS (Use searchMenu for others)**
+        ${initialMenu}
       `,
       tools: {
+        // 🔍 NEW TOOL: Smart Menu Search
+        searchMenu: llm.tool({
+          description:
+            "Search the full menu database for specific items (e.g. 'goat', 'kheer').",
+          parameters: {
+            type: "object",
+            properties: { query: { type: "string" } },
+            required: ["query"],
+          },
+          execute: async ({ query }) => {
+            const { items } = await getMenu();
+            const q = query.toLowerCase();
+            // Simple fuzzy match
+            const matches = items
+              .filter((i) => i.name.toLowerCase().includes(q))
+              .slice(0, 10); // Limit to top 10 results
+
+            if (matches.length === 0) return "No items found.";
+            return matches
+              .map((m) => `${m.name} ($${(m.price / 100).toFixed(2)})`)
+              .join("\n");
+          },
+        }),
+
         createCloverOrder: llm.tool({
-          description: "Place a Clover order. REQUIRED: items, phoneNumber.",
+          description: "Place order. REQUIRED: items, phoneNumber.",
           parameters: {
             type: "object",
             properties: {
@@ -231,8 +307,12 @@ class RestaurantAgent extends voice.Agent {
                 items: {
                   type: "object",
                   properties: {
-                    name: { type: "string" },
+                    name: { type: "string", description: "Exact item name" },
                     quantity: { type: "integer" },
+                    modifications: {
+                      type: "string",
+                      description: "e.g. 'Spicy', 'No Onion'",
+                    },
                   },
                   required: ["name"],
                 },
@@ -245,47 +325,34 @@ class RestaurantAgent extends voice.Agent {
           },
           execute: async ({ items, note, orderType, phoneNumber }) => {
             try {
-              const { order, totalCents, unmatched } =
-                await createCloverOrderFromItems({
-                  items,
-                  note,
-                  orderType: orderType || "pickup",
-                  phoneNumber,
-                });
-              return {
-                success: true,
-                orderId: order.id,
-                totalCents,
-                formattedTotal: formatCurrency(totalCents),
-                unmatched,
-              };
+              const { order, totalCents } = await createOrder({
+                items,
+                note,
+                orderType: orderType || "pickup",
+                phoneNumber,
+              });
+
+              const speechTotal = formatCurrencyForSpeech(totalCents);
+              return `SUCCESS. Total: ${speechTotal}. SMS Sent. 
+              INSTRUCTION: Say "Order confirmed! Your total is ${speechTotal}. Check your texts. Goodbye!" then hang up.`;
             } catch (err) {
               return { success: false, error: err.message };
             }
           },
         }),
-        getCloverOrderStatus: llm.tool({
-          description: "Check status of an existing order by phone number.",
-          parameters: {
-            type: "object",
-            properties: {
-              phoneNumber: { type: "string" },
-            },
-            required: ["phoneNumber"],
-          },
-          execute: async ({ phoneNumber }) => {
-            try {
-              const order = await findLatestOrderByPhone(phoneNumber);
-              if (!order) return { found: false };
-              return {
-                found: true,
-                status: order.state,
-                title: order.title,
-                total: order.total,
-              };
-            } catch (err) {
-              return { found: false, error: err.message };
+
+        hangUp: llm.tool({
+          description: "Call this IMMEDIATELY after saying Goodbye.",
+          parameters: { type: "object", properties: {} },
+          execute: async () => {
+            console.log("✂️ HangUp requested.");
+            if (activeRoom) {
+              setTimeout(() => {
+                console.log("📞 DISCONNECTING.");
+                activeRoom.disconnect();
+              }, 4000); // 4s buffer for TTS
             }
+            return "Ending call...";
           },
         }),
       },
@@ -294,115 +361,84 @@ class RestaurantAgent extends voice.Agent {
 }
 
 // -----------------------------
-// 4. Main Entry Point
+// 6. MAIN ENTRY
 // -----------------------------
 const agent = defineAgent({
-  name: "universal-restaurant-agent",
+  name: "restaurant-os-agent",
 
   entry: async (ctx) => {
-    console.log("🔌 Connecting to LiveKit room...");
+    console.log("🔌 Connecting...");
     await ctx.connect();
-    console.log("✅ Agent connected to room:", ctx.room.name);
 
-    // -- Config Loading --
     let config = {};
     try {
       config = JSON.parse(ctx.job.metadata || "{}");
-    } catch (e) {
-      config = {};
-    }
-    const restaurantName = config.restaurantName || "Bawarchi Biryanis Miami";
-    const baseMenuText = config.menu || "Menu is not available.";
+    } catch (e) {}
+    const restaurantName = config.restaurantName || "Bawarchi Biryanis";
+    const systemPrompt = config.systemPrompt || "You are a helpful assistant.";
 
-    // -- Load Clover Menu --
-    let combinedMenuText = baseMenuText;
+    // Load Menu (Initial Popular List)
+    let initialMenu = "Loading...";
     try {
-      const { items } = await getCloverInventory();
-      const cloverMenuText =
-        items && items.length
-          ? items.map((i) => `- ${i.name}`).join("\n")
-          : "No Clover items loaded.";
-      combinedMenuText = `[Clover Menu Items]\n${cloverMenuText}\n\n[Base Menu]\n${baseMenuText}`;
-    } catch (err) {
-      combinedMenuText = baseMenuText;
+      const { items } = await getMenu();
+      // Only show top 20 items in initial context to save tokens/confusion
+      initialMenu = items
+        .slice(0, 20)
+        .map((i) => `- ${i.name}`)
+        .join("\n");
+      initialMenu += "\n\n(Use searchMenu tool to find other items)";
+    } catch (e) {
+      initialMenu = "Menu unavailable.";
     }
 
-    // -- Wait for User --
-    console.log("⏳ Waiting for human caller...");
     const participant = await ctx.waitForParticipant();
 
-    // Normalize SIP identity for Clover (e.g. "sip:+12345" -> "12345")
-    const callerPhone = normalizePhone(participant.identity);
-    console.log("👤 Caller Identity:", participant.identity, "->", callerPhone);
+    // Normalization logic for phone number
+    let callerPhone = normalizePhone(participant.identity);
+    // If SIP returns "1234567890", assume US and add +1 for Twilio
+    if (callerPhone.length === 10) callerPhone = `+1${callerPhone}`;
+    else if (callerPhone.length > 10 && !callerPhone.startsWith("+"))
+      callerPhone = `+${callerPhone}`;
 
     const restaurantAgent = new RestaurantAgent({
       restaurantName,
-      systemPromptText: config.systemPrompt || "You are a helpful assistant.",
-      menuText: combinedMenuText,
+      systemPrompt,
+      initialMenu,
+      activeRoom: ctx.room,
     });
 
-    // -- VAD TUNING (Anti-Cut-Off) --
-    console.log("🧠 Loading Silero VAD (Tuned for patience)...");
+    // VAD Tuning (Patient)
     const vad = await silero.VAD.load({
-      minSpeechDuration: 0.1, // Recognize short "Yes/No" quickly
-      minSilenceDuration: 0.8, // Wait 0.8s of silence before replying (Prevents cutting off)
+      minSpeechDuration: 0.1,
+      minSilenceDuration: 1.0,
       threshold: 0.5,
     });
 
-    // -- Session Setup --
-    console.log("🧪 Creating AgentSession...");
     const session = new voice.AgentSession({
       vad,
-      // Deepgram Nova-3 is currently the fastest STT
+      // Fix: Keywords removed to prevent crash
       stt: new deepgram.STT({ model: "nova-3" }),
-
-      // GPT-4o-mini is fastest/cheapest for simple ordering
       llm: new openai.LLM({ model: "gpt-4o-mini" }),
-
-      // -- ELEVENLABS TUNING (Low Latency) --
+      // Feature: High Quality Indian Voice
       tts: new elevenlabs.TTS({
-        // MUST use Turbo v2.5 for <1s latency
-        modelID: "eleven_turbo_v2_5",
-        // ⚠️ REPLACE THIS ID WITH YOUR CHOSEN INDIAN VOICE ID ⚠️
-        // "Raveena" or similar
-        voice: {
-          id: "9w21nMuk8CWXIME31V1S", // <--- CHANGE THIS ID
-        },
-        // Stream small chunks for faster playback start
-        chunk_length_schedule: [50, 100, 200],
+        modelID: "eleven_multilingual_v2",
+        voice: { id: "6BZyx2XekeeXOkTVn8un", name: "Naina" },
       }),
     });
 
-    // Log TTS errors to debug silence
     session.on("error", (err) => console.error("🔥 Session Error:", err));
 
     try {
       await runWithJobContextAsync(ctx, async () => {
-        console.log("🚀 Starting AgentSession...");
-        await session.start({
-          agent: restaurantAgent,
-          room: ctx.room,
+        await session.start({ agent: restaurantAgent, room: ctx.room });
+        await session.generateReply({
+          instructions: `Greet cheerfully with "Namaste" from ${restaurantName}.`,
         });
 
-        console.log("📢 Sending Greeting...");
-        const handle = await session.generateReply({
-          instructions: `Greet the caller cheerfully using "Namaste", mention "${restaurantName}", and ask how you can help.`,
-          allowInterruptions: true,
-        });
-
-        await handle.waitForPlayout();
-        console.log("✅ Greeting finished.");
-
-        // -- KEEP-ALIVE: Don't exit until call ends --
-        await new Promise((resolve) => {
-          ctx.room.on("disconnected", () => {
-            console.log("📞 Room disconnected. Ending session.");
-            resolve();
-          });
-        });
+        await new Promise((resolve) => ctx.room.on("disconnected", resolve));
       });
     } catch (err) {
-      console.error("❌ Error in AgentSession:", err);
+      console.error("❌ Fatal Error:", err);
     }
   },
 });
