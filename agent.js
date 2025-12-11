@@ -1,8 +1,13 @@
 // agent.js
-require("dotenv").config();
+import "dotenv/config"; // Replaces require("dotenv").config()
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-const livekit = require("@livekit/agents");
-const {
+// Convert CommonJS __filename to ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+import {
   defineAgent,
   cli,
   WorkerOptions,
@@ -10,12 +15,15 @@ const {
   voice,
   runWithJobContextAsync,
   llm,
-} = livekit;
+} from "@livekit/agents";
 
-const openai = require("@livekit/agents-plugin-openai");
-const deepgram = require("@livekit/agents-plugin-deepgram");
-const elevenlabs = require("@livekit/agents-plugin-elevenlabs");
-const silero = require("@livekit/agents-plugin-silero");
+import * as openai from "@livekit/agents-plugin-openai";
+import * as deepgram from "@livekit/agents-plugin-deepgram";
+import * as elevenlabs from "@livekit/agents-plugin-elevenlabs";
+import * as silero from "@livekit/agents-plugin-silero";
+
+// Your custom voice map
+import { getNextRotatedVoice } from "./voiceMap.js";
 
 // -----------------------------
 // 1. CONFIGURATION & STATE
@@ -46,7 +54,6 @@ function formatCurrency(cents) {
   return `$${(cents / 100).toFixed(2)}`;
 }
 
-// Converts 2550 -> "25 dollars and 50 cents" for clear TTS
 function formatCurrencyForSpeech(cents) {
   if (typeof cents !== "number" || Number.isNaN(cents)) return "0 dollars";
   const dollars = Math.floor(cents / 100);
@@ -60,7 +67,6 @@ function normalizePhone(phone) {
   return String(phone).replace(/^sip:/, "").replace(/\D/g, "");
 }
 
-// SMS Sender (Uses standard Fetch to avoid extra dependencies)
 async function sendSms(to, body) {
   if (!CONFIG.twilioSid || !CONFIG.twilioToken || !CONFIG.twilioPhone) {
     console.warn("⚠️ SMS Skipped: Missing Twilio Credentials");
@@ -119,10 +125,8 @@ async function cloverRequest(path, { method = "GET", body } = {}) {
   return res.json();
 }
 
-// Smart Menu Fetcher (Implements "Real-Time Sync")
 async function getMenu() {
   const now = Date.now();
-  // Check Cache Validity
   if (
     menuCache.items.length > 0 &&
     now - menuCache.lastFetch < CONFIG.menuCacheTtl
@@ -132,13 +136,12 @@ async function getMenu() {
 
   console.log("🔄 Refreshing Menu from Clover API...");
   try {
-    const data = await cloverRequest("/items?limit=1000"); // Adjust limit as needed
+    const data = await cloverRequest("/items?limit=1000");
     const items = data.elements || [];
     const nameToItem = {};
 
     for (const item of items) {
       if (!item.name || !item.id) continue;
-      // We could filter out "hidden" items here if Clover provides that flag
       const key = item.name.trim().toLowerCase();
       nameToItem[key] = {
         id: item.id,
@@ -152,25 +155,23 @@ async function getMenu() {
     return menuCache;
   } catch (err) {
     console.error("❌ Menu Fetch Failed:", err);
-    return menuCache; // Return old cache if fail
+    return menuCache;
   }
 }
 
 // -----------------------------
-// 4. ORDER LOGIC (Kitchen Printer Optimized)
+// 4. ORDER LOGIC
 // -----------------------------
 async function createOrder({ items, note, orderType, phoneNumber }) {
   if (!Array.isArray(items) || items.length === 0) throw new Error("No items");
   const { nameToItem } = await getMenu();
 
-  // Create Header Note
   const noteParts = [];
   if (orderType) noteParts.push(`Type: ${orderType}`);
   if (note) noteParts.push(`Note: ${note}`);
   if (phoneNumber) noteParts.push(`Phone: ${phoneNumber}`);
   const headerNote = noteParts.join(" | ");
 
-  // 1. Create Open Order
   const order = await cloverRequest("/orders", {
     method: "POST",
     body: { state: "open", title: headerNote },
@@ -178,20 +179,16 @@ async function createOrder({ items, note, orderType, phoneNumber }) {
 
   const unmatched = [];
   let totalCents = 0;
-  const orderSummaryLines = []; // For SMS
+  const orderSummaryLines = [];
 
-  // 2. Map Items & Format for Kitchen Printer
   const bulkLineItems = {
     items: items.map((it) => {
       const rawName = (it.name || "").trim();
       const key = rawName.toLowerCase();
       const qty = it.quantity || 1;
-      const mods = it.modifications || ""; // e.g. "Spicy, Extra Sauce"
+      const mods = it.modifications || "";
 
       const inv = nameToItem[key];
-
-      // STRATEGY: Append mods to name so cook SEES it.
-      // e.g. "Chicken Biryani" -> "Chicken Biryani **[Spicy]**"
       const kitchenFriendlyName = mods ? `${rawName} **[${mods}]**` : rawName;
 
       orderSummaryLines.push(`${qty}x ${kitchenFriendlyName}`);
@@ -200,7 +197,7 @@ async function createOrder({ items, note, orderType, phoneNumber }) {
         totalCents += inv.price * qty;
         return {
           item: { id: inv.id },
-          name: kitchenFriendlyName, // Send modified name to Clover
+          name: kitchenFriendlyName,
           price: inv.price,
           unitQty: qty,
         };
@@ -211,24 +208,20 @@ async function createOrder({ items, note, orderType, phoneNumber }) {
     }),
   };
 
-  // 3. Add Lines
   await cloverRequest(`/orders/${order.id}/bulk_line_items`, {
     method: "POST",
     body: bulkLineItems,
   });
 
-  // 4. Update Total
   await cloverRequest(`/orders/${order.id}`, {
     method: "POST",
     body: { total: totalCents },
   });
 
-  // 5. Send SMS Confirmation (Trust Layer)
   if (phoneNumber) {
     const smsBody = `Bawarchi Biryanis: Order Confirmed!\n\n${orderSummaryLines.join(
       "\n"
     )}\n\nTotal: ${formatCurrency(totalCents)}\nPickup in ~20 mins.`;
-    // Fire and forget (don't await)
     sendSms(phoneNumber, smsBody);
   }
 
@@ -240,43 +233,66 @@ async function createOrder({ items, note, orderType, phoneNumber }) {
 // -----------------------------
 initializeLogger({ level: "info", destination: "stdout" });
 
+// -----------------------------
+// 1. RESTAURANT KNOWLEDGE BASE
+// (Edit these details to match your restaurant)
+// -----------------------------
+const RESTAURANT_INFO = {
+  address: "5959 Long Point Rd, Houston, TX 77055",
+  phone: "(713) 461-4500",
+  hours: "11:00 AM to 10:00 PM every day",
+  dietary: {
+    halal: "Yes, all our meats are 100% Halal certified.",
+    vegetarian:
+      "Yes, we have a large selection of vegetarian curries and biryanis.",
+    vegan:
+      "We offer vegan options like Chana Masala and Aloo Gobi. Please ask to remove ghee/cream.",
+    glutenFree:
+      "Most of our curries are gluten-free, but please avoid Naan bread.",
+  },
+};
+
+// -----------------------------
+// 2. UPDATED AGENT CLASS
+// -----------------------------
 class RestaurantAgent extends voice.Agent {
   constructor({ restaurantName, systemPrompt, initialMenu, activeRoom }) {
     super({
       instructions: `
         You are the efficient, polite, and Indian-accented front-desk AI for ${restaurantName}.
-
+        
         **CORE BEHAVIOR**
         - Keep answers short (1–2 sentences max).
         - Wait patiently if the user pauses.
 
+        **STORE INFORMATION (Use this for FAQ)**
+        - Location: ${RESTAURANT_INFO.address}
+        - Phone: ${RESTAURANT_INFO.phone}
+        - Hours: ${RESTAURANT_INFO.hours}
+        - Halal Status: ${RESTAURANT_INFO.dietary.halal}
+        - Vegetarian/Vegan: ${RESTAURANT_INFO.dietary.vegetarian} ${RESTAURANT_INFO.dietary.vegan}
+        - Gluten Free: ${RESTAURANT_INFO.dietary.glutenFree}
+
         **SMART MENU SEARCH**
         - You have a list of "Popular Items" in your context.
-        - IF the user asks for something NOT in that list, use the \`searchMenu\` tool to check our full database.
-        - IF \`searchMenu\` returns nothing, apologize and say we don't have it.
-
+        - IF the user asks for something NOT in that list, use the \`searchMenu\` tool.
+        
         **ORDERING RULES**
         - Always ask for **Spice Level** (Mild/Med/Spicy) for Biryanis/Curries.
         - Always ask for **Quantity**.
-        - When calling \`createCloverOrder\`, put the Spice Level in the 'modifications' field for that item.
-
+        
         **ENDING THE CALL**
-        - When \`createCloverOrder\` returns success:
-        1. Read the "Speech Total" clearly.
-        2. Say: "Order confirmed! Check your texts for a receipt. Thank you, Goodbye!"
-        3. **IMMEDIATELY** call the \`hangUp\` tool.
+        - When \`createCloverOrder\` returns success, say: "Order confirmed! Check your texts. Goodbye!" then call \`hangUp\`.
 
         **SYSTEM CONTEXT**
         ${systemPrompt}
 
-        **POPULAR ITEMS (Use searchMenu for others)**
+        **POPULAR ITEMS**
         ${initialMenu}
       `,
       tools: {
-        // 🔍 NEW TOOL: Smart Menu Search
         searchMenu: llm.tool({
-          description:
-            "Search the full menu database for specific items (e.g. 'goat', 'kheer').",
+          description: "Search full menu database.",
           parameters: {
             type: "object",
             properties: { query: { type: "string" } },
@@ -285,11 +301,9 @@ class RestaurantAgent extends voice.Agent {
           execute: async ({ query }) => {
             const { items } = await getMenu();
             const q = query.toLowerCase();
-            // Simple fuzzy match
             const matches = items
               .filter((i) => i.name.toLowerCase().includes(q))
-              .slice(0, 10); // Limit to top 10 results
-
+              .slice(0, 10);
             if (matches.length === 0) return "No items found.";
             return matches
               .map((m) => `${m.name} ($${(m.price / 100).toFixed(2)})`)
@@ -307,12 +321,9 @@ class RestaurantAgent extends voice.Agent {
                 items: {
                   type: "object",
                   properties: {
-                    name: { type: "string", description: "Exact item name" },
+                    name: { type: "string" },
                     quantity: { type: "integer" },
-                    modifications: {
-                      type: "string",
-                      description: "e.g. 'Spicy', 'No Onion'",
-                    },
+                    modifications: { type: "string" },
                   },
                   required: ["name"],
                 },
@@ -331,10 +342,8 @@ class RestaurantAgent extends voice.Agent {
                 orderType: orderType || "pickup",
                 phoneNumber,
               });
-
               const speechTotal = formatCurrencyForSpeech(totalCents);
-              return `SUCCESS. Total: ${speechTotal}. SMS Sent. 
-              INSTRUCTION: Say "Order confirmed! Your total is ${speechTotal}. Check your texts. Goodbye!" then hang up.`;
+              return `SUCCESS. Total: ${speechTotal}. SMS Sent.`;
             } catch (err) {
               return { success: false, error: err.message };
             }
@@ -350,7 +359,7 @@ class RestaurantAgent extends voice.Agent {
               setTimeout(() => {
                 console.log("📞 DISCONNECTING.");
                 activeRoom.disconnect();
-              }, 4000); // 4s buffer for TTS
+              }, 4000);
             }
             return "Ending call...";
           },
@@ -377,11 +386,9 @@ const agent = defineAgent({
     const restaurantName = config.restaurantName || "Bawarchi Biryanis";
     const systemPrompt = config.systemPrompt || "You are a helpful assistant.";
 
-    // Load Menu (Initial Popular List)
     let initialMenu = "Loading...";
     try {
       const { items } = await getMenu();
-      // Only show top 20 items in initial context to save tokens/confusion
       initialMenu = items
         .slice(0, 20)
         .map((i) => `- ${i.name}`)
@@ -392,10 +399,7 @@ const agent = defineAgent({
     }
 
     const participant = await ctx.waitForParticipant();
-
-    // Normalization logic for phone number
     let callerPhone = normalizePhone(participant.identity);
-    // If SIP returns "1234567890", assume US and add +1 for Twilio
     if (callerPhone.length === 10) callerPhone = `+1${callerPhone}`;
     else if (callerPhone.length > 10 && !callerPhone.startsWith("+"))
       callerPhone = `+${callerPhone}`;
@@ -407,24 +411,29 @@ const agent = defineAgent({
       activeRoom: ctx.room,
     });
 
-    // VAD Tuning (Patient)
     const vad = await silero.VAD.load({
       minSpeechDuration: 0.1,
       minSilenceDuration: 1.0,
       threshold: 0.5,
     });
 
+    // 🚀 NEW: Get Rotated Voice
+    const currentVoice = getNextRotatedVoice();
+
     const session = new voice.AgentSession({
       vad,
-      // Fix: Keywords removed to prevent crash
       stt: new deepgram.STT({ model: "nova-3" }),
       llm: new openai.LLM({ model: "gpt-4o-mini" }),
-      // Feature: High Quality Indian Voice
       tts: new elevenlabs.TTS({
         modelID: "eleven_multilingual_v2",
-        voice: { id: "6BZyx2XekeeXOkTVn8un", name: "Naina" },
+        voice: { id: currentVoice.id, name: currentVoice.name },
       }),
     });
+
+    // Inject System Prompt about the voice persona
+    session.systemPrompt = `You are ${currentVoice.name}. You are the ${
+      currentVoice.category || "professional"
+    } front-desk assistant for ${restaurantName}.`;
 
     session.on("error", (err) => console.error("🔥 Session Error:", err));
 
@@ -443,8 +452,9 @@ const agent = defineAgent({
   },
 });
 
-if (require.main === module) {
-  cli.runApp(new WorkerOptions({ agent: __filename }));
-}
+export default agent;
 
-module.exports = agent;
+// ESM equivalent of "if (require.main === module)"
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url) }));
+}
