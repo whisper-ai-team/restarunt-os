@@ -1,9 +1,8 @@
 // agent.js
-import "dotenv/config"; // Replaces require("dotenv").config()
+import "dotenv/config";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Convert CommonJS __filename to ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -21,111 +20,102 @@ import * as openai from "@livekit/agents-plugin-openai";
 import * as deepgram from "@livekit/agents-plugin-deepgram";
 import * as elevenlabs from "@livekit/agents-plugin-elevenlabs";
 import * as silero from "@livekit/agents-plugin-silero";
+import Fuse from "fuse.js";
+import natural from "natural";
 
-// Your custom voice map
-import { getNextRotatedVoice } from "./voiceMap.js";
+import { getVoiceFromSelection } from "./voiceMap.js";
+import { buildSystemPrompt } from "./promptBuilder.js";
+import { getDeepgramKeywords, masterMenu } from "./menuData.js";
 
 // -----------------------------
-// 1. CONFIGURATION & STATE
+// 1. CONFIGURATION & CORRECTIONS
 // -----------------------------
 const CONFIG = {
-  cloverApiKey: process.env.CLOVER_API_KEY,
-  cloverMerchantId: process.env.CLOVER_MERCHANT_ID,
   cloverBaseUrl:
     process.env.CLOVER_BASE_URL || "https://apisandbox.dev.clover.com",
-  twilioSid: process.env.TWILIO_ACCOUNT_SID,
-  twilioToken: process.env.TWILIO_AUTH_TOKEN,
-  twilioPhone: process.env.TWILIO_PHONE_NUMBER,
-  menuCacheTtl: 10 * 60 * 1000, // 10 Minutes Cache
+  menuCacheTtl: 10 * 60 * 1000,
 };
 
-// Global State
-let menuCache = {
-  items: [],
-  nameToItem: {},
-  lastFetch: 0,
+// THE "HEARING AID" LAYER: Fix common Deepgram errors deterministically
+const HEARING_CORRECTIONS = {
+  bone: "goan",
+  cone: "goan",
+  gourd: "goan",
+  gone: "goan",
+  biden: "baingan",
+  byun: "baingan",
+  bertha: "bharta",
+  barra: "vada",
+  pao: "pav",
+  ubuntu: "guntur", // "Ubuntu Chicken" -> "Guntur Chicken"
 };
 
+const MOCK_DB = {
+  "+15712799105": { name: "Venkat", lastOrder: "Hyderabadi Biryani" },
+  "+12013444638": { name: "Suresh", lastOrder: "Masala Dosa" },
+};
+
+let menuCache = { items: [], lastFetch: 0 };
+let sessionCart = [];
+let customerDetails = { name: "Guest", phone: "Unknown" };
+
+process.setMaxListeners(20);
+initializeLogger({ level: "info", destination: "stdout" });
+
 // -----------------------------
-// 2. HELPERS (Formatting & SMS)
+// 2. GLOBAL SINGLETONS
 // -----------------------------
-function formatCurrency(cents) {
-  if (typeof cents !== "number" || Number.isNaN(cents)) return "$0.00";
-  return `$${(cents / 100).toFixed(2)}`;
-}
+const vadLoadPromise = silero.VAD.load({
+  minSpeechDuration: 0.05,
+  minSilenceDuration: 1.0,
+  threshold: 0.4,
+});
 
-function formatCurrencyForSpeech(cents) {
-  if (typeof cents !== "number" || Number.isNaN(cents)) return "0 dollars";
-  const dollars = Math.floor(cents / 100);
-  const remainder = cents % 100;
-  if (remainder === 0) return `${dollars} dollars`;
-  return `${dollars} dollars and ${remainder} cents`;
-}
+const metaphone = new natural.DoubleMetaphone();
 
-function normalizePhone(phone) {
-  if (!phone) return "";
-  return String(phone).replace(/^sip:/, "").replace(/\D/g, "");
-}
-
-async function sendSms(to, body) {
-  if (!CONFIG.twilioSid || !CONFIG.twilioToken || !CONFIG.twilioPhone) {
-    console.warn("⚠️ SMS Skipped: Missing Twilio Credentials");
+// -----------------------------
+// 3. HELPERS
+// -----------------------------
+async function finalizeSession(reason) {
+  if (sessionCart.length === 0) {
+    console.log(`🏁 Call ended (${reason}). No order placed.`);
     return;
   }
-
-  const url = `https://api.twilio.com/2010-04-01/Accounts/${CONFIG.twilioSid}/Messages.json`;
-  const params = new URLSearchParams({
-    To: to,
-    From: CONFIG.twilioPhone,
-    Body: body,
+  console.log("------------------------------------------------");
+  console.log(`💾 SAVING ORDER FOR: ${customerDetails.name}`);
+  sessionCart.forEach((item) => {
+    console.log(
+      `   - ${item.qty}x ${item.name} ($${(item.price / 100).toFixed(2)})`
+    );
   });
-
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization:
-          "Basic " +
-          Buffer.from(`${CONFIG.twilioSid}:${CONFIG.twilioToken}`).toString(
-            "base64"
-          ),
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params,
-    });
-    if (res.ok) console.log(`✅ SMS Sent to ${to}`);
-    else console.error(`❌ SMS Failed: ${await res.text()}`);
-  } catch (err) {
-    console.error("❌ SMS Network Error:", err);
-  }
+  console.log("------------------------------------------------");
+  sessionCart = [];
 }
 
 // -----------------------------
-// 3. CLOVER SERVICE (With Caching)
+// 4. CLOVER SERVICE
 // -----------------------------
-async function cloverRequest(path, { method = "GET", body } = {}) {
-  if (!CONFIG.cloverApiKey || !CONFIG.cloverMerchantId) {
-    throw new Error("Missing Clover credentials");
-  }
+async function cloverRequest(path, { method = "GET", body } = {}, credentials) {
+  const apiKey = credentials.apiKey || process.env.CLOVER_API_KEY;
+  const merchId = credentials.merchantId || process.env.CLOVER_MERCHANT_ID;
 
-  const url = `${CONFIG.cloverBaseUrl}/v3/merchants/${CONFIG.cloverMerchantId}${path}`;
+  if (!apiKey || !merchId) throw new Error("Missing Clover credentials");
+
+  const url = `${CONFIG.cloverBaseUrl}/v3/merchants/${merchId}${path}`;
   const res = await fetch(url, {
     method,
     headers: {
-      Authorization: `Bearer ${CONFIG.cloverApiKey}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Clover error ${res.status}: ${text}`);
-  }
+  if (!res.ok) throw new Error(`Clover error ${res.status}`);
   return res.json();
 }
 
-async function getMenu() {
+async function getMenu(credentials) {
   const now = Date.now();
   if (
     menuCache.items.length > 0 &&
@@ -133,235 +123,214 @@ async function getMenu() {
   ) {
     return menuCache;
   }
-
-  console.log("🔄 Refreshing Menu from Clover API...");
   try {
-    const data = await cloverRequest("/items?limit=1000");
+    const data = await cloverRequest("/items?limit=1000", {}, credentials);
     const items = data.elements || [];
-    const nameToItem = {};
-
-    for (const item of items) {
-      if (!item.name || !item.id) continue;
-      const key = item.name.trim().toLowerCase();
-      nameToItem[key] = {
-        id: item.id,
-        name: item.name,
-        price: typeof item.price === "number" ? item.price : 0,
-      };
-    }
-
-    menuCache = { items, nameToItem, lastFetch: now };
-    console.log(`✅ Menu Refreshed: ${items.length} items.`);
+    menuCache = { items, lastFetch: now };
     return menuCache;
   } catch (err) {
     console.error("❌ Menu Fetch Failed:", err);
-    return menuCache;
+    return { items: [], lastFetch: now };
   }
 }
 
-// -----------------------------
-// 4. ORDER LOGIC
-// -----------------------------
-async function createOrder({ items, note, orderType, phoneNumber }) {
-  if (!Array.isArray(items) || items.length === 0) throw new Error("No items");
-  const { nameToItem } = await getMenu();
-
-  const noteParts = [];
-  if (orderType) noteParts.push(`Type: ${orderType}`);
-  if (note) noteParts.push(`Note: ${note}`);
-  if (phoneNumber) noteParts.push(`Phone: ${phoneNumber}`);
-  const headerNote = noteParts.join(" | ");
-
-  const order = await cloverRequest("/orders", {
-    method: "POST",
-    body: { state: "open", title: headerNote },
-  });
-
-  const unmatched = [];
-  let totalCents = 0;
-  const orderSummaryLines = [];
-
-  const bulkLineItems = {
-    items: items.map((it) => {
-      const rawName = (it.name || "").trim();
-      const key = rawName.toLowerCase();
-      const qty = it.quantity || 1;
-      const mods = it.modifications || "";
-
-      const inv = nameToItem[key];
-      const kitchenFriendlyName = mods ? `${rawName} **[${mods}]**` : rawName;
-
-      orderSummaryLines.push(`${qty}x ${kitchenFriendlyName}`);
-
-      if (inv && inv.id) {
-        totalCents += inv.price * qty;
-        return {
-          item: { id: inv.id },
-          name: kitchenFriendlyName,
-          price: inv.price,
-          unitQty: qty,
-        };
-      }
-
-      unmatched.push({ name: rawName, qty });
-      return { name: kitchenFriendlyName, price: 0, unitQty: qty };
-    }),
+function parseJobMetadata(metadataString) {
+  let data = {};
+  try {
+    data = JSON.parse(metadataString || "{}");
+  } catch (e) {}
+  return {
+    name: data.restaurantName || "Bharat Bistro",
+    greeting: data.greeting || "Namaste! Welcome to Bharat Bistro.",
+    instructions: data.systemPrompt || "",
+    info: {
+      address: data.address || "123 Curry Lane",
+      hours: data.hours || "11 AM - 10 PM",
+      phone: data.phone || "555-0199",
+    },
+    voiceSelection: data.voices || data.voiceId || "indian",
+    clover: { apiKey: data.cloverApiKey, merchantId: data.cloverMerchantId },
   };
-
-  await cloverRequest(`/orders/${order.id}/bulk_line_items`, {
-    method: "POST",
-    body: bulkLineItems,
-  });
-
-  await cloverRequest(`/orders/${order.id}`, {
-    method: "POST",
-    body: { total: totalCents },
-  });
-
-  if (phoneNumber) {
-    const smsBody = `Bawarchi Biryanis: Order Confirmed!\n\n${orderSummaryLines.join(
-      "\n"
-    )}\n\nTotal: ${formatCurrency(totalCents)}\nPickup in ~20 mins.`;
-    sendSms(phoneNumber, smsBody);
-  }
-
-  return { order, totalCents };
 }
 
 // -----------------------------
 // 5. AGENT DEFINITION
 // -----------------------------
-initializeLogger({ level: "info", destination: "stdout" });
-
-// -----------------------------
-// 1. RESTAURANT KNOWLEDGE BASE
-// (Edit these details to match your restaurant)
-// -----------------------------
-const RESTAURANT_INFO = {
-  address: "5959 Long Point Rd, Houston, TX 77055",
-  phone: "(713) 461-4500",
-  hours: "11:00 AM to 10:00 PM every day",
-  dietary: {
-    halal: "Yes, all our meats are 100% Halal certified.",
-    vegetarian:
-      "Yes, we have a large selection of vegetarian curries and biryanis.",
-    vegan:
-      "We offer vegan options like Chana Masala and Aloo Gobi. Please ask to remove ghee/cream.",
-    glutenFree:
-      "Most of our curries are gluten-free, but please avoid Naan bread.",
-  },
-};
-
-// -----------------------------
-// 2. UPDATED AGENT CLASS
-// -----------------------------
 class RestaurantAgent extends voice.Agent {
-  constructor({ restaurantName, systemPrompt, initialMenu, activeRoom }) {
+  constructor({ restaurantConfig, initialMenu, activeRoom }) {
+    const personalizedContext = `
+      You are speaking with ${customerDetails.name}.
+      If they exist in the database, welcome them back.
+    `;
+
+    const systemPrompt = buildSystemPrompt({
+      restaurantName: restaurantConfig.name,
+      info: restaurantConfig.info,
+      instructions: restaurantConfig.instructions + personalizedContext,
+      menuContext: initialMenu,
+      tone: "friendly",
+    });
+
     super({
-      instructions: `
-        You are the efficient, polite, and Indian-accented front-desk AI for ${restaurantName}.
-        
-        **CORE BEHAVIOR**
-        - Keep answers short (1–2 sentences max).
-        - Wait patiently if the user pauses.
-
-        **STORE INFORMATION (Use this for FAQ)**
-        - Location: ${RESTAURANT_INFO.address}
-        - Phone: ${RESTAURANT_INFO.phone}
-        - Hours: ${RESTAURANT_INFO.hours}
-        - Halal Status: ${RESTAURANT_INFO.dietary.halal}
-        - Vegetarian/Vegan: ${RESTAURANT_INFO.dietary.vegetarian} ${RESTAURANT_INFO.dietary.vegan}
-        - Gluten Free: ${RESTAURANT_INFO.dietary.glutenFree}
-
-        **SMART MENU SEARCH**
-        - You have a list of "Popular Items" in your context.
-        - IF the user asks for something NOT in that list, use the \`searchMenu\` tool.
-        
-        **ORDERING RULES**
-        - Always ask for **Spice Level** (Mild/Med/Spicy) for Biryanis/Curries.
-        - Always ask for **Quantity**.
-        
-        **ENDING THE CALL**
-        - When \`createCloverOrder\` returns success, say: "Order confirmed! Check your texts. Goodbye!" then call \`hangUp\`.
-
-        **SYSTEM CONTEXT**
-        ${systemPrompt}
-
-        **POPULAR ITEMS**
-        ${initialMenu}
-      `,
+      instructions: systemPrompt,
       tools: {
+        getRestaurantInfo: llm.tool({
+          description: "Get info.",
+          parameters: { type: "object", properties: {} },
+          execute: async () =>
+            `Address: ${restaurantConfig.info.address}. Hours: ${restaurantConfig.info.hours}.`,
+        }),
+
+        checkOrderStatus: llm.tool({
+          description: "Check status.",
+          parameters: { type: "object", properties: {} },
+          execute: async () => {
+            if (activeRoom.state === "disconnected") return;
+            return `Latest order for ${customerDetails.name}: Kitchen is preparing it.`;
+          },
+        }),
+
+        bookTable: llm.tool({
+          description: "Book table.",
+          parameters: {
+            type: "object",
+            properties: {
+              partySize: { type: "integer" },
+              time: { type: "string" },
+            },
+            required: ["partySize", "time"],
+          },
+          execute: async ({ partySize, time }) =>
+            `Reservation confirmed for ${partySize} people at ${time}.`,
+        }),
+
+        // --- SMARTEST MENU SEARCH ---
         searchMenu: llm.tool({
-          description: "Search full menu database.",
+          description:
+            "Search menu with Hearing Correction, Phonetic, and Fuzzy matching.",
           parameters: {
             type: "object",
             properties: { query: { type: "string" } },
             required: ["query"],
           },
           execute: async ({ query }) => {
-            const { items } = await getMenu();
-            const q = query.toLowerCase();
-            const matches = items
-              .filter((i) => i.name.toLowerCase().includes(q))
-              .slice(0, 10);
-            if (matches.length === 0) return "No items found.";
-            return matches
-              .map((m) => `${m.name} ($${(m.price / 100).toFixed(2)})`)
-              .join("\n");
+            if (activeRoom.state === "disconnected") return;
+            console.log(`🔍 Raw Query: "${query}"`);
+
+            // 1. HEARING AID: Fix specific bad words
+            let fixedQuery = query.toLowerCase();
+            Object.keys(HEARING_CORRECTIONS).forEach((badWord) => {
+              if (fixedQuery.includes(badWord)) {
+                fixedQuery = fixedQuery.replace(
+                  badWord,
+                  HEARING_CORRECTIONS[badWord]
+                );
+              }
+            });
+            console.log(`   ✨ Fixed Query: "${fixedQuery}"`);
+
+            try {
+              const { items: cloverItems } = await getMenu(
+                restaurantConfig.clover
+              );
+
+              // Filter out hidden items (Availability Check)
+              const availableItems = cloverItems.filter((i) => !i.hidden);
+
+              const enrichedItems = availableItems.map((cItem) => {
+                const cNameClean = cItem.name.trim().toLowerCase();
+                const brainEntry = masterMenu.find(
+                  (m) => m.name.trim().toLowerCase() === cNameClean
+                );
+                const soundCodes = metaphone.process(cItem.name);
+                return {
+                  ...cItem,
+                  synonyms: brainEntry ? brainEntry.synonyms : [],
+                  soundCode: soundCodes ? soundCodes[0] : "",
+                };
+              });
+
+              // 2. Phonetic Search
+              const [querySound] = metaphone.process(fixedQuery) || [];
+              if (querySound) {
+                const matches = enrichedItems.filter(
+                  (i) => i.soundCode === querySound
+                );
+                if (matches.length > 0) {
+                  console.log(`   🎯 PHONETIC MATCH: "${matches[0].name}"`);
+                  const list = matches
+                    .map((m) => `- ${m.name} ($${(m.price / 100).toFixed(2)})`)
+                    .join("\n");
+                  return `System: Found matches based on sound:\n${list}\n(Please offer these to the user)`;
+                }
+              }
+
+              // 3. Fuzzy Search
+              const fuse = new Fuse(enrichedItems, {
+                keys: ["name", "synonyms"],
+                threshold: 0.5,
+                distance: 100,
+              });
+              const results = fuse.search(fixedQuery);
+
+              if (results.length === 0)
+                return "System: No items found matching that description.";
+
+              console.log(`   ✅ Fuzzy Match: "${results[0].item.name}"`);
+              const list = results
+                .slice(0, 5)
+                .map(
+                  (r) =>
+                    `- ${r.item.name} ($${(r.item.price / 100).toFixed(2)})`
+                )
+                .join("\n");
+              return `System: Found matches:\n${list}\n(Please offer these to the user)`;
+            } catch (err) {
+              return "System: Error accessing menu.";
+            }
           },
         }),
 
-        createCloverOrder: llm.tool({
-          description: "Place order. REQUIRED: items, phoneNumber.",
+        addToOrder: llm.tool({
+          description: "Add item to cart.",
           parameters: {
             type: "object",
             properties: {
-              items: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: { type: "string" },
-                    quantity: { type: "integer" },
-                    modifications: { type: "string" },
-                  },
-                  required: ["name"],
-                },
-              },
-              note: { type: "string" },
-              orderType: { type: "string", enum: ["pickup", "delivery"] },
-              phoneNumber: { type: "string" },
+              itemName: { type: "string" },
+              quantity: { type: "integer" },
+              notes: { type: "string" },
             },
-            required: ["items", "phoneNumber"],
+            required: ["itemName", "quantity"],
           },
-          execute: async ({ items, note, orderType, phoneNumber }) => {
-            try {
-              const { order, totalCents } = await createOrder({
-                items,
-                note,
-                orderType: orderType || "pickup",
-                phoneNumber,
-              });
-              const speechTotal = formatCurrencyForSpeech(totalCents);
-              return `SUCCESS. Total: ${speechTotal}. SMS Sent.`;
-            } catch (err) {
-              return { success: false, error: err.message };
-            }
+          execute: async ({ itemName, quantity, notes }) => {
+            const { items } = await getMenu(restaurantConfig.clover);
+            const itemData = items.find(
+              (i) => i.name.toLowerCase() === itemName.toLowerCase()
+            );
+            const price = itemData ? itemData.price : 0;
+            sessionCart.push({
+              name: itemName,
+              qty: quantity,
+              price: price,
+              notes: notes || "",
+            });
+            return `System: Added ${quantity}x ${itemName}. Ask if they want anything else.`;
           },
         }),
 
+        confirmOrder: llm.tool({
+          description: "Finalize order.",
+          parameters: { type: "object", properties: {} },
+          execute: async () =>
+            `System: Order confirmed for ${customerDetails.name}. Total items: ${sessionCart.length}. End call now.`,
+        }),
+
         hangUp: llm.tool({
-          description: "Call this IMMEDIATELY after saying Goodbye.",
+          description: "End call.",
           parameters: { type: "object", properties: {} },
           execute: async () => {
-            console.log("✂️ HangUp requested.");
-            if (activeRoom) {
-              setTimeout(() => {
-                console.log("📞 DISCONNECTING.");
-                activeRoom.disconnect();
-              }, 4000);
-            }
-            return "Ending call...";
+            if (activeRoom) setTimeout(() => activeRoom.disconnect(), 1000);
+            return "Goodbye!";
           },
         }),
       },
@@ -379,82 +348,92 @@ const agent = defineAgent({
     console.log("🔌 Connecting...");
     await ctx.connect();
 
-    let config = {};
-    try {
-      config = JSON.parse(ctx.job.metadata || "{}");
-    } catch (e) {}
-    const restaurantName = config.restaurantName || "Bawarchi Biryanis";
-    const systemPrompt = config.systemPrompt || "You are a helpful assistant.";
+    console.log("⏳ Waiting for caller...");
+    const participant = await ctx.waitForParticipant();
+    console.log(`👤 Caller Connected: ${participant.identity}`);
 
-    let initialMenu = "Loading...";
-    try {
-      const { items } = await getMenu();
-      initialMenu = items
-        .slice(0, 20)
-        .map((i) => `- ${i.name}`)
-        .join("\n");
-      initialMenu += "\n\n(Use searchMenu tool to find other items)";
-    } catch (e) {
-      initialMenu = "Menu unavailable.";
+    const callerPhone = participant.identity.replace("sip_", "");
+    if (MOCK_DB[callerPhone]) {
+      customerDetails = { name: MOCK_DB[callerPhone].name, phone: callerPhone };
+    } else {
+      customerDetails = { name: "Guest", phone: callerPhone };
     }
 
-    const participant = await ctx.waitForParticipant();
-    let callerPhone = normalizePhone(participant.identity);
-    if (callerPhone.length === 10) callerPhone = `+1${callerPhone}`;
-    else if (callerPhone.length > 10 && !callerPhone.startsWith("+"))
-      callerPhone = `+${callerPhone}`;
+    sessionCart = [];
+    const restaurantConfig = parseJobMetadata(ctx.job.metadata);
+    let initialGreeting =
+      customerDetails.name !== "Guest"
+        ? `Namaste ${customerDetails.name}! Welcome back to Bharat Bistro.`
+        : restaurantConfig.greeting;
+
+    let initialMenu = "Loading...";
+    let deepgramKeywords = [];
+    let rawKeywords = getDeepgramKeywords();
+    deepgramKeywords = rawKeywords.map((k) =>
+      typeof k === "string" ? [k.split(":")[0], parseFloat(k.split(":")[1])] : k
+    );
+
+    try {
+      const { items } = await getMenu(restaurantConfig.clover);
+      initialMenu = items
+        .slice(0, 50)
+        .map((i) => `- ${i.name}`)
+        .join("\n");
+      console.log(`🚀 Injected ${deepgramKeywords.length} Manual Keywords.`);
+    } catch (e) {}
+
+    const onHangup = async () => await finalizeSession("Caller Hangup");
+    const onRoomClose = async () => await finalizeSession("Room Closed");
+    ctx.room.on("participant_disconnected", onHangup);
+    ctx.room.on("disconnected", onRoomClose);
+
+    const vadModel = await vadLoadPromise;
+    const selectedVoice = getVoiceFromSelection(
+      restaurantConfig.voiceSelection
+    );
 
     const restaurantAgent = new RestaurantAgent({
-      restaurantName,
-      systemPrompt,
+      restaurantConfig,
       initialMenu,
       activeRoom: ctx.room,
     });
 
-    const vad = await silero.VAD.load({
-      minSpeechDuration: 0.1,
-      minSilenceDuration: 1.0,
-      threshold: 0.5,
-    });
-
-    // 🚀 NEW: Get Rotated Voice
-    const currentVoice = getNextRotatedVoice();
-
     const session = new voice.AgentSession({
-      vad,
-      stt: new deepgram.STT({ model: "nova-3" }),
+      vad: vadModel,
+      stt: new deepgram.STT({
+        model: "nova-2",
+        language: "en-IN",
+        keywords: deepgramKeywords,
+        smartFormat: true,
+        endpointing: 300,
+      }),
       llm: new openai.LLM({ model: "gpt-4o-mini" }),
       tts: new elevenlabs.TTS({
         modelID: "eleven_multilingual_v2",
-        voice: { id: currentVoice.id, name: currentVoice.name },
+        voice: { id: selectedVoice.id },
       }),
     });
-
-    // Inject System Prompt about the voice persona
-    session.systemPrompt = `You are ${currentVoice.name}. You are the ${
-      currentVoice.category || "professional"
-    } front-desk assistant for ${restaurantName}.`;
-
-    session.on("error", (err) => console.error("🔥 Session Error:", err));
 
     try {
       await runWithJobContextAsync(ctx, async () => {
         await session.start({ agent: restaurantAgent, room: ctx.room });
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         await session.generateReply({
-          instructions: `Greet cheerfully with "Namaste" from ${restaurantName}.`,
+          instructions: `Say exactly: "${initialGreeting}"`,
         });
-
         await new Promise((resolve) => ctx.room.on("disconnected", resolve));
       });
     } catch (err) {
       console.error("❌ Fatal Error:", err);
+    } finally {
+      ctx.room.off("participant_disconnected", onHangup);
+      ctx.room.off("disconnected", onRoomClose);
     }
   },
 });
 
 export default agent;
 
-// ESM equivalent of "if (require.main === module)"
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url) }));
 }
