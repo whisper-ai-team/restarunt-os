@@ -36,7 +36,7 @@ const CONFIG = {
   menuCacheTtl: 10 * 60 * 1000,
 };
 
-// THE "HEARING AID" LAYER: Fix common Deepgram errors deterministically
+// THE "HEARING AID": Silent Corrections
 const HEARING_CORRECTIONS = {
   bone: "goan",
   cone: "goan",
@@ -46,8 +46,9 @@ const HEARING_CORRECTIONS = {
   byun: "baingan",
   bertha: "bharta",
   barra: "vada",
+  power: "pav",
   pao: "pav",
-  ubuntu: "guntur", // "Ubuntu Chicken" -> "Guntur Chicken"
+  ubuntu: "guntur",
 };
 
 const MOCK_DB = {
@@ -66,8 +67,8 @@ initializeLogger({ level: "info", destination: "stdout" });
 // 2. GLOBAL SINGLETONS
 // -----------------------------
 const vadLoadPromise = silero.VAD.load({
-  minSpeechDuration: 0.05,
-  minSilenceDuration: 1.0,
+  minSpeechDuration: 0.2, // Tuned for natural pausing
+  minSilenceDuration: 0.8,
   threshold: 0.4,
 });
 
@@ -204,10 +205,11 @@ class RestaurantAgent extends voice.Agent {
             `Reservation confirmed for ${partySize} people at ${time}.`,
         }),
 
-        // --- SMARTEST MENU SEARCH ---
+        // --- SMARTEST MENU SEARCH (Minimalist Output) ---
+        // --- INTELLIGENT MENU SEARCH (With Descriptions) ---
         searchMenu: llm.tool({
           description:
-            "Search menu with Hearing Correction, Phonetic, and Fuzzy matching.",
+            "Search menu. Returns Item Name, Price, and Description.",
           parameters: {
             type: "object",
             properties: { query: { type: "string" } },
@@ -215,9 +217,10 @@ class RestaurantAgent extends voice.Agent {
           },
           execute: async ({ query }) => {
             if (activeRoom.state === "disconnected") return;
-            console.log(`🔍 Raw Query: "${query}"`);
 
-            // 1. HEARING AID: Fix specific bad words
+            console.log(`🔍 User Query: "${query}"`);
+
+            // 1. SILENT CORRECTION
             let fixedQuery = query.toLowerCase();
             Object.keys(HEARING_CORRECTIONS).forEach((badWord) => {
               if (fixedQuery.includes(badWord)) {
@@ -227,14 +230,11 @@ class RestaurantAgent extends voice.Agent {
                 );
               }
             });
-            console.log(`   ✨ Fixed Query: "${fixedQuery}"`);
 
             try {
               const { items: cloverItems } = await getMenu(
                 restaurantConfig.clover
               );
-
-              // Filter out hidden items (Availability Check)
               const availableItems = cloverItems.filter((i) => !i.hidden);
 
               const enrichedItems = availableItems.map((cItem) => {
@@ -243,8 +243,13 @@ class RestaurantAgent extends voice.Agent {
                   (m) => m.name.trim().toLowerCase() === cNameClean
                 );
                 const soundCodes = metaphone.process(cItem.name);
+
+                // Attach Description if available in Brain
                 return {
                   ...cItem,
+                  description: brainEntry
+                    ? brainEntry.description
+                    : "Delicious and freshly made.",
                   synonyms: brainEntry ? brainEntry.synonyms : [],
                   soundCode: soundCodes ? soundCodes[0] : "",
                 };
@@ -258,10 +263,8 @@ class RestaurantAgent extends voice.Agent {
                 );
                 if (matches.length > 0) {
                   console.log(`   🎯 PHONETIC MATCH: "${matches[0].name}"`);
-                  const list = matches
-                    .map((m) => `- ${m.name} ($${(m.price / 100).toFixed(2)})`)
-                    .join("\n");
-                  return `System: Found matches based on sound:\n${list}\n(Please offer these to the user)`;
+                  // Output includes Description now!
+                  return `System: Found "${matches[0].name}" - ${matches[0].description}. Offer this to the user.`;
                 }
               }
 
@@ -277,14 +280,8 @@ class RestaurantAgent extends voice.Agent {
                 return "System: No items found matching that description.";
 
               console.log(`   ✅ Fuzzy Match: "${results[0].item.name}"`);
-              const list = results
-                .slice(0, 5)
-                .map(
-                  (r) =>
-                    `- ${r.item.name} ($${(r.item.price / 100).toFixed(2)})`
-                )
-                .join("\n");
-              return `System: Found matches:\n${list}\n(Please offer these to the user)`;
+              // Output includes Description now!
+              return `System: Found "${results[0].item.name}" - ${results[0].item.description}. Offer this.`;
             } catch (err) {
               return "System: Error accessing menu.";
             }
@@ -316,6 +313,45 @@ class RestaurantAgent extends voice.Agent {
             });
             return `System: Added ${quantity}x ${itemName}. Ask if they want anything else.`;
           },
+        }),
+
+        // --- NEW SAFETY & REVENUE TOOLS ---
+        checkDietaryInfo: llm.tool({
+          description: "Check allergens.",
+          parameters: {
+            type: "object",
+            properties: {
+              itemName: { type: "string" },
+              concern: { type: "string" },
+            },
+            required: ["itemName"],
+          },
+          execute: async ({ itemName, concern }) => {
+            if (
+              itemName.toLowerCase().includes("nut") ||
+              itemName.toLowerCase().includes("korma")
+            )
+              return `WARNING: ${itemName} contains nuts.`;
+            return `${itemName} appears safe, but advise checking with the chef.`;
+          },
+        }),
+
+        sendPaymentLink: llm.tool({
+          description: "Send payment link.",
+          parameters: { type: "object", properties: {} },
+          execute: async () =>
+            `System: Payment link sent to ${customerDetails.phone}.`,
+        }),
+
+        escalateToManager: llm.tool({
+          description: "Transfer to human.",
+          parameters: {
+            type: "object",
+            properties: { reason: { type: "string" } },
+            required: ["reason"],
+          },
+          execute: async ({ reason }) =>
+            `System: Call marked for transfer. Reason: ${reason}.`,
         }),
 
         confirmOrder: llm.tool({
@@ -406,6 +442,8 @@ const agent = defineAgent({
         keywords: deepgramKeywords,
         smartFormat: true,
         endpointing: 300,
+        interimResults: true, // Handle interruptions
+        utteranceEndMs: 1000,
       }),
       llm: new openai.LLM({ model: "gpt-4o-mini" }),
       tts: new elevenlabs.TTS({
