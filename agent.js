@@ -1,4 +1,4 @@
-// agent.js
+// agent.js - Main entry point for the Restaurant OS Voice Agent
 import "dotenv/config";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -6,464 +6,542 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Load Google Cloud credentials (Used for STT only)
+import { readFileSync } from "node:fs";
+let googleCredentials = null;
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  try {
+    googleCredentials = JSON.parse(readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, "utf8"));
+  } catch (err) {}
+}
+
 import {
   defineAgent,
   cli,
   WorkerOptions,
   initializeLogger,
   voice,
-  runWithJobContextAsync,
-  llm,
 } from "@livekit/agents";
 
 import * as openai from "@livekit/agents-plugin-openai";
 import * as deepgram from "@livekit/agents-plugin-deepgram";
-import * as elevenlabs from "@livekit/agents-plugin-elevenlabs";
-import * as silero from "@livekit/agents-plugin-silero";
-import Fuse from "fuse.js";
-import natural from "natural";
+
+// Import our modular components
+import { isOpen, redact, INSTANCE_ID, startHeartbeat } from "./utils/agentUtils.js";
+import { MOCK_DB, parseJobMetadata, COMMON_WORD_BLACKLIST } from "./config/agentConfig.js";
+import { vadLoadPromise } from "./config/vadConfig.js";
+import { getMenu } from "./services/cloverService.js";
+import { finalizeSession } from "./services/sessionManager.js";
+import { RestaurantAgent } from "./agent/RestaurantAgent.js";
 
 import { getVoiceFromSelection } from "./voiceMap.js";
-import { buildSystemPrompt } from "./promptBuilder.js";
-import { getDeepgramKeywords, masterMenu } from "./menuData.js";
+import { getCuisineProfile } from "./cuisines/cuisineRegistry.js";
+import { sendSMS } from "./services/notificationService.js";
+import { PrismaClient } from "@prisma/client";
 
-// -----------------------------
-// 1. CONFIGURATION & CORRECTIONS
-// -----------------------------
-const CONFIG = {
-  cloverBaseUrl:
-    process.env.CLOVER_BASE_URL || "https://apisandbox.dev.clover.com",
-  menuCacheTtl: 10 * 60 * 1000,
-};
+const prisma = new PrismaClient();
 
-// THE "HEARING AID": Silent Corrections
-const HEARING_CORRECTIONS = {
-  bone: "goan",
-  cone: "goan",
-  gourd: "goan",
-  gone: "goan",
-  biden: "baingan",
-  byun: "baingan",
-  bertha: "bharta",
-  barra: "vada",
-  power: "pav",
-  pao: "pav",
-  ubuntu: "guntur",
-};
-
-const MOCK_DB = {
-  "+15712799105": { name: "Venkat", lastOrder: "Hyderabadi Biryani" },
-  "+12013444638": { name: "Suresh", lastOrder: "Masala Dosa" },
-};
-
-let menuCache = { items: [], lastFetch: 0 };
-let sessionCart = [];
-let customerDetails = { name: "Guest", phone: "Unknown" };
-
-process.setMaxListeners(20);
+process.setMaxListeners(50);
 initializeLogger({ level: "info", destination: "stdout" });
 
-// -----------------------------
-// 2. GLOBAL SINGLETONS
-// -----------------------------
-const vadLoadPromise = silero.VAD.load({
-  minSpeechDuration: 0.2, // Tuned for natural pausing
-  minSilenceDuration: 0.8,
-  threshold: 0.4,
-});
+console.log("🚀 Restaurant AI Agent Starting...");
+console.log("📋 Google Credentials:", googleCredentials ? "✅ Loaded" : "❌ Not found");
 
-const metaphone = new natural.DoubleMetaphone();
+// Start heartbeat monitoring
+startHeartbeat();
 
 // -----------------------------
-// 3. HELPERS
-// -----------------------------
-async function finalizeSession(reason) {
-  if (sessionCart.length === 0) {
-    console.log(`🏁 Call ended (${reason}). No order placed.`);
-    return;
-  }
-  console.log("------------------------------------------------");
-  console.log(`💾 SAVING ORDER FOR: ${customerDetails.name}`);
-  sessionCart.forEach((item) => {
-    console.log(
-      `   - ${item.qty}x ${item.name} ($${(item.price / 100).toFixed(2)})`
-    );
-  });
-  console.log("------------------------------------------------");
-  sessionCart = [];
-}
-
-// -----------------------------
-// 4. CLOVER SERVICE
-// -----------------------------
-async function cloverRequest(path, { method = "GET", body } = {}, credentials) {
-  const apiKey = credentials.apiKey || process.env.CLOVER_API_KEY;
-  const merchId = credentials.merchantId || process.env.CLOVER_MERCHANT_ID;
-
-  if (!apiKey || !merchId) throw new Error("Missing Clover credentials");
-
-  const url = `${CONFIG.cloverBaseUrl}/v3/merchants/${merchId}${path}`;
-  const res = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!res.ok) throw new Error(`Clover error ${res.status}`);
-  return res.json();
-}
-
-async function getMenu(credentials) {
-  const now = Date.now();
-  if (
-    menuCache.items.length > 0 &&
-    now - menuCache.lastFetch < CONFIG.menuCacheTtl
-  ) {
-    return menuCache;
-  }
-  try {
-    const data = await cloverRequest("/items?limit=1000", {}, credentials);
-    const items = data.elements || [];
-    menuCache = { items, lastFetch: now };
-    return menuCache;
-  } catch (err) {
-    console.error("❌ Menu Fetch Failed:", err);
-    return { items: [], lastFetch: now };
-  }
-}
-
-function parseJobMetadata(metadataString) {
-  let data = {};
-  try {
-    data = JSON.parse(metadataString || "{}");
-  } catch (e) {}
-  return {
-    name: data.restaurantName || "Bharat Bistro",
-    greeting: data.greeting || "Namaste! Welcome to Bharat Bistro.",
-    instructions: data.systemPrompt || "",
-    info: {
-      address: data.address || "123 Curry Lane",
-      hours: data.hours || "11 AM - 10 PM",
-      phone: data.phone || "555-0199",
-    },
-    voiceSelection: data.voices || data.voiceId || "indian",
-    clover: { apiKey: data.cloverApiKey, merchantId: data.cloverMerchantId },
-  };
-}
-
-// -----------------------------
-// 5. AGENT DEFINITION
-// -----------------------------
-class RestaurantAgent extends voice.Agent {
-  constructor({ restaurantConfig, initialMenu, activeRoom }) {
-    const personalizedContext = `
-      You are speaking with ${customerDetails.name}.
-      If they exist in the database, welcome them back.
-    `;
-
-    const systemPrompt = buildSystemPrompt({
-      restaurantName: restaurantConfig.name,
-      info: restaurantConfig.info,
-      instructions: restaurantConfig.instructions + personalizedContext,
-      menuContext: initialMenu,
-      tone: "friendly",
-    });
-
-    super({
-      instructions: systemPrompt,
-      tools: {
-        getRestaurantInfo: llm.tool({
-          description: "Get info.",
-          parameters: { type: "object", properties: {} },
-          execute: async () =>
-            `Address: ${restaurantConfig.info.address}. Hours: ${restaurantConfig.info.hours}.`,
-        }),
-
-        checkOrderStatus: llm.tool({
-          description: "Check status.",
-          parameters: { type: "object", properties: {} },
-          execute: async () => {
-            if (activeRoom.state === "disconnected") return;
-            return `Latest order for ${customerDetails.name}: Kitchen is preparing it.`;
-          },
-        }),
-
-        bookTable: llm.tool({
-          description: "Book table.",
-          parameters: {
-            type: "object",
-            properties: {
-              partySize: { type: "integer" },
-              time: { type: "string" },
-            },
-            required: ["partySize", "time"],
-          },
-          execute: async ({ partySize, time }) =>
-            `Reservation confirmed for ${partySize} people at ${time}.`,
-        }),
-
-        // --- SMARTEST MENU SEARCH (Minimalist Output) ---
-        // --- INTELLIGENT MENU SEARCH (With Descriptions) ---
-        searchMenu: llm.tool({
-          description:
-            "Search menu. Returns Item Name, Price, and Description.",
-          parameters: {
-            type: "object",
-            properties: { query: { type: "string" } },
-            required: ["query"],
-          },
-          execute: async ({ query }) => {
-            if (activeRoom.state === "disconnected") return;
-
-            console.log(`🔍 User Query: "${query}"`);
-
-            // 1. SILENT CORRECTION
-            let fixedQuery = query.toLowerCase();
-            Object.keys(HEARING_CORRECTIONS).forEach((badWord) => {
-              if (fixedQuery.includes(badWord)) {
-                fixedQuery = fixedQuery.replace(
-                  badWord,
-                  HEARING_CORRECTIONS[badWord]
-                );
-              }
-            });
-
-            try {
-              const { items: cloverItems } = await getMenu(
-                restaurantConfig.clover
-              );
-              const availableItems = cloverItems.filter((i) => !i.hidden);
-
-              const enrichedItems = availableItems.map((cItem) => {
-                const cNameClean = cItem.name.trim().toLowerCase();
-                const brainEntry = masterMenu.find(
-                  (m) => m.name.trim().toLowerCase() === cNameClean
-                );
-                const soundCodes = metaphone.process(cItem.name);
-
-                // Attach Description if available in Brain
-                return {
-                  ...cItem,
-                  description: brainEntry
-                    ? brainEntry.description
-                    : "Delicious and freshly made.",
-                  synonyms: brainEntry ? brainEntry.synonyms : [],
-                  soundCode: soundCodes ? soundCodes[0] : "",
-                };
-              });
-
-              // 2. Phonetic Search
-              const [querySound] = metaphone.process(fixedQuery) || [];
-              if (querySound) {
-                const matches = enrichedItems.filter(
-                  (i) => i.soundCode === querySound
-                );
-                if (matches.length > 0) {
-                  console.log(`   🎯 PHONETIC MATCH: "${matches[0].name}"`);
-                  // Output includes Description now!
-                  return `System: Found "${matches[0].name}" - ${matches[0].description}. Offer this to the user.`;
-                }
-              }
-
-              // 3. Fuzzy Search
-              const fuse = new Fuse(enrichedItems, {
-                keys: ["name", "synonyms"],
-                threshold: 0.5,
-                distance: 100,
-              });
-              const results = fuse.search(fixedQuery);
-
-              if (results.length === 0)
-                return "System: No items found matching that description.";
-
-              console.log(`   ✅ Fuzzy Match: "${results[0].item.name}"`);
-              // Output includes Description now!
-              return `System: Found "${results[0].item.name}" - ${results[0].item.description}. Offer this.`;
-            } catch (err) {
-              return "System: Error accessing menu.";
-            }
-          },
-        }),
-
-        addToOrder: llm.tool({
-          description: "Add item to cart.",
-          parameters: {
-            type: "object",
-            properties: {
-              itemName: { type: "string" },
-              quantity: { type: "integer" },
-              notes: { type: "string" },
-            },
-            required: ["itemName", "quantity"],
-          },
-          execute: async ({ itemName, quantity, notes }) => {
-            const { items } = await getMenu(restaurantConfig.clover);
-            const itemData = items.find(
-              (i) => i.name.toLowerCase() === itemName.toLowerCase()
-            );
-            const price = itemData ? itemData.price : 0;
-            sessionCart.push({
-              name: itemName,
-              qty: quantity,
-              price: price,
-              notes: notes || "",
-            });
-            return `System: Added ${quantity}x ${itemName}. Ask if they want anything else.`;
-          },
-        }),
-
-        // --- NEW SAFETY & REVENUE TOOLS ---
-        checkDietaryInfo: llm.tool({
-          description: "Check allergens.",
-          parameters: {
-            type: "object",
-            properties: {
-              itemName: { type: "string" },
-              concern: { type: "string" },
-            },
-            required: ["itemName"],
-          },
-          execute: async ({ itemName, concern }) => {
-            if (
-              itemName.toLowerCase().includes("nut") ||
-              itemName.toLowerCase().includes("korma")
-            )
-              return `WARNING: ${itemName} contains nuts.`;
-            return `${itemName} appears safe, but advise checking with the chef.`;
-          },
-        }),
-
-        sendPaymentLink: llm.tool({
-          description: "Send payment link.",
-          parameters: { type: "object", properties: {} },
-          execute: async () =>
-            `System: Payment link sent to ${customerDetails.phone}.`,
-        }),
-
-        escalateToManager: llm.tool({
-          description: "Transfer to human.",
-          parameters: {
-            type: "object",
-            properties: { reason: { type: "string" } },
-            required: ["reason"],
-          },
-          execute: async ({ reason }) =>
-            `System: Call marked for transfer. Reason: ${reason}.`,
-        }),
-
-        confirmOrder: llm.tool({
-          description: "Finalize order.",
-          parameters: { type: "object", properties: {} },
-          execute: async () =>
-            `System: Order confirmed for ${customerDetails.name}. Total items: ${sessionCart.length}. End call now.`,
-        }),
-
-        hangUp: llm.tool({
-          description: "End call.",
-          parameters: { type: "object", properties: {} },
-          execute: async () => {
-            if (activeRoom) setTimeout(() => activeRoom.disconnect(), 1000);
-            return "Goodbye!";
-          },
-        }),
-      },
-    });
-  }
-}
-
-// -----------------------------
-// 6. MAIN ENTRY
+// MAIN ENTRY
 // -----------------------------
 const agent = defineAgent({
   name: "restaurant-os-agent",
 
   entry: async (ctx) => {
-    console.log("🔌 Connecting...");
-    await ctx.connect();
+    console.log("🔌 Parallel Boot: Connecting room & loading menu...");
+    
+    // 1. Kick off parallel tasks immediately
+    const connectPromise = ctx.connect();
+    
+    // DEBUG: Log all available metadata sources
+    console.log("🔍 DEBUG ctx.job:", JSON.stringify({
+      metadata: ctx.job?.metadata,
+      dispatchMetadata: ctx.job?.dispatch?.metadata,
+      agentDispatchId: ctx.job?.dispatchId,
+      room: ctx.job?.room?.name,
+      namespace: ctx.job?.namespace
+    }, null, 2));
+    
+    // Try multiple metadata sources
+    const rawMetadata = ctx.job?.metadata || ctx.job?.dispatch?.metadata || "";
+    console.log(`📋 Raw metadata string: "${rawMetadata}"`);
+    
+    const metadataDetails = parseJobMetadata(rawMetadata); // Local parse
+    const menuPromise = getMenu(metadataDetails.clover);
+    
+    await connectPromise;
+    console.log("✅ Connected to LiveKit room");
 
     console.log("⏳ Waiting for caller...");
     const participant = await ctx.waitForParticipant();
     console.log(`👤 Caller Connected: ${participant.identity}`);
+    
+    console.log(`[DEBUG] Step 1: Loading Cuisine Profile...`);
+    // 2. Load Enterprise Cuisine Profile
+    const cuisineType = metadataDetails.cuisine || "indian"; 
+    const cuisineProfile = getCuisineProfile(cuisineType);
+    
+    console.log(`🌍 [${INSTANCE_ID}] Cuisine Profile Loaded: ${cuisineProfile.name}`);
 
-    const callerPhone = participant.identity.replace("sip_", "");
-    if (MOCK_DB[callerPhone]) {
-      customerDetails = { name: MOCK_DB[callerPhone].name, phone: callerPhone };
-    } else {
-      customerDetails = { name: "Guest", phone: callerPhone };
+    console.log(`[DEBUG] Step 2: Resolving Menu Promise...`);
+    // 3. Resolve background tasks
+    const restaurantConfig = metadataDetails;
+    
+    // Fallback: If ID is missing, fetch from Side-Channel API (Server Truth)
+    if (!restaurantConfig.id && ctx.job?.room?.name) {
+       try {
+         const roomName = ctx.job.room.name;
+         console.log(`🌐 Fetching Context for room: ${roomName}`);
+         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+         const res = await fetch(`${apiUrl}/api/internal/room-context/${encodeURIComponent(roomName)}`);
+         
+         if (res.ok) {
+            const context = await res.json();
+            // Merge context into restaurantConfig (and metadataDetails by reference)
+            Object.assign(restaurantConfig, context); 
+            console.log(`✅ Context Resolved via API: ${restaurantConfig.id} (${restaurantConfig.name})`);
+         } else {
+             console.warn(`⚠️ Context API returned ${res.status} for room ${roomName}`);
+         }
+       } catch(e) { console.error("Context Fetch Failed", e); }
     }
 
-    sessionCart = [];
-    const restaurantConfig = parseJobMetadata(ctx.job.metadata);
+    // ULTIMATE SECURITY: Fail Closed
+    // No default tenant allowed. If ID is missing, we must end the call for safety.
+    if (!restaurantConfig.id) {
+        console.error("🚨 CRITICAL SECURITY ERROR: Restaurant ID missing after all lookups. Failing closed.");
+        
+        await connectPromise;
+        const failureMessage = "We're sorry, our system is currently undergoing maintenance. Please try calling back later. Goodbye!";
+        
+        // STABILITY FIX: Explicitly disconnect room BEFORE returning to prevent libc++abi crashes
+        if (ctx.room) {
+            console.log("🔌 Explicitly disconnecting room to prevent mutex errors.");
+            ctx.room.disconnect();
+        }
+        
+        return; 
+    }
+
+    // 4. CHECK BUSINESS HOURS & AUTO-REJECT
+    const isOpenNow = isOpen(restaurantConfig.businessHours, restaurantConfig.timezone);
+    if (!isOpenNow && restaurantConfig.voiceSelection !== "test_mode") { // Allow bypass for testing if needed
+        console.log(`⛔ [${INSTANCE_ID}] Restaurant is CLOSED (Schedule: ${JSON.stringify(restaurantConfig.businessHours)}). Auto-declining.`);
+        
+        // Connect just to say we are closed
+        await connectPromise;
+        
+        // Let agent handle closed state through instructions
+        console.log(`🔒 [${INSTANCE_ID}] Proceeding with CLOSED state instructions.`);
+    }
+
+    const { items: menuItems } = await menuPromise;
+    console.log(`[DEBUG] Step 2b: Menu Promise Resolved. Items: ${menuItems ? menuItems.length : 0}`);
+
+    const menuSummary = menuItems
+      .slice(0, 150) // Show first 150 items to LLM (was 50)
+      .map((i) => `- ${i.name}`)
+      .join("\n");
+      
+    console.log(`🚀 [${INSTANCE_ID}] Data ready. Menu items: ${menuItems.length}`);
+
+    const callerPhone = participant.identity.replace("sip_", "");
+    let customerDetails = { name: "Guest", phone: callerPhone };
+    if (MOCK_DB[callerPhone]) {
+      customerDetails = { name: MOCK_DB[callerPhone].name, phone: callerPhone };
+    }
+    console.log(`[DEBUG] Step 3: Customer Identified as ${customerDetails.name}`);
+
+    let sessionCart = [];
+    let isFinalized = false;
+
     let initialGreeting =
       customerDetails.name !== "Guest"
-        ? `Namaste ${customerDetails.name}! Welcome back to Bharat Bistro.`
+        ? `Namaste ${customerDetails.name}! Welcome back to ${restaurantConfig.name}.`
         : restaurantConfig.greeting;
 
-    let initialMenu = "Loading...";
-    let deepgramKeywords = [];
-    let rawKeywords = getDeepgramKeywords();
-    deepgramKeywords = rawKeywords.map((k) =>
-      typeof k === "string" ? [k.split(":")[0], parseFloat(k.split(":")[1])] : k
-    );
-
+    // LOGGING: Start Call
+    let callRecord = null;
     try {
-      const { items } = await getMenu(restaurantConfig.clover);
-      initialMenu = items
+        if (restaurantConfig.id) {
+           callRecord = await prisma.call.create({
+             data: {
+               restaurantId: restaurantConfig.id,
+               customerPhone: callerPhone,
+               status: "ongoing"
+             }
+           });
+           console.log(`📞 Call Logged: ${callRecord.id}`);
+        } else {
+           console.warn("⚠️ No Restaurant ID - cannot log call.");
+        }
+    } catch (e) { console.error("❌ Log Start Failed:", e); }
+
+    // 4. Generate STT Keywords Dynamically from menu
+    console.log(`[DEBUG] Step 3a: Generating keywords from menu...`);
+    
+    let deepgramKeywords = []; // Initialize outside try/catch for proper scope
+    
+    try {
+      // 1. CONSERVATIVE: Boost individual words (≥5 chars, not in blacklist)
+      // This prevents short words like "naan" from replacing "a/an"
+      const individualWords = menuItems
+        .slice(0, 100)
+        .flatMap(item => item.name.split(/\s+/))
+        .map(word => word.toLowerCase().replace(/[^a-z0-9]/g, ''))
+        .filter(word => word.length >= 5) // ✅ Increased from 3 to 5
+        .filter(word => !COMMON_WORD_BLACKLIST.includes(word)); // ✅ Exclude common words
+      
+      // 2. SAFE: Boost ONLY multi-word phrases (2+ words)
+      // Multi-word items like "butter chicken" are safe and need the most help
+      const fullNames = menuItems
         .slice(0, 50)
-        .map((i) => `- ${i.name}`)
-        .join("\n");
-      console.log(`🚀 Injected ${deepgramKeywords.length} Manual Keywords.`);
-    } catch (e) {}
+        .map(item => item.name.toLowerCase().trim())
+        .filter(name => name.split(/\s+/).length >= 2); // ✅ Only phrases, not single words
+        
+      // 3. CURATED: Boost phonetic aliases from the cuisine profile
+      // These are hand-picked corrections, so they're safe
+      const aliases = Object.values(cuisineProfile.phoneticCorrections || {})
+        .map(a => a.toLowerCase().trim());
 
-    const onHangup = async () => await finalizeSession("Caller Hangup");
-    const onRoomClose = async () => await finalizeSession("Room Closed");
-    ctx.room.on("participant_disconnected", onHangup);
-    ctx.room.on("disconnected", onRoomClose);
+      // Combine and filter unique
+      const allKeywords = [...new Set([...individualWords, ...fullNames, ...aliases])];
+      
+      // ✅ Reduced from 200 to 100 for less aggressive boosting
+      deepgramKeywords = allKeywords.slice(0, 100).map(word => [word]);
+      
+      console.log(`🛰️  [${INSTANCE_ID}] Injected ${deepgramKeywords.length} keywords for STT (Conservative Mode).`);
+      console.log(`🔍 Sample keywords: ${allKeywords.slice(0, 8).join(', ')}`);
+    } catch (err) {
+      console.error(`⚠️ Keyword generation failed: ${err.message}`);
+      deepgramKeywords = [];
+    }
 
-    const vadModel = await vadLoadPromise;
-    const selectedVoice = getVoiceFromSelection(
-      restaurantConfig.voiceSelection
-    );
+    // Transcript Logger - MUST be declared before finalize() for proper scope
+    const transcriptLog = [];
+    let restaurantAgent = null;
+    let session = null; // Declare early for visibility in finalize
 
-    const restaurantAgent = new RestaurantAgent({
+    // Helper to finalize session and log to DB
+    const finalize = async (reason) => {
+      console.log(`🛑 [${INSTANCE_ID}] Finalizing session. Reason: ${reason} (Transcript length: ${transcriptLog.length})`);
+      if (isFinalized) return;
+      isFinalized = true;
+      
+      // FLUSH DELAY: Give events a split second to finish emitting before we commit to DB
+      await new Promise(r => setTimeout(r, 1000));
+
+      // --- EXHAUSTIVE RECOVERY ---
+      if (transcriptLog.length === 0) {
+          console.log(`🔍 [${INSTANCE_ID}] Deep Searching for history...`);
+          const possiblePaths = [
+              { name: 'session.history', data: session?.history?.messages },
+              { name: 'session._chatCtx', data: session?._chatCtx?.messages },
+              { name: 'session.chat_ctx', data: session?.chat_ctx?.messages },
+              { name: 'agent.chat_ctx', data: restaurantAgent?.chat_ctx?.messages },
+              { name: 'session.llm.chat_ctx', data: session?.llm?.chat_ctx?.messages }
+          ];
+
+          for (const path of possiblePaths) {
+              if (path.data && path.data.length > 0) {
+                  console.log(`🎯 [${INSTANCE_ID}] Found history in ${path.name} (${path.data.length} items)`);
+                  path.data.forEach(msg => {
+                      if (msg.role === 'user' || msg.role === 'assistant') {
+                          let text = typeof msg.content === 'string' ? msg.content : (Array.isArray(msg.content) ? msg.content.map(c => c.text || "").join(" ") : "");
+                          if (text && text.trim()) {
+                              transcriptLog.push({ role: msg.role === 'assistant' ? 'agent' : 'user', text: redact(text), time: new Date() });
+                          }
+                      }
+                  });
+                  break; 
+              }
+          }
+      }
+
+      // LOGGING: Final DB Save
+      if (callRecord) {
+         try {
+             const duration = Math.round((Date.now() - callRecord.createdAt.getTime()) / 1000);
+             const hasInteraction = transcriptLog.length > 0 || duration > 10;
+             
+             let finalStatus = "missed";
+             if (sessionCart.length > 0) finalStatus = "order_placed";
+             else if (reason === "Caller Hangup" || hasInteraction) finalStatus = "completed";
+             
+             // Fix summary to include Price for Dashboard visibility
+             const totalCents = sessionCart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+             const summaryText = sessionCart.length > 0 
+                ? `Order Placed: $${(totalCents/100).toFixed(2)} (${sessionCart.length} items)` 
+                : (hasInteraction ? "Call completed" : "Missed call");
+
+             console.log(`💾 [${INSTANCE_ID}] Saving ${transcriptLog.length} items to DB. Status: ${finalStatus}. Summary: ${summaryText}`);
+             
+             await prisma.call.update({
+                 where: { id: callRecord.id },
+                 data: {
+                   endedAt: new Date(),
+                   status: finalStatus,
+                   duration: duration,
+                   transcript: transcriptLog,
+                   summary: summaryText
+                 }
+             });
+             console.log(`✅ [${INSTANCE_ID}] DB Save Complete.`);
+         } catch(e) { console.error(`❌ [${INSTANCE_ID}] DB Save Failed:`, e); }
+      }
+
+      // Use restaurantConfig.id OR fall back to callRecord.restaurantId (which was set successfully)
+      const restId = restaurantConfig?.id || callRecord?.restaurantId;
+      console.log(`🔍 [finalize] restaurantId = ${restId}`);
+      await finalizeSession(reason, sessionCart, customerDetails, restId, callRecord?.id);
+
+      // --- DYNAMIC POST-CALL PROMOTION ---
+      try {
+        const notifs = restaurantConfig.notificationConfig;
+        // Only send if configured AND call was meaningful (Order Placed or Completed)
+        if (notifs && notifs.customMessage && (sessionCart.length > 0 || reason === "Caller Hangup")) {
+             console.log(`📨 [${INSTANCE_ID}] Preparing Post-Call SMS...`);
+             let promoMessage = notifs.customMessage;
+             
+             if (notifs.promotions && notifs.promotions.length > 0) {
+                 promoMessage += "\n\n🌟 Special Offers:\n" + notifs.promotions.map(p => "• " + p).join("\n");
+             }
+             
+             await sendSMS(customerDetails.phone, promoMessage);
+             console.log(`✅ [${INSTANCE_ID}] Post-Call SMS Sent.`);
+        }
+      } catch (promoErr) {
+        console.error(`⚠️ Failed to send post-call SMS: ${promoErr.message}`);
+      }
+    };
+
+    const onHangup = async () => await finalize("Caller Hangup");
+    const onRoomClose = async () => await finalize("Room Closed");
+    
+    // Use 'once' to prevent double-firing, though our boolean guard handles it
+    ctx.room.once("participant_disconnected", onHangup);
+    ctx.room.once("disconnected", onRoomClose);
+
+    console.log(`[DEBUG] Step 3b: Awaiting VAD Load...`);
+    let vadModel;
+    try {
+      // Race VAD load against a 5s timeout
+      vadModel = await Promise.race([
+        vadLoadPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("VAD Load Timeout")), 5000))
+      ]);
+      console.log(`[DEBUG] Step 4: VAD Model Loaded`);
+    } catch (err) {
+      console.error(`🚨 [CRITICAL] VAD Failed to Load: ${err.message}`);
+      throw err; 
+    }
+    
+    const selectedVoice = getVoiceFromSelection(restaurantConfig.voiceSelection);
+    console.log(`[DEBUG] Step 5: Voice Selected: ${selectedVoice.id}`);
+
+    // Assign to outer let variable reference
+    restaurantAgent = new RestaurantAgent({
       restaurantConfig,
-      initialMenu,
+      initialMenu: menuSummary,
       activeRoom: ctx.room,
+      cuisineProfile,
+      customerDetails,
+      sessionCart,
+      finalizeCallback: finalize // Pass local finalize function to agent
     });
+    console.log(`[DEBUG] Step 6: Restaurant Agent Instantiated`);
 
-    const session = new voice.AgentSession({
+    console.log(`🎤 [${INSTANCE_ID}] Pipeline ready. Voice: ${selectedVoice.name} (${selectedVoice.id})`);
+
+    session = new voice.AgentSession({
       vad: vadModel,
       stt: new deepgram.STT({
         model: "nova-2",
         language: "en-IN",
-        keywords: deepgramKeywords,
+        keywords: deepgramKeywords, // Re-enabled with proper formatting
         smartFormat: true,
-        endpointing: 300,
-        interimResults: true, // Handle interruptions
-        utteranceEndMs: 1000,
+        endpointing: 150,
+        interimResults: true,
+        utteranceEndMs: 800,
       }),
       llm: new openai.LLM({ model: "gpt-4o-mini" }),
-      tts: new elevenlabs.TTS({
-        modelID: "eleven_multilingual_v2",
-        voice: { id: selectedVoice.id },
+      tts: new openai.TTS({ 
+        voice: selectedVoice.id, 
+        model: "tts-1",
+        speed: restaurantConfig.voiceSpeed || 1.0
       }),
     });
 
-    try {
-      await runWithJobContextAsync(ctx, async () => {
-        await session.start({ agent: restaurantAgent, room: ctx.room });
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        await session.generateReply({
-          instructions: `Say exactly: "${initialGreeting}"`,
+    console.log(`✅ [${INSTANCE_ID}] Session Initialized with OpenAI Voice: ${selectedVoice.name}`);
+
+    // Add comprehensive logs for speech events
+    session.on("user_started_speaking", () => {
+      console.log("🎤 User started speaking...");
+    });
+
+    session.on("user_stopped_speaking", () => {
+      console.log("🎤 User stopped speaking.");
+    });
+
+    // Generic Transcription Listener (Often more robust than user_started/stopped)
+    session.on("transcription", (trans) => {
+        console.log(`📝 [${INSTANCE_ID}] [RAW] session:transcription:`, JSON.stringify(trans));
+    });
+
+    // --- ULTRA-ROBUST ROOM-LEVEL LISTENER ---
+    // If AgentSession events fail, the Room will still see the text.
+    ctx.room.on("transcriptionReceived", (transcriptions, participant) => {
+        console.log(`📝 [${INSTANCE_ID}] [ROOM EVENT] Received from ${participant?.identity || 'unknown'}`);
+        transcriptions.forEach(t => {
+            const text = redact(t.text || "");
+            if (!text.trim()) return;
+            
+            const role = (participant?.identity?.includes('agent') || participant?.identity === ctx.room.localParticipant.identity) ? 'agent' : 'user';
+            
+            console.log(`   [ROOM TRANSCRIPT] ${role.toUpperCase()}: "${text}"`);
+            
+            // Check for duplicates before pushing
+            const isDuplicate = transcriptLog.some(existing => existing.text === text && existing.role === role);
+            if (!isDuplicate) {
+                transcriptLog.push({ role, text, time: new Date() });
+                
+                // Real-time Save
+                if (callRecord) {
+                    prisma.call.update({
+                        where: { id: callRecord.id },
+                        data: { transcript: transcriptLog }
+                    }).catch(() => {});
+                }
+            }
         });
-        await new Promise((resolve) => ctx.room.on("disconnected", resolve));
+    });
+
+    // Transcript event handlers (using correct event names for @livekit/agents v1.x)
+    session.on("user_input_transcribed", (ev) => {
+      console.log(`📝 [${INSTANCE_ID}] [DEBUG] User Input Transcribed. isFinal: ${ev.isFinal}, text: "${ev.transcript}"`);
+      
+      if (ev.isFinal) {
+        const text = redact(ev.transcript || "");
+        if (text.trim()) {
+            console.log(`📝 [${INSTANCE_ID}] Pushing User Final: "${text}"`);
+            transcriptLog.push({ role: "user", text, time: new Date() });
+            
+            // --- AUTO-SAVE ON EVERY TURN ---
+            if (callRecord) {
+                prisma.call.update({
+                    where: { id: callRecord.id },
+                    data: { transcript: transcriptLog }
+                }).catch(() => {});
+            }
+        }
+      }
+    });
+
+    session.on("conversation_item_added", (ev) => {
+      const msg = ev.item;
+      console.log(`💬 [${INSTANCE_ID}] Conversation Item Added. Role: ${msg.role}`);
+      
+      if (msg.role === 'assistant') {
+        const text = redact(typeof msg.content === 'string' ? msg.content : (Array.isArray(msg.content) ? msg.content.map(c => typeof c === 'string' ? c : (c.text || "")).join(" ") : ""));
+        if (text.trim()) {
+            // Check for duplicates
+            const isDuplicate = transcriptLog.some(existing => existing.text === text && existing.role === 'agent');
+            if (!isDuplicate) {
+                console.log(`🤖 [${INSTANCE_ID}] Pushing Agent Final: "${text}"`);
+                transcriptLog.push({ role: "agent", text, time: new Date() });
+                
+                // --- AUTO-SAVE ON EVERY TURN ---
+                if (callRecord) {
+                    prisma.call.update({
+                        where: { id: callRecord.id },
+                        data: { transcript: transcriptLog }
+                    }).catch(() => {});
+                }
+            }
+        }
+      }
+    });
+
+    session.on("agent_started_speaking", () => {
+      console.log("🗣️  Agent started speaking...");
+    });
+
+    session.on("agent_stopped_speaking", () => {
+      console.log("🗣️  Agent stopped speaking.");
+    });
+
+    // Add error listener to session for unexpected failures
+    session.on("error", (err) => {
+      console.error("🚨 Session error event:", err);
+    });
+
+    try {
+      console.log(`🎬 [${INSTANCE_ID}] Starting agent session...`);
+      
+      // DIAGNOSTIC: Log session properties to find where chat history is hidden
+      console.log(`🔍 [${INSTANCE_ID}] Session properties:`, Object.keys(session).filter(k => !k.startsWith('_')));
+
+      // --- THE "DIFFERENT ROUTE": BACKGROUND AUTO-SAVE ---
+      // Instead of waiting for the end, we poll the session context every 5 seconds.
+      const autoSaveInterval = setInterval(async () => {
+          if (isFinalized) return;
+          
+          const activeHistory = session?.history?.messages || session?._chatCtx?.messages;
+          if (!activeHistory || activeHistory.length <= transcriptLog.length) return;
+
+          console.log(`💾 [${INSTANCE_ID}] Auto-saving transcript snapshot (${activeHistory.length} messages)...`);
+          const newTrace = [];
+          activeHistory.forEach(msg => {
+              if (msg.role === 'user' || msg.role === 'assistant') {
+                  let text = typeof msg.content === 'string' ? msg.content : (Array.isArray(msg.content) ? msg.content.map(c => c.text || "").join(" ") : "");
+                  if (text && text.trim()) {
+                      newTrace.push({ role: msg.role === 'assistant' ? 'agent' : 'user', text: redact(text), time: new Date() });
+                  }
+              }
+          });
+
+          if (newTrace.length > 0 && callRecord) {
+              try {
+                  await prisma.call.update({
+                      where: { id: callRecord.id },
+                      data: { transcript: newTrace }
+                  });
+              } catch (e) {
+                  console.error(`⚠️ [${INSTANCE_ID}] Auto-save failed:`, e.message);
+              }
+          }
+      }, 5000);
+
+      await session.start({ agent: restaurantAgent, room: ctx.room });
+      console.log(`✅ [${INSTANCE_ID}] Session started successfully`);
+      
+      console.log(`🗣️  Generating greeting: "${initialGreeting}"`);
+      await session.generateReply({
+        instructions: `Say exactly: "${initialGreeting}"`,
       });
+      
+      await new Promise((resolve) => ctx.room.on("disconnected", resolve));
+      clearInterval(autoSaveInterval);
     } catch (err) {
-      console.error("❌ Fatal Error:", err);
+      // Silence known shutdown errors
+      if (err?.code === 'APIUserAbortError' || err?.message?.includes('aborted')) {
+          console.log("ℹ️ Session ended normally (User Abort / Hangup).");
+      } else {
+          console.error("❌ Unexpected Session Error:", err);
+      }
     } finally {
+      // Ensure finalize runs even if we crash out of the session
+      if (!isFinalized) await finalize("Session Ended (Finally Block)");
+      
       ctx.room.off("participant_disconnected", onHangup);
       ctx.room.off("disconnected", onRoomClose);
     }
