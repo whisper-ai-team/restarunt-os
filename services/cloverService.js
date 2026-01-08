@@ -1,6 +1,7 @@
 // cloverService.js - Clover POS API integration
 import { CONFIG } from "../config/agentConfig.js";
 import { INSTANCE_ID } from "../utils/agentUtils.js";
+import { MenuIntelligenceService } from "./menuIntelligence.js";
 
 let menuCache = { items: [], lastFetch: 0 };
 
@@ -27,7 +28,7 @@ export async function cloverRequest(path, { method = "GET", body } = {}, credent
   return res.json();
 }
 
-export async function getMenu(credentials) {
+export async function getMenu(credentials, restaurantId) {
   const now = Date.now();
   if (
     menuCache.items.length > 0 &&
@@ -50,18 +51,44 @@ export async function getMenu(credentials) {
     }
   };
 
+
+
+// ... existing imports
+
+// ... existing code
+
   try {
     console.log(`🍔 [${INSTANCE_ID}] Fetching menu from Clover...`);
     const data = await cloverRequest("/items?limit=1000&expand=categories", {}, credentials, fetchWithTimeout);
     const items = data.elements || [];
     menuCache = { items, lastFetch: now };
     console.log(`🍔 [${INSTANCE_ID}] Menu fetch success: ${items.length} items.`);
+    
+    // --- AI SENTINEL TRIGGER ---
+    if (items.length > 0 && restaurantId) {
+       // 1. Kick off Enrichment (Fire & Forget)
+       MenuIntelligenceService.enrichMenu(restaurantId, items).catch(err => {
+           console.error(`⚠️ [MenuSentinel] Background enrichment failed:`, err);
+       });
+       
+       // 2. Try to merge existing intelligence immediately
+       try {
+           const enrichedItems = await MenuIntelligenceService.mergeIntelligence(restaurantId, items);
+           menuCache = { items: enrichedItems, lastFetch: now };
+           console.log(`🍔 [${INSTANCE_ID}] Menu fetch success: ${items.length} items (Enriched).`);
+           return menuCache;
+       } catch (err) {
+           console.warn(`⚠️ [MenuSentinel] Merge failed, returning raw items:`, err);
+       }
+    }
+    
     return menuCache;
   } catch (err) {
     console.error("❌ Menu Fetch Failed:", err.message);
     return { items: [], lastFetch: now };
   }
 }
+
 
 // Helper: Create order in Clover POS
 export async function createCloverOrder(cart, customerName, customerPhone, credentials) {

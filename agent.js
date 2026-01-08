@@ -28,6 +28,7 @@ import * as deepgram from "@livekit/agents-plugin-deepgram";
 
 // Import our modular components
 import { isOpen, redact, INSTANCE_ID, startHeartbeat } from "./utils/agentUtils.js";
+import { generateSTTKeywords } from "./utils/sttHelpers.js";
 import { MOCK_DB, parseJobMetadata, COMMON_WORD_BLACKLIST } from "./config/agentConfig.js";
 import { vadLoadPromise } from "./config/vadConfig.js";
 import { getMenu } from "./services/cloverService.js";
@@ -76,7 +77,7 @@ const agent = defineAgent({
     console.log(`📋 Raw metadata string: "${rawMetadata}"`);
     
     const metadataDetails = parseJobMetadata(rawMetadata); // Local parse
-    const menuPromise = getMenu(metadataDetails.clover);
+    const menuPromise = getMenu(metadataDetails.clover, metadataDetails.id);
     
     await connectPromise;
     console.log("✅ Connected to LiveKit room");
@@ -101,7 +102,7 @@ const agent = defineAgent({
        try {
          const roomName = ctx.job.room.name;
          console.log(`🌐 Fetching Context for room: ${roomName}`);
-         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001";
          const res = await fetch(`${apiUrl}/api/internal/room-context/${encodeURIComponent(roomName)}`);
          
          if (res.ok) {
@@ -187,40 +188,18 @@ const agent = defineAgent({
     } catch (e) { console.error("❌ Log Start Failed:", e); }
 
     // 4. Generate STT Keywords Dynamically from menu
+    // 4. Generate STT Keywords Dynamically from menu
     console.log(`[DEBUG] Step 3a: Generating keywords from menu...`);
     
-    let deepgramKeywords = []; // Initialize outside try/catch for proper scope
+    let deepgramKeywords = []; 
     
     try {
-      // 1. CONSERVATIVE: Boost individual words (≥5 chars, not in blacklist)
-      // This prevents short words like "naan" from replacing "a/an"
-      const individualWords = menuItems
-        .slice(0, 100)
-        .flatMap(item => item.name.split(/\s+/))
-        .map(word => word.toLowerCase().replace(/[^a-z0-9]/g, ''))
-        .filter(word => word.length >= 5) // ✅ Increased from 3 to 5
-        .filter(word => !COMMON_WORD_BLACKLIST.includes(word)); // ✅ Exclude common words
+      const rawKeywords = generateSTTKeywords(menuItems);
+      // Format for Deepgram adapter: Must be Array<[string, boost?]>
+      // e.g. [["samosa"], ["biryani"]]
+      deepgramKeywords = rawKeywords.map(word => [word]);
       
-      // 2. SAFE: Boost ONLY multi-word phrases (2+ words)
-      // Multi-word items like "butter chicken" are safe and need the most help
-      const fullNames = menuItems
-        .slice(0, 50)
-        .map(item => item.name.toLowerCase().trim())
-        .filter(name => name.split(/\s+/).length >= 2); // ✅ Only phrases, not single words
-        
-      // 3. CURATED: Boost phonetic aliases from the cuisine profile
-      // These are hand-picked corrections, so they're safe
-      const aliases = Object.values(cuisineProfile.phoneticCorrections || {})
-        .map(a => a.toLowerCase().trim());
-
-      // Combine and filter unique
-      const allKeywords = [...new Set([...individualWords, ...fullNames, ...aliases])];
-      
-      // ✅ Reduced from 200 to 100 for less aggressive boosting
-      deepgramKeywords = allKeywords.slice(0, 100).map(word => [word]);
-      
-      console.log(`🛰️  [${INSTANCE_ID}] Injected ${deepgramKeywords.length} keywords for STT (Conservative Mode).`);
-      console.log(`🔍 Sample keywords: ${allKeywords.slice(0, 8).join(', ')}`);
+      console.log(`🛰️  [${INSTANCE_ID}] Injected ${deepgramKeywords.length} keywords from Menu Intelligence.`);
     } catch (err) {
       console.error(`⚠️ Keyword generation failed: ${err.message}`);
       deepgramKeywords = [];

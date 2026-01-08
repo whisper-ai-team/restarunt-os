@@ -22,6 +22,9 @@ export const CUISINE_PROFILES = {
       pan: "paneer",
       pen: "paneer",
       shahi: "shahi paneer",
+      malay: "malai",
+      costa: "pista", // Fixes "Malay Costa" -> "Malai Pista"
+      pasta: "pista", // Common mishearing
     },
     personaInstructions: "Use warm, hospitable language. Mention spice levels if appropriate. Use 'Namaste' as a greeting.",
     preferredVoices: ["nova", "shimmer", "alloy"],

@@ -4,10 +4,14 @@ import Fuse from "fuse.js";
 import { buildSystemPrompt } from "../promptBuilder.js";
 import { getVoiceFromSelection } from "../voiceMap.js";
 import { isOpen, redact, metaphone, INSTANCE_ID } from "../utils/agentUtils.js";
+import { validateOrder } from "../utils/dietaryHelpers.js";
 import { DIETARY_MAP } from "../config/agentConfig.js";
 import { getMenu, createCloverOrder } from "../services/cloverService.js";
 import { sendOrderConfirmation } from "../services/notificationService.js";
 import { printOrderToKitchen } from "../cloverPrint.js";
+
+// -----------------------------
+import { MenuMatcher } from "../utils/menuMatcher.js";
 
 // -----------------------------
 // RESTAURANT AGENT CLASS
@@ -60,9 +64,9 @@ export class RestaurantAgent extends voice.Agent {
        finalInstructions = systemPrompt + `
        
        CRITICAL OPERATIONAL RULES:
-       1. TOOL USAGE (CART): You MUST call the 'addToOrder' tool EVERY TIME a customer mentions an item they want to order. Even if you are just clarifying quantities, ensure the items are in the cart.
+       1. TOOL USAGE (CART): You MUST call the 'addToOrder' tool EVERY TIME a customer mentions an item they want to order. IMPORTANT: Pass the EXACT item name found in the menu search. Do NOT append allergy names (e.g. use "Butter Chicken", NOT "Butter Chicken Cashew").
        2. ALLERGIES (SAFETY): If the user orders more than 2 items AND hasn't mentioned allergies, you MUST ask: "Before I finalize that, do you have any food allergies or dietary restrictions I should note for the kitchen?". 
-       3. ALLERGIES (MATCH): If a user mentions an allergy, immediately use 'checkDietaryInfo'. NEVER guess.
+       3. ALLERGIES (MATCH): If a user mentions an allergy, immediately use 'logDietaryRestriction'. NEVER guess. This is critical for safety.
        4. ORDER SUMMARY: Before finalizing, you MUST read back the entire order summary (items, quantities, total) and ask "Is this correct?".
        5. CONFIRM ORDER: After the user confirms ('yes', 'correct'), you MUST call 'confirmOrder'.
        6. HUMAN HAND-OFF: If the user is frustrated, use 'transferToHuman'.
@@ -148,7 +152,8 @@ export class RestaurantAgent extends voice.Agent {
 
             try {
               const { items: cloverItems } = await getMenu(
-                restaurantConfig.clover
+                restaurantConfig.clover,
+                restaurantConfig.id
               );
               const availableItems = cloverItems.filter((i) => !i.hidden);
 
@@ -195,6 +200,8 @@ export class RestaurantAgent extends voice.Agent {
           },
         }),
 
+
+
         addToOrder: llm.tool({
           description: "Use this ONLY when the customer explicitly wants to buy/order an item. Requires itemName and quantity. Validates against the menu before adding.",
           parameters: {
@@ -216,38 +223,79 @@ export class RestaurantAgent extends voice.Agent {
             }
             this.lastProcessedHash = turnHash;
 
-            const { items } = await getMenu(restaurantConfig.clover);
+            const { items } = await getMenu(restaurantConfig.clover, restaurantConfig.id);
             
-            // === STRICT MENU MATCHING ===
-            // Stage 1: Exact match
-            let itemData = items.find(
-              (i) => i.name.toLowerCase() === itemName.toLowerCase()
-            );
+            // --- LAYER B: MENU MATCHER ENGINE ---
+            const matchResult = MenuMatcher.findMatch(itemName, items);
             
-            // Stage 2: High-Confidence Fuzzy (No partial guessing)
-            if (!itemData) {
-               const fuse = new Fuse(items, { keys: ["name"], threshold: 0.3 });
-               const results = fuse.search(itemName);
-               if (results.length > 0) {
-                   itemData = results[0].item;
-               }
+            // CASE 1: AMBIGUOUS
+            if (matchResult.ambiguous) {
+                const [opt1, opt2] = matchResult.ambiguous;
+                console.log(`🛡️ [MATCHER] Ambiguous request: "${itemName}" -> "${opt1.name}" vs "${opt2.name}"`);
+                return `System: Request for "${itemName}" is ambiguous. You MUST ask: "Did you mean ${opt1.name} or ${opt2.name}?" (Do not guess).`;
             }
             
-            if (itemData) {
-               console.log(`🛒 Added to Order: ${itemData.name} x${quantity}`);
-               sessionCart.push({ name: itemData.name, qty: quantity, price: itemData.price, notes: notes || "" });
-               return `System: Added ${quantity}x ${itemData.name} to order. Total items in cart: ${sessionCart.length}. Just say "Added that for you."`;
-            } else {
-               console.warn(`⚠️ Ambiguous item: "${itemName}"`);
-               const fuse = new Fuse(items, { keys: ["name"], threshold: 0.6 });
-               const suggestions = fuse.search(itemName).slice(0, 2).map(r => r.item.name);
-               
-               if (suggestions.length > 0) {
-                   return `System: Item "${itemName}" is ambiguous. Please ask the user to clarify between: ${suggestions.join(' or ')}.`;
-               }
-               return `System: Item "${itemName}" not found in menu. Ask for clarification.`;
+            // CASE 2: NO MATCH (Low Confidence)
+            if (!matchResult.match) {
+                console.log(`🛡️ [MATCHER] Low confidence for: "${itemName}"`);
+                
+                // Try Soft Match for Suggestions (The "Malai Kofta" fix)
+                const suggestions = MenuMatcher.findSuggestions(itemName, items);
+                if (suggestions.length > 0) {
+                     const names = suggestions.map(s => s.name).join('" or "');
+                     console.log(`💡 [MATCHER] Suggesting: ${names}`);
+                     return `System: I couldn't confidently match "${itemName}", but it sounds like "${names}". Ask the user: "Did you mean ${names}?"`;
+                }
+
+                return `System: I couldn't confidently match "${itemName}" to a menu item. Please apologize and ask for the item again, or ask if they'd like to hear categories.`;
             }
+            
+            // CASE 3: MATCH FOUND
+            const itemData = matchResult.match;
+            
+            // --- LAYER C: SAFETY CHECK (The Sentinel Logic) ---
+            if (itemData.dietaryTags && itemData.dietaryTags.length > 0) {
+                const active = Array.from(this.activeAllergies);
+                const conflict = active.find(allergy => {
+                     // Check if any tag matches the allergy (fuzzy match)
+                     return itemData.dietaryTags.some(tag => tag.includes(allergy) || allergy.includes(tag));
+                });
+
+                if (conflict) {
+                     const reason = `Item "${itemData.name}" is tagged with "${conflict}" by our Safety Sentinel.`;
+                     console.warn(`🛡️ [SENTINEL] Blocked unsafe item: ${itemData.name}. Reason: ${reason}`);
+                     return `System: BLOCKED. You CANNOT add "${itemData.name}" because it contains ${conflict}. Inform the customer immediately.`;
+                }
+            }
+            
+            // Legacy Fallback (Optional, but keeping for complete safety net)
+            const safetyCheck = validateOrder(itemData.name, Array.from(this.activeAllergies));
+            if (!safetyCheck.safe) {
+                console.warn(`🛡️ [SAFETY] Blocked unsafe item: ${itemData.name}. Reason: ${safetyCheck.reason}`);
+                return `System: BLOCKED. You CANNOT add "${itemData.name}" because the customer has a declared allergy. ${safetyCheck.reason}. Inform the customer immediately.`;
+            }
+
+            console.log(`🛒 Added to Order: ${itemData.name} x${quantity} (Score: ${matchResult.score?.toFixed(2) || 'N/A'})`);
+            sessionCart.push({ name: itemData.name, qty: quantity, price: itemData.price, notes: notes || "" });
+            return `System: Added ${quantity}x ${itemData.name} to order. Total items in cart: ${sessionCart.length}. IMPORTANT: Read back the item name to confirm: "Okay, ${quantity} ${itemData.name}. Is that correct?"`;
           },
+        }),
+
+        logDietaryRestriction: llm.tool({
+          description: "Call this IMMEDIATELY when the user mentions an allergy or dietary restriction (e.g. 'I'm allergic to nuts', 'I'm vegan'). This enforces safety checks on all future orders.",
+          parameters: {
+            type: "object",
+            properties: {
+              restriction: { type: "string", description: "The specific allergy or diet (e.g. 'nuts', 'diary', 'shellfish', 'gluten', 'vegan')" }
+            },
+            required: ["restriction"]
+          },
+          execute: async ({ restriction }) => {
+             const normalized = restriction.toLowerCase();
+             this.activeAllergies.add(normalized);
+             console.log(`🛡️ [SAFETY] Logged allergy: ${normalized}. Active: ${Array.from(this.activeAllergies).join(", ")}`);
+             return `System: Recorded ${normalized} allergy. Future orders containing this will be blocked automatically. Confirm this with the user: "I've noted your ${normalized} allergy/restriction."`;
+          }
         }),
 
         // --- NEW SAFETY & REVENUE TOOLS ---
@@ -391,5 +439,6 @@ export class RestaurantAgent extends voice.Agent {
     // Store callback for use in tools (after super)
     this.finalizeCallback = finalizeCallback;
     this.lastProcessedHash = null; // Guard for duplicate adds in a single turn
+    this.activeAllergies = new Set(); // Track session-level allergies
   }
 }

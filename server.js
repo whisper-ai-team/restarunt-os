@@ -16,6 +16,8 @@ import {
   getRestaurantConfigInternal,
 } from "./restaurantConfig.js";
 import { getCloverDevices } from "./cloverPrint.js";
+import { reviewService } from "./services/reviewService.js";
+import { feedbackService } from "./services/feedbackService.js";
 import { PrismaClient } from "@prisma/client";
 
 console.log("🔍 DATABASE_URL:", process.env.DATABASE_URL ? "✅ Loaded" : "❌ Missing");
@@ -967,6 +969,81 @@ app.get("/api/calls/:id", async (req, res) => {
     console.error("Call Detail Error:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// --- REPUTATION MANAGEMENT API ---
+
+// 1. Get Reviews
+app.get("/api/restaurants/:id/reviews", async (req, res) => {
+    try {
+        const { status, source } = req.query;
+        const reviews = await reviewService.getReviews(req.params.id, { status, source });
+        res.json(reviews);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 2. Sync Reviews (Mock)
+app.post("/api/restaurants/:id/reviews/sync", async (req, res) => {
+    try {
+        const result = await reviewService.syncReviews(req.params.id);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 3. Generate AI Reply
+app.post("/api/reviews/:reviewId/generate-reply", async (req, res) => {
+    try {
+        const result = await reviewService.generateReply(req.params.reviewId, req.body.tone);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 4. Post Reply
+app.post("/api/reviews/:reviewId/reply", async (req, res) => {
+    try {
+        const result = await reviewService.postReply(req.params.reviewId, req.body.content);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 5. Private Feedback (Public Endpoint)
+app.post("/api/feedback", async (req, res) => {
+    try {
+        const { restaurantId, ...data } = req.body;
+        const feedback = await feedbackService.createFeedback(restaurantId, data);
+        res.json(feedback);
+    } catch (err) {
+        console.error("Feedback Error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 6. Get Feedback (Admin)
+app.get("/api/restaurants/:id/feedback", async (req, res) => {
+    try {
+        const feedback = await feedbackService.getFeedback(req.params.id);
+        res.json(feedback);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// 7. Resolve Feedback
+app.post("/api/feedback/:id/resolve", async (req, res) => {
+    try {
+        const result = await feedbackService.resolveFeedback(req.params.id);
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 const server = httpServer.listen(port, "0.0.0.0", () => {

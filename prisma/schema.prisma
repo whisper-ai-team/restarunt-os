@@ -74,6 +74,9 @@ model Restaurant {
   orders            Order[]
   printers          Printer[]
   calls             Call[]
+  reviews           Review[]
+  feedback          Feedback[]
+  menuItems         MenuItem[]
 }
 
 model Call {
@@ -144,4 +147,91 @@ model OrderItem {
   notes     String?
   orderId   String
   order     Order    @relation(fields: [orderId], references: [id])
+}
+
+// --- Reputation & Review Management ---
+
+model Review {
+  id            String    @id @default(cuid())
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  
+  source        String    // "GOOGLE", "YELP", "FACEBOOK"
+  externalId    String?   // ID from the external platform
+  authorName    String
+  rating        Int
+  content       String    @db.Text
+  postedAt      DateTime
+  
+  // Status
+  status        String    @default("UNANSWERED") // "UNANSWERED", "ANSWERED", "IGNORED"
+  
+  // Reply
+  replyContent  String?   @db.Text
+  replySentAt   DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([restaurantId])
+}
+
+model Feedback {
+  id            String    @id @default(cuid())
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  
+  customerName  String?
+  customerPhone String?
+  email         String?
+  rating        Int
+  content       String    @db.Text
+  
+  isResolved    Boolean   @default(false)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([restaurantId])
+}
+
+// --- AI Menu Intelligence ---
+
+model MenuItem {
+  id              String   @id @default(cuid())
+  cloverId        String?  // ID from Clover/POS
+  restaurantId    String
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id])
+  
+  name            String
+  price           Int      // in cents
+  description     String?  @db.Text
+  category        String?
+  
+  hidden          Boolean  @default(false)
+  available       Boolean  @default(true)
+  
+  intelligence    MenuItemIntelligence?
+  
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  
+  @@unique([restaurantId, cloverId])
+  @@index([restaurantId])
+}
+
+model MenuItemIntelligence {
+  id              String   @id @default(cuid())
+  menuItemId      String   @unique
+  menuItem        MenuItem @relation(fields: [menuItemId], references: [id])
+  
+  // AI-Generated Safety Tags
+  dietaryTags     String[] // ["nuts", "dairy", "vegan", "gluten"]
+  ingredients     String[] // ["cashew", "cream", "chicken"]
+  
+  // Anti-Hallucination & STT
+  phoneticName    String?  // "Butter Chicken" (lowercase, normalized)
+  sttKeywords     String[] // ["butter chicken", "makhani", "murgh"]
+  
+  processedAt     DateTime @default(now())
 }

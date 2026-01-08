@@ -11,12 +11,12 @@ export const CONFIG = {
 
 export const MOCK_DB = {
   "+15712799105": { name: "Venkat", lastOrder: "Hyderabadi Biryani" },
-  "+12013444638": { name: "Suresh", lastOrder: "Masala Dosa" },
+  "+12013444638": { name: "Venkat", lastOrder: "Masala Dosa" },
 };
 
 // --- NEW STRUCTURAL DIETARY INTELLIGENCE ---
 export const DIETARY_MAP = {
-  nuts: ["korma", "massaman", "pesto", "satay", "pad thai", "cashew", "almond", "walnut", "peanut"],
+  nuts: ["korma", "massaman", "pesto", "satay", "pad thai", "cashew", "almond", "walnut", "peanut", "butter chicken"], // Added butter chicken (often uses cashew paste)
   dairy: ["korma", "paneer", "malai", "butter chicken", "cream", "cheese", "alfredo", "milk", "yogurt", "shake", "smoothie"],
   gluten: ["naan", "bread", "bun", "pasta", "pizza", "ravioli", "samosa", "tempura", "noodle", "tortilla", "wrap"],
   shellfish: ["prawn", "shrimp", "lobster", "crab", "mussel", "scallop"],

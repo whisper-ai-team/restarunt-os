@@ -15,6 +15,7 @@ import {
   Mail,
   Smartphone
 } from "lucide-react";
+import VoiceSelector from "./VoiceSelector";
 
 interface DesignStudioProps {
   restaurant: any;
@@ -65,7 +66,7 @@ export default function DesignStudio({ restaurant, onSave }: DesignStudioProps) 
               <h3 className="text-lg font-semibold text-white">Agent Identity</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-sm font-medium text-slate-400">Agent Name</label>
                 <input 
@@ -76,18 +77,16 @@ export default function DesignStudio({ restaurant, onSave }: DesignStudioProps) 
                   placeholder="e.g. Hayman AI"
                 />
               </div>
+              
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-400">Voice Persona</label>
-                <select 
-                  value={voice}
-                  onChange={(e) => setVoice(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all"
-                >
-                  <option value="alloy">Alloy (Neutral)</option>
-                  <option value="shimmer">Shimmer (Professional)</option>
-                  <option value="echo">Echo (Helpful)</option>
-                  <option value="fable">Fable (Friendly)</option>
-                </select>
+                <label className="text-sm font-medium text-slate-400">Agent Voice</label>
+                <p className="text-xs text-slate-500 mb-3">
+                  Choose a voice that matches your brand personality
+                </p>
+                <VoiceSelector 
+                  selected={voice} 
+                  onChange={setVoice}
+                />
               </div>
             </div>
           </div>

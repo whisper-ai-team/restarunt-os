@@ -27,6 +27,7 @@ import {
   Send
 } from "lucide-react";
 import { useWorkflowConfig } from "@/hooks";
+import VoiceSelector from "./VoiceSelector";
 
 interface CallWorkflowViewProps {
   restaurantId: string;
@@ -195,23 +196,20 @@ export default function CallWorkflowView({ restaurantId }: CallWorkflowViewProps
       {/* Top Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Agent Voice Card */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-all group">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-5">
-              <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600 group-hover:scale-110 transition-transform">
-                <Mic size={24} />
-              </div>
-              <div>
-                <h3 className="font-bold text-base text-gray-900">Agent Voice</h3>
-                <p className="text-sm text-gray-500 mt-1">Set the voice personality for Hayman AI.</p>
-              </div>
+        <div className="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-all">
+          <div className="flex items-start gap-5 mb-4">
+            <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600">
+              <Mic size={24} />
             </div>
-            <button className="flex items-center gap-3 px-4 py-2 border border-gray-200 rounded-xl bg-white hover:bg-gray-50 hover:border-indigo-300 transition-all shadow-sm">
-              <div className="w-6 h-6 rounded-full bg-gradient-to-br from-pink-400 to-purple-500"></div>
-              <span className="text-sm font-semibold text-gray-700 capitalize">{voiceSettings.persona}</span>
-              <ChevronDown size={16} className="text-gray-400" />
-            </button>
+            <div>
+              <h3 className="font-bold text-base text-gray-900">Agent Voice</h3>
+              <p className="text-sm text-gray-500 mt-1">Choose a voice that matches your brand personality</p>
+            </div>
           </div>
+          <VoiceSelector 
+            selected={voiceSettings.persona} 
+            onChange={(voiceId) => setVoiceSettings(prev => ({ ...prev, persona: voiceId }))}
+          />
         </div>
 
         {/* Agent Guidelines Card */}

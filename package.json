@@ -5,9 +5,10 @@
   "main": "index.js",
   "scripts": {
     "start": "node server.js & npm run agent:start",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "agent:dev": "node agent.js dev",
-    "agent:start": "node agent.js start"
+    "agent:start": "node agent.js start",
+    "verify": "node scripts/verify-integrity.js"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +26,6 @@
     "@prisma/client": "6.19.1",
     "body-parser": "^2.2.1",
     "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
     "elevenlabs": "^1.59.0",
     "express": "^5.2.1",
     "fuse.js": "^7.1.0",
@@ -38,6 +38,9 @@
     "twilio": "^5.11.1"
   },
   "devDependencies": {
+    "dotenv": "^17.2.3",
+    "jest": "^30.2.0",
+    "node-fetch": "^3.3.2",
     "prisma": "6.19.1"
   }
 }
