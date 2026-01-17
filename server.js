@@ -35,9 +35,6 @@ const port = process.env.PORT || 3001;
 // Global WebSocket state
 const activeAgents = new Map(); // agentId -> { status, roomName, startTime }
 const activeCalls = new Map();  // roomName -> { customerName, startTime, transcript }
-// Global WebSocket state
-const activeAgents = new Map(); // agentId -> { status, roomName, startTime }
-const activeCalls = new Map();  // roomName -> { customerName, startTime, transcript }
 
 // Persistence now handled via Prisma 'Call' model (removed file-based context)
 

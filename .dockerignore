@@ -1,0 +1,11 @@
+node_modules
+frontend
+tests
+.git
+.env
+.DS_Store
+Dockerfile
+fly.toml
+active_calls_context.json
+*.log
+*.db
