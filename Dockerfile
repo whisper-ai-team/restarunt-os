@@ -27,5 +27,4 @@ COPY . .
 # Expose the API Port
 EXPOSE 3001
 
-ENTRYPOINT ["./start.sh"]
 CMD ["npm", "run", "start"]
