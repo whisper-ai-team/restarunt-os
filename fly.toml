@@ -1,4 +1,3 @@
-
 app = "restaurant-os-backend"
 primary_region = "ewr"
 
@@ -8,13 +7,12 @@ primary_region = "ewr"
 [env]
   PORT = "3001"
   NODE_ENV = "production"
+  NEXT_PUBLIC_API_URL = "https://restaurant-os-backend.fly.dev"
 
-# Define two process groups: One for the API, one for the Voice Agent
 [processes]
   web = "node server.js"
   agent = "node agent.js start"
 
-# Configure the Web process to accept HTTP traffic
 [[services]]
   processes = ["web"]
   protocol = "tcp"
@@ -29,7 +27,6 @@ primary_region = "ewr"
     port = 443
     handlers = ["tls", "http"]
 
-  # Health check to ensure zero-downtime deploys
   [[services.http_checks]]
     interval = "10s"
     timeout = "2s"
@@ -37,5 +34,3 @@ primary_region = "ewr"
     restart_limit = 0
     method = "GET"
     path = "/health"
-
-# The Agent process does not need exposed ports (it connects outbound to LiveKit)
