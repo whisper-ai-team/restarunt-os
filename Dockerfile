@@ -27,6 +27,5 @@ COPY . .
 # Expose the API Port
 EXPOSE 3001
 
-# The actual command will be handled by fly.toml processes, 
-# but this is a sane default for testing limits
+ENTRYPOINT ["./start.sh"]
 CMD ["npm", "run", "start"]
