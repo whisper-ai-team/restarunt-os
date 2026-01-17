@@ -13,8 +13,9 @@ export async function finalizeSession(reason, sessionCart, customerDetails, rest
     console.log(`🏁 Call ended (${reason}). No order placed.`);
     return null;
   }
+  const customerName = customerDetails?.name || "Guest";
   console.log("------------------------------------------------");
-  console.log(`💾 SAVING ORDER FOR: ${customerDetails.name}`);
+  console.log(`💾 SAVING ORDER FOR: ${customerName}`);
   sessionCart.forEach((item) => {
     console.log(
       `   - ${item.qty}x ${item.name} ($${(item.price / 100).toFixed(2)})`

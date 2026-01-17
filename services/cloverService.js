@@ -16,10 +16,16 @@ let menuCache = { items: [], lastFetch: 0 };
 export async function cloverRequest(path, { method = "GET", body } = {}, credentials) {
   const apiKey = credentials.apiKey || process.env.CLOVER_API_KEY;
   const merchId = credentials.merchantId || process.env.CLOVER_MERCHANT_ID;
+  const env = credentials.environment || "production"; 
+
+  // Dynamic Base URL Selection
+  const baseUrl = env === "sandbox" 
+      ? "https://apisandbox.dev.clover.com" 
+      : "https://api.clover.com";
 
   if (!apiKey || !merchId) throw new Error("Missing Clover credentials");
 
-  const url = `${CONFIG.cloverBaseUrl}/v3/merchants/${merchId}${path}`;
+  const url = `${baseUrl}/v3/merchants/${merchId}${path}`;
   const res = await fetch(url, {
     method,
     headers: {
@@ -62,24 +68,7 @@ export async function getMenu(credentials, restaurantId) {
 
 // ... existing code
 
-  // --- TEST MODE INTERCEPT ---
-  if (credentials && credentials.apiKey === "TEST_MODE_KEY") {
-      console.log(`🍔 [${INSTANCE_ID}] TEST MODE: Loading menu from fixture for ${restaurantId}...`);
-      const fixturePath = path.join(__dirname, '../tests/fixtures', `${restaurantId}.json`);
-      
-      try {
-          if (fs.existsSync(fixturePath)) {
-              const fileData = fs.readFileSync(fixturePath, 'utf8');
-              const json = JSON.parse(fileData);
-              const items = json.items || [];
-              menuCache = { items, lastFetch: now };
-              console.log(`🍔 [${INSTANCE_ID}] Mock Menu Loaded: ${items.length} items`);
-              return menuCache;
-          } else {
-              console.error(`❌ Fixture not found at ${fixturePath}`);
-          }
-      } catch(e) { console.error("Mock Load Error:", e); }
-  }
+
 
   try {
     console.log(`🍔 [${INSTANCE_ID}] Fetching menu from Clover...`);
@@ -125,14 +114,7 @@ export async function createCloverOrder(cart, customerName, customerPhone, crede
   });
   
   try {
-    if (credentials && credentials.apiKey === "TEST_MODE_KEY") {
-        console.log(`✅ [Mock] Order created successfully in Test Mode`);
-        return { 
-           id: `MOCK-ORDER-${Date.now()}`, 
-           state: 'open',
-           total: cart.reduce((sum, i) => sum + (i.price * i.qty), 0)
-        };
-    }
+
 
     // Step 1: Create empty order
     console.log(`   Step 1: Creating empty order...`);

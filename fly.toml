@@ -8,10 +8,11 @@ primary_region = "ewr"
   PORT = "3001"
   NODE_ENV = "production"
   NEXT_PUBLIC_API_URL = "https://restaurant-os-backend.fly.dev"
+  GOOGLE_APPLICATION_CREDENTIALS = "/app/google-credentials.json"
 
 [processes]
-  web = "sh ./start.sh node server.js"
-  agent = "sh ./start.sh node agent.js start"
+  web = "sh /app/start.sh node /app/server.js"
+  agent = "/bin/bash /app/start.sh node /app/agent.js start"
 
 [[services]]
   processes = ["web"]
@@ -34,3 +35,14 @@ primary_region = "ewr"
     restart_limit = 0
     method = "GET"
     path = "/health"
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1
+  processes = ["web"]
+
+[[vm]]
+  memory = "2gb"
+  cpu_kind = "shared"
+  cpus = 1
+  processes = ["agent"]

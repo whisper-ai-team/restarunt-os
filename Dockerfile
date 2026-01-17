@@ -1,9 +1,9 @@
-FROM node:18-bullseye-slim
+FROM node:20-bullseye-slim
 
 # Install system dependencies
 # openssl is required for Prisma
 # ca-certificates for checking SSL connections
-RUN apt-get update && apt-get install -y openssl ca-certificates curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openssl ca-certificates curl libgomp1 python3 build-essential && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
