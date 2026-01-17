@@ -10,8 +10,8 @@ primary_region = "ewr"
   NEXT_PUBLIC_API_URL = "https://restaurant-os-backend.fly.dev"
 
 [processes]
-  web = "node server.js"
-  agent = "node agent.js start"
+  web = "./start.sh node server.js"
+  agent = "./start.sh node agent.js start"
 
 [[services]]
   processes = ["web"]

@@ -17,6 +17,10 @@ RUN npm ci
 COPY prisma ./prisma
 RUN npx prisma generate
 
+# Setup Entrypoint
+COPY start.sh .
+RUN chmod +x start.sh
+
 # Copy the rest of the application
 COPY . .
 
