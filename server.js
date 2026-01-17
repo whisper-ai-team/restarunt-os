@@ -24,6 +24,8 @@ console.log("🔍 DATABASE_URL:", process.env.DATABASE_URL ? "✅ Loaded" : "❌
 const prisma = new PrismaClient({ errorFormat: "minimal" });
 
 const app = express();
+app.use(cors());
+app.use(bodyParser.json());
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: "*" },
@@ -33,36 +35,11 @@ const port = process.env.PORT || 3001;
 // Global WebSocket state
 const activeAgents = new Map(); // agentId -> { status, roomName, startTime }
 const activeCalls = new Map();  // roomName -> { customerName, startTime, transcript }
-const activeRoomContext = new Map(); // roomName -> restaurantConfig (Side-channel for Agent)
+// Global WebSocket state
+const activeAgents = new Map(); // agentId -> { status, roomName, startTime }
+const activeCalls = new Map();  // roomName -> { customerName, startTime, transcript }
 
-// Persistence for Context (Survive Restarts)
-import { readFile, writeFile } from 'fs/promises';
-const CONTEXT_FILE = './active_calls_context.json';
-
-async function saveContext() {
-  try {
-    const data = JSON.stringify(Object.fromEntries(activeRoomContext), null, 2);
-    await writeFile(CONTEXT_FILE, data);
-    console.log("💾 Context Saved to File");
-  } catch (err) { console.error("❌ Context Save Failed:", err); }
-}
-
-async function loadContext() {
-  try {
-    const data = await readFile(CONTEXT_FILE, 'utf8');
-    const parsed = JSON.parse(data);
-    for (const [key, value] of Object.entries(parsed)) {
-      activeRoomContext.set(key, value);
-    }
-    console.log(`📂 Context Loaded: ${activeRoomContext.size} rooms restored.`);
-  } catch (err) { 
-    // Ignore ENOENT (file not found)
-    if (err.code !== 'ENOENT') console.error("❌ Context Load Failed:", err.message); 
-  }
-}
-
-// Load on startup
-loadContext();
+// Persistence now handled via Prisma 'Call' model (removed file-based context)
 
 // Initialize LiveKit Clients
 const receiver = new WebhookReceiver(
@@ -151,6 +128,39 @@ app.post("/api/calls/:id/takeover", async (req, res) => {
     }
 });
 
+// ✅ Call Transfer API (Handoff to Staff)
+app.post("/api/calls/:id/transfer", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { staffPhone } = req.body;
+
+        if (!staffPhone) return res.status(400).json({ error: "staffPhone is required" });
+
+        console.log(`📡 TRANSFER REQUESTED FOR CALL: ${id} TO ${staffPhone}`);
+
+        const call = await prisma.call.findUnique({
+            where: { id },
+        });
+
+        if (!call) return res.status(404).json({ error: "Call record not found" });
+        if (!call.twilioCallSid) return res.status(400).json({ error: "No external call SID found for this call (SIP session required)" });
+
+        const { transferCallToStaff } = await import("./services/handoffService.js");
+        await transferCallToStaff(call.twilioCallSid, staffPhone);
+
+        // Update DB
+        await prisma.call.update({
+            where: { id },
+            data: { status: "TRANSFERRED" }
+        });
+
+        res.json({ success: true, target: staffPhone });
+    } catch (err) {
+        console.error("❌ Transfer failed:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ✅ Helper: normalize phone so formats match
 function normalizePhone(num) {
   if (!num) return "";
@@ -163,13 +173,7 @@ function normalizePhone(num) {
 }
 
 // Middleware to capture raw body for webhook verification
-// Middleware to capture raw body for webhook verification
 app.use("/api/webhook", bodyParser.raw({ type: "*/*" }));
-
-// Standard JSON middleware for API endpoints
-// Standard JSON middleware for API endpoints
-app.use(cors()); // Enable CORS for Next.js dashboard
-app.use(bodyParser.json());
 
 // --- THE CORE LOGIC ---
 app.post("/api/webhook", async (req, res) => {
@@ -199,7 +203,8 @@ app.post("/api/webhook", async (req, res) => {
 
       console.log(`📞 Incoming call to (raw): ${dialedNumberRaw}`);
       console.log(`📞 Incoming call normalized: ${dialedNumber}`);
-      console.log(`🏠 Caller is waiting in room: ${existingRoomName}`);
+      console.log(`🏠 SIP Event Room Name: "${existingRoomName}"`);
+      console.log(`🔗 Checking Active Context Map Key: "${existingRoomName}"`);
 
       // 3. Database Lookup (Multi-Tenant Routing)
       const restaurant = await getRestaurantByPhone(dialedNumber);
@@ -223,13 +228,32 @@ app.post("/api/webhook", async (req, res) => {
           restaurantId: restaurant.id,
           restaurantName: restaurant.name,
           restaurantConfig: restaurant, // Pass full config to agent
+          twilioCallSid: sipEvent.callId, // Capture SIP Call ID (Twilio SID)
         })
       );
 
-      // Save context for side-channel lookup (Fix for empty metadata)
-      activeRoomContext.set(existingRoomName, restaurant);
-      await saveContext(); // Persist to file
-      console.log(`💾 Room Context Saved: ${existingRoomName} -> ${restaurant.id}`);
+      // Save context persistently via Call record
+      try {
+          await prisma.call.upsert({
+              where: { roomName: existingRoomName },
+              update: {
+                  restaurantId: restaurant.id,
+                  twilioCallSid: sipEvent.callId,
+                  status: "INITIATING"
+              },
+              create: {
+                  roomName: existingRoomName,
+                  restaurantId: restaurant.id,
+                  customerPhone: dialedNumber, // Normalized
+                  twilioCallSid: sipEvent.callId,
+                  status: "INITIATING"
+              }
+          });
+          console.log(`💾 Room Context Saved to DB: ${existingRoomName} -> ${restaurant.id}`);
+      } catch (dbErr) {
+          console.error("❌ Failed to save Call Context to DB:", dbErr);
+          // Non-blocking, agent might still work if metadata passes through
+      }
 
       console.log(
         `🚀 Agent Dispatched to room ${existingRoomName}! Dispatch ID: ${dispatch.id}`
@@ -327,38 +351,89 @@ app.get("/health", (req, res) => {
 app.get("/api/internal/room-context/:roomName", async (req, res) => {
   const { roomName } = req.params;
   
-  // 1. Try In-Memory Map
-  let context = activeRoomContext.get(roomName);
-  
-  // 2. SELF-HEALING FALLBACK: Parse phone from room name if map fails (Multi-worker safe)
-  if (!context) {
-    console.log(`🔍 [CONTEXT] Miss for ${roomName}. Attempting regex recovery...`);
-    const phoneMatch = roomName.match(/call-_(\+?\d+)_/);
-    if (phoneMatch) {
-       const phoneNumber = phoneMatch[1];
-       console.log(`📞 [CONTEXT] Extracted phone: "${phoneNumber}"`);
-       try {
-         context = await getRestaurantByPhone(phoneNumber);
-         if (context) {
-            console.log(`✨ [CONTEXT] Self-Healed context for ${roomName} via Phone: ${phoneNumber} -> ${context.name}`);
-            activeRoomContext.set(roomName, context);
-         } else {
-            console.warn(`❌ [CONTEXT] getRestaurantByPhone returned null for ${phoneNumber}`);
-         }
-       } catch (e) {
-         console.warn(`⚠️ [CONTEXT] Phone recovery failed for ${phoneNumber}: ${e.message}`);
-       }
-    } else {
-       console.warn(`❌ [CONTEXT] Regex failed to extract phone from ${roomName}`);
-    }
-  }
+  try {
+    // 1. Try Persistent DB first
+    console.log(`🔍 [CONTEXT] Looking up context for ${roomName} in DB...`);
+    let context = null;
+    
+    try {
+        const call = await prisma.call.findUnique({
+            where: { roomName },
+            include: { restaurant: true } // Fetch full restaurant details
+        });
 
-  if (context) {
-    console.log(`🔍 Context served for room: ${roomName} -> ${context.id}`);
-    res.json(context);
-  } else {
-    console.warn(`⚠️ No context found for room: ${roomName}`);
-    res.status(404).json({ error: "Context not found" });
+        if (call && call.restaurant) {
+             // Rehydrate full config using our helper to ensure decrypted keys etc
+             context = await getRestaurantConfigInternal(call.restaurant.id);
+             // Add call specific data
+             context.twilioCallSid = call.twilioCallSid;
+             console.log(`✅ [CONTEXT] DB Hit: ${roomName} -> ${context.name}`);
+        }
+    } catch (e) {
+        console.warn(`⚠️ [CONTEXT] DB Lookup failed: ${e.message}`);
+    }
+    
+    // 2. SELF-HEALING FALLBACK: Parse phone from room name if DB fails
+    if (!context) {
+      console.log(`🔍 [CONTEXT] Miss for ${roomName}. Attempting regex recovery...`);
+      const phoneMatch = roomName.match(/call-_(\+?\d+)_/);
+      if (phoneMatch) {
+         const phoneNumber = phoneMatch[1];
+         console.log(`📞 [CONTEXT] Extracted phone: "${phoneNumber}"`);
+         try {
+           context = await getRestaurantByPhone(phoneNumber);
+           if (context) {
+              console.log(`✨ [CONTEXT] Self-Healed context for ${roomName} via Phone: ${phoneNumber} -> ${context.name}`);
+              // Should we save to DB here? Maybe. But let's keep it simple.
+           } else {
+              console.warn(`❌ [CONTEXT] getRestaurantByPhone returned null for ${phoneNumber}`);
+           }
+         } catch (e) {
+           console.warn(`⚠️ [CONTEXT] Phone recovery failed for ${phoneNumber}: ${e.message}`);
+         }
+      } else {
+         console.warn(`❌ [CONTEXT] Regex failed to extract phone from ${roomName}`);
+      }
+    }
+
+    if (context) {
+      console.log(`🔍 Context served for room: ${roomName} -> ${context.id}`);
+      return res.json(context);
+    } else {
+      // 3. DEV MODE FALLBACK: If running locally, default to the first active restaurant
+      // This allows 'npm run agent:dev' to work without a real SIP webhook.
+       if (process.env.NODE_ENV !== 'production' || !process.env.NODE_ENV) { // Ensure this is safe
+          console.log(`⚠️ [DEV MODE] Context miss for ${roomName}. Defaulting to Generic Pizza.`);
+          try {
+            // Priority: Pulcinella -> First Found
+            let targetId = 'italian-pulcinella';
+            let fullConfig = null;
+            
+            try {
+                fullConfig = await getRestaurantConfigInternal(targetId);
+            } catch (e) {
+                // Pizza not found, fallback to any
+                const restaurants = await getAllRestaurants();
+                if (restaurants.length > 0) {
+                   fullConfig = await getRestaurantConfigInternal(restaurants[0].id);
+                }
+            }
+
+            if (fullConfig) {
+               console.log(`✅ [DEV MODE] Served fallback: ${fullConfig.name}`);
+               return res.json(fullConfig);
+            }
+          } catch(e) {
+           console.error("Dev fallback failed:", e);
+         }
+      }
+
+      console.warn(`⚠️ No context found for room: ${roomName}`);
+      return res.status(404).json({ error: "Context not found" });
+    }
+  } catch (error) {
+    console.error(`❌ [CONTEXT] Critical failure for ${roomName}:`, error);
+    return res.status(500).json({ error: "Internal server error", message: error.message });
   }
 });
 

@@ -95,6 +95,8 @@ model Call {
   summary         String?
   transcript      Json?
   recordingUrl    String?
+  twilioCallSid   String?     @unique // Twilio SID for call redirection/handoff
+  roomName        String?     @unique // LiveKit Room Name (Persistent Context Key)
   isTakeoverActive Boolean   @default(false) // Whether a human has taken over the call
   
   // Relations

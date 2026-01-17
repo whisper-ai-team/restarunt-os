@@ -9,6 +9,7 @@ import { DIETARY_MAP } from "../config/agentConfig.js";
 import { getMenu, createCloverOrder } from "../services/cloverService.js";
 import { sendOrderConfirmation } from "../services/notificationService.js";
 import { printOrderToKitchen } from "../cloverPrint.js";
+import { createDeliveryTools } from "./tools/DeliveryTools.js";
 
 // -----------------------------
 import { MenuMatcher } from "../utils/menuMatcher.js";
@@ -17,7 +18,7 @@ import { MenuMatcher } from "../utils/menuMatcher.js";
 // RESTAURANT AGENT CLASS
 // -----------------------------
 export class RestaurantAgent extends voice.Agent {
-  constructor({ restaurantConfig, initialMenu, activeRoom, cuisineProfile, customerDetails, sessionCart, finalizeCallback }) {
+  constructor({ restaurantConfig, initialMenu, activeRoom, cuisineProfile, customerDetails, sessionCart, callRecord, finalizeCallback }) {
     const personalizedContext = `
       You are speaking with ${customerDetails.name}.
       Cuisine Focus: ${cuisineProfile.name}.
@@ -64,13 +65,19 @@ export class RestaurantAgent extends voice.Agent {
        finalInstructions = systemPrompt + `
        
        CRITICAL OPERATIONAL RULES:
-       1. TOOL USAGE (CART): You MUST call the 'addToOrder' tool EVERY TIME a customer mentions an item they want to order. IMPORTANT: Pass the EXACT item name found in the menu search. Do NOT append allergy names (e.g. use "Butter Chicken", NOT "Butter Chicken Cashew").
-       2. ALLERGIES (SAFETY): If the user orders more than 2 items AND hasn't mentioned allergies, you MUST ask: "Before I finalize that, do you have any food allergies or dietary restrictions I should note for the kitchen?". 
-       3. ALLERGIES (MATCH): If a user mentions an allergy, immediately use 'logDietaryRestriction'. NEVER guess. This is critical for safety.
-       4. ORDER SUMMARY: Before finalizing, you MUST read back the entire order summary (items, quantities, total) and ask "Is this correct?".
-       5. CONFIRM ORDER: After the user confirms ('yes', 'correct'), you MUST call 'confirmOrder'.
-       6. HUMAN HAND-OFF: If the user is frustrated, use 'transferToHuman'.
-       7. ENDING CALL: When done, say exactly: "${restaurantConfig.endCallMessage || "Goodbye! Have a great day."}" and call 'hangUp'.
+       1. CUISINE GUARDRAIL: You represent an AUTHENTIC ${cuisineProfile.name} restaurant. You MUST strictly adhere to this cuisine.
+          - If the user asks for dishes from a different cuisine (e.g., asking for Sushi at an Italian restaurant), politely refuse and say: "I apologize, but we specialize in ${cuisineProfile.name} cuisine. We don't serve that here."
+          - NEVER recommend items that are clearly not ${cuisineProfile.name} (e.g., do not suggest Curry if you are a Pizza place).
+          - ONLY discuss items that exist in the menu provided or are standard staples of ${cuisineProfile.name} cuisine if and only if they match the menu style.
+       2. TOOL USAGE (CART): You MUST call the 'addToOrder' tool EVERY TIME a customer mentions an item they want to order. IMPORTANT: Pass the EXACT item name found in the menu search. Do NOT append allergy names (e.g. use "Butter Chicken", NOT "Butter Chicken Cashew").
+       3. ORDER TYPE: Before finalizing, you MUST confirm if the order is for "Pickup" or "Delivery" using 'setOrderType'. If "Delivery", you MUST collect the address using 'setDeliveryAddress'.
+       4. ALLERGIES (SAFETY): If the user orders more than 2 items AND hasn't mentioned allergies, you MUST ask: "Before I finalize that, do you have any food allergies or dietary restrictions I should note for the kitchen?". 
+       5. ALLERGIES (MATCH): If a user mentions an allergy, immediately use 'logDietaryRestriction'. NEVER guess. This is critical for safety.
+       6. ORDER SUMMARY: Before finalizing, you MUST read back the entire order summary (items, quantities, total) and ask "Is this correct?".
+       7. PAYMENT: If the customer asks how to pay, use 'getPaymentInfo'. Inform them they can pay at the restaurant for pickup or via an SMS link for delivery.
+       8. CONFIRM ORDER: After the user confirms ('yes', 'correct'), you MUST call 'confirmOrder'.
+       9. HUMAN HAND-OFF: If the user is frustrated, use 'transferToHuman'.
+       10. ENDING CALL: When done, say exactly: "${restaurantConfig.endCallMessage || "Goodbye! Have a great day."}" and call 'hangUp'.
        `;
     }
 
@@ -107,6 +114,16 @@ export class RestaurantAgent extends voice.Agent {
             `Reservation confirmed for ${partySize} people at ${time}.`,
         }),
 
+        getPaymentInfo: llm.tool({
+          description: "Explain how payment works.",
+          parameters: { type: "object", properties: {} },
+          execute: async () => {
+             return "Pickup orders: Pay at the restaurant when you arrive. Delivery orders: We will send you an SMS link for secure online payment after the order is confirmed.";
+          }
+        }),
+
+        ...createDeliveryTools(sessionCart, customerDetails, restaurantConfig),
+
         transferToHuman: llm.tool({
           description: "Connect the customer to a human manager or restaurant staff.",
           parameters: {
@@ -116,10 +133,41 @@ export class RestaurantAgent extends voice.Agent {
             }
           },
           execute: async ({ reason }) => {
-             console.log(`📡 [${INSTANCE_ID}] TRANSFER TRIGGERED. Reason: ${reason}`);
-             // In a real SIP environment, we would use session.transfer()
-             // For now, we simulate the handover response.
-             return "SUCCESS: Transferring you to a manager now. Please hold for a moment.";
+             console.log("\n" + "=".repeat(50));
+             console.log(`🎁 [${INSTANCE_ID}] TRANSFER TRIGGERED. Reason: ${reason}`);
+             console.log("=".repeat(50) + "\n");
+             
+             try {
+                // Get the staff phone from notification config
+                const staffPhone = restaurantConfig.notificationConfig?.phoneNumbers?.[0] || "+18639009879"; // Updated to requested staff number
+                
+                if (!this.callRecord || !this.callRecord.id) {
+                    console.error(`❌ [${INSTANCE_ID}] Transfer Failed: No active callRecord.`, { 
+                        hasRecord: !!this.callRecord, 
+                        hasId: !!this.callRecord?.id 
+                    });
+                    throw new Error("Call record not found or not initialized");
+                }
+                
+                console.log(`📡 [${INSTANCE_ID}] Initiating transfer for Call ID: ${this.callRecord.id} to ${staffPhone}`);
+                
+                const PORT = 3001; // Hardcoded to backend port (avoiding 3000 frontend)
+                const res = await fetch(`http://localhost:${PORT}/api/calls/${this.callRecord.id}/transfer`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ staffPhone })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || "Transfer request failed");
+                }
+
+                return "SUCCESS: I'm transferring you to a manager now. Please hold for one moment while I connect you.";
+             } catch (err) {
+                console.error("❌ Transfer Tool Failed:", err.message);
+                return `System Error: I couldn't initiate the transfer (${err.message}). Please apologize and ask the customer if you can take their number for a callback instead.`;
+             }
           }
         }),
 
@@ -192,12 +240,43 @@ export class RestaurantAgent extends voice.Agent {
                 return "System: No items found matching that description.";
 
               console.log(`   ✅ Fuzzy Match: "${results[0].item.name}"`);
-              // Output includes Description now!
-              return `System: Found "${results[0].item.name}" - ${results[0].item.description}. Offer this.`;
+              const matchedItem = results[0].item;
+              return `System: Found "${matchedItem.name}" ($${(matchedItem.price / 100).toFixed(2)}) - ${matchedItem.description}. Offer this.`;
             } catch (err) {
               return "System: Error accessing menu.";
             }
           },
+        }),
+
+        removeFromOrder: llm.tool({
+          description: "Use this ONLY when the customer wants to remove an item they previously added or reduce the quantity.",
+          parameters: {
+            type: "object",
+            properties: {
+              itemName: { type: "string" },
+              quantityToRemove: { type: "integer", description: "Optional: number of items to remove. If omitted, removes all of that item." }
+            },
+            required: ["itemName"],
+          },
+          execute: async ({ itemName, quantityToRemove }) => {
+            const query = itemName.toLowerCase();
+            const index = sessionCart.findIndex(i => i.name.toLowerCase().includes(query));
+            
+            if (index === -1) {
+                return `System: I couldn't find "${itemName}" in the current cart. Cart has: ${sessionCart.map(i => i.name).join(", ")}.`;
+            }
+
+            const item = sessionCart[index];
+            if (quantityToRemove && quantityToRemove < item.qty) {
+                item.qty -= quantityToRemove;
+                console.log(`🛒 Updated quantity for ${item.name}: ${item.qty}`);
+                return `System: Reduced ${item.name} quantity to ${item.qty}. Confirm this: "Okay, I've updated that. You now have ${item.qty} ${item.name} in your cart."`;
+            } else {
+                sessionCart.splice(index, 1);
+                console.log(`🛒 Removed from Order: ${item.name}`);
+                return `System: Removed ${item.name} from cart. Confirm this: "No problem, I've removed the ${item.name} from your order."`;
+            }
+          }
         }),
 
 
@@ -436,7 +515,8 @@ export class RestaurantAgent extends voice.Agent {
       },
     });
 
-    // Store callback for use in tools (after super)
+    // Store meta-data for use in tools
+    this.callRecord = callRecord;
     this.finalizeCallback = finalizeCallback;
     this.lastProcessedHash = null; // Guard for duplicate adds in a single turn
     this.activeAllergies = new Set(); // Track session-level allergies

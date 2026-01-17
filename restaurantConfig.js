@@ -27,8 +27,15 @@ export async function getRestaurantByPhone(phoneNumber) {
     throw new Error(`Restaurant ${restaurant.name} is inactive`);
   }
 
-  // Decrypt Clover API key
-  const decryptedApiKey = decrypt(restaurant.cloverApiKey);
+  // Decrypt Clover API key (Skip for Test Mode)
+  let decryptedApiKey = restaurant.cloverApiKey;
+  if (restaurant.cloverApiKey !== "TEST_MODE_KEY") {
+      try {
+        decryptedApiKey = decrypt(restaurant.cloverApiKey);
+      } catch (e) {
+          console.warn(`Encryption Warning: Could not decrypt key for ${restaurant.name} (ID: ${restaurant.id}). Using raw.`);
+      }
+  }
 
   // Return in format expected by agent
   return {
@@ -193,7 +200,14 @@ export async function getRestaurantConfigInternal(id) {
 
   if (!restaurant) throw new Error("Restaurant not found");
 
-  const decryptedApiKey = decrypt(restaurant.cloverApiKey);
+  let decryptedApiKey = restaurant.cloverApiKey;
+  if (restaurant.cloverApiKey !== "TEST_MODE_KEY") {
+     try {
+       decryptedApiKey = decrypt(restaurant.cloverApiKey);
+     } catch (e) {
+       console.warn(`Encryption Warning: Could not decrypt key (Internal) for ${restaurant.name}.`);
+     }
+  }
 
   return {
     ...restaurant,

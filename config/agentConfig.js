@@ -45,23 +45,25 @@ export function parseJobMetadata(metadataString) {
   
   // Handle nested restaurantConfig object from server.js dispatch
   const config = data.restaurantConfig || data;
+  console.log("🔍 [DEBUG] parseJobMetadata Config Keys:", Object.keys(config));
+  console.log("🔍 [DEBUG] parseJobMetadata cuisineType:", config.cuisineType);
   
   return {
-    id: data.restaurantId || config.id,
-    name: data.restaurantName || config.name || "Bharat Bistro",
-    greeting: config.greeting || "Namaste! Welcome to Bharat Bistro.",
+    id: data.restaurantId || config.id || "pizza-repo-001",
+    name: data.restaurantName || config.name || "Generic Pizza",
+    greeting: config.greeting || "Hot and fresh! Welcome to Generic Pizza.",
     instructions: config.systemPrompt || "",
     info: {
-      address: config.location?.address || config.address || "123 Curry Lane",
-      hours: config.hours || "11 AM - 10 PM",
-      phone: config.phoneNumber || config.phone || "555-0199",
+      address: config.location?.address || config.address || "123 Dough Lane",
+      hours: config.hours || "11 AM - 11 PM",
+      phone: config.phoneNumber || config.phone || "555-PIZZA",
     },
     voiceSelection: config.voiceSelection || data.voices || data.voiceId || null,
     clover: { 
-      apiKey: config.cloverApiKey || data.cloverApiKey, 
+      apiKey: config.cloverApiKey || data.cloverApiKey || "TEST_MODE_KEY", 
       merchantId: config.cloverMerchantId || data.cloverMerchantId 
     },
     printing: config.printing || {},
-    cuisine: config.cuisineType || "indian"
+    cuisine: config.cuisineType || "american"
   };
 }

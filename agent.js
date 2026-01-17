@@ -89,7 +89,7 @@ const agent = defineAgent({
     console.log(`[DEBUG] Step 1: Loading Cuisine Profile...`);
     // 2. Load Enterprise Cuisine Profile
     const cuisineType = metadataDetails.cuisine || "indian"; 
-    const cuisineProfile = getCuisineProfile(cuisineType);
+    let cuisineProfile = getCuisineProfile(cuisineType);
     
     console.log(`🌍 [${INSTANCE_ID}] Cuisine Profile Loaded: ${cuisineProfile.name}`);
 
@@ -97,23 +97,30 @@ const agent = defineAgent({
     // 3. Resolve background tasks
     const restaurantConfig = metadataDetails;
     
-    // Fallback: If ID is missing, fetch from Side-Channel API (Server Truth)
-    if (!restaurantConfig.id && ctx.job?.room?.name) {
+    // Aggressive Context Lookup: Ensure we have twilioCallSid for human handoff
+    if ((!restaurantConfig.id || !restaurantConfig.twilioCallSid) && ctx.job?.room?.name) {
        try {
          const roomName = ctx.job.room.name;
-         console.log(`🌐 Fetching Context for room: ${roomName}`);
+         console.log(`🌐 [${INSTANCE_ID}] Fetching latest Context for room: ${roomName}`);
          const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001";
          const res = await fetch(`${apiUrl}/api/internal/room-context/${encodeURIComponent(roomName)}`);
          
          if (res.ok) {
             const context = await res.json();
-            // Merge context into restaurantConfig (and metadataDetails by reference)
+            // Deep merge or update config
             Object.assign(restaurantConfig, context); 
-            console.log(`✅ Context Resolved via API: ${restaurantConfig.id} (${restaurantConfig.name})`);
+            console.log(`✅ [${INSTANCE_ID}] Context Resolved via API. ID: ${restaurantConfig.id}, Name: ${restaurantConfig.name}, CallSid: ${restaurantConfig.twilioCallSid ? '✅ Found' : '❌ Missing'}`);
+
+            // RE-LOAD CUISINE PROFILE if context provides it
+            if (context.cuisineType) {
+                console.log(`🔄 [${INSTANCE_ID}] Updating Cuisine Profile to: ${context.cuisineType}`);
+                cuisineProfile = getCuisineProfile(context.cuisineType);
+            }
+
          } else {
-             console.warn(`⚠️ Context API returned ${res.status} for room ${roomName}`);
+             console.warn(`⚠️ [${INSTANCE_ID}] Context API returned ${res.status} for room ${roomName}`);
          }
-       } catch(e) { console.error("Context Fetch Failed", e); }
+       } catch(e) { console.error(`❌ [${INSTANCE_ID}] Context Fetch Failed`, e); }
     }
 
     // ULTIMATE SECURITY: Fail Closed
@@ -150,7 +157,7 @@ const agent = defineAgent({
 
     const menuSummary = menuItems
       .slice(0, 150) // Show first 150 items to LLM (was 50)
-      .map((i) => `- ${i.name}`)
+      .map((i) => `- ${i.name} ($${((i.price || 0) / 100).toFixed(2)})`)
       .join("\n");
       
     console.log(`🚀 [${INSTANCE_ID}] Data ready. Menu items: ${menuItems.length}`);
@@ -165,10 +172,13 @@ const agent = defineAgent({
     let sessionCart = [];
     let isFinalized = false;
 
-    let initialGreeting =
-      customerDetails.name !== "Guest"
-        ? `Namaste ${customerDetails.name}! Welcome back to ${restaurantConfig.name}.`
-        : restaurantConfig.greeting;
+    let initialGreeting = restaurantConfig.greeting;
+    
+    // Personalize if known customer
+    if (customerDetails.name !== "Guest") {
+        const greetingPrefix = cuisineType === 'indian' ? "Namaste" : "Hello";
+        initialGreeting = `${greetingPrefix} ${customerDetails.name}! Welcome back to ${restaurantConfig.name}.`;
+    }
 
     // LOGGING: Start Call
     let callRecord = null;
@@ -178,14 +188,22 @@ const agent = defineAgent({
              data: {
                restaurantId: restaurantConfig.id,
                customerPhone: callerPhone,
-               status: "ongoing"
+               status: "ongoing",
+               twilioCallSid: metadataDetails.twilioCallSid || restaurantConfig.twilioCallSid
              }
            });
            console.log(`📞 Call Logged: ${callRecord.id}`);
         } else {
            console.warn("⚠️ No Restaurant ID - cannot log call.");
         }
-    } catch (e) { console.error("❌ Log Start Failed:", e); }
+    } catch (e) { 
+        console.error("❌ CRITICAL: Call Log Start Failed!", e);
+        console.error("   Details:", {
+            restaurantId: restaurantConfig.id,
+            customerPhone: callerPhone,
+            error: e.message
+        });
+    }
 
     // 4. Generate STT Keywords Dynamically from menu
     // 4. Generate STT Keywords Dynamically from menu
@@ -335,6 +353,7 @@ const agent = defineAgent({
       cuisineProfile,
       customerDetails,
       sessionCart,
+      callRecord,
       finalizeCallback: finalize // Pass local finalize function to agent
     });
     console.log(`[DEBUG] Step 6: Restaurant Agent Instantiated`);

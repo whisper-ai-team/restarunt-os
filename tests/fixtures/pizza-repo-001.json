@@ -1,0 +1,6145 @@
+{
+  "categories": {
+    "P1VSVBEWAE404": {
+      "id": "P1VSVBEWAE404",
+      "name": "Bread Type",
+      "sortOrder": 24,
+      "items": []
+    },
+    "K9ZEKGDPMEK82": {
+      "id": "K9ZEKGDPMEK82",
+      "name": "Sandwiches",
+      "sortOrder": 22,
+      "items": []
+    },
+    "AQDYH5DBZ7SG8": {
+      "id": "AQDYH5DBZ7SG8",
+      "name": "Desserts",
+      "sortOrder": 2,
+      "items": [
+        "8XNV9XAE14ZH6",
+        "NZTYZHQCKH7ZG",
+        "QWWB10FQS81S4",
+        "K39TRVA28F7E0",
+        "B55GD2ABZNYRY",
+        "859XW3PJ4593W"
+      ]
+    },
+    "CXJ2N51CJXV0J": {
+      "id": "CXJ2N51CJXV0J",
+      "name": "Specialty Meals ",
+      "sortOrder": 23,
+      "items": [
+        "ENV34E736X3GT"
+      ]
+    },
+    "NZFJZ350EWDHR": {
+      "id": "NZFJZ350EWDHR",
+      "name": "Sides",
+      "sortOrder": 13,
+      "items": [
+        "2SJQ40MWWKAGA",
+        "HEA04V47RZZ5J",
+        "KWYEBEJ9KVYZY",
+        "BSHP4QAG3CZ86",
+        "70X1CGND17220"
+      ]
+    },
+    "54XW458EWFW08": {
+      "id": "54XW458EWFW08",
+      "name": "Side Of Sauce",
+      "sortOrder": 12,
+      "items": [
+        "RFEZX3S1RPD24",
+        "F6G11C2PBZR72"
+      ]
+    },
+    "QZWXW6K7Z9QE6": {
+      "id": "QZWXW6K7Z9QE6",
+      "name": "Pizza",
+      "sortOrder": 6,
+      "items": [
+        "Z6DHCMQ1FF018",
+        "MXKEN7BRR0Z7R",
+        "K6WC8RK9T9W78",
+        "2ASBB6GEM897Y",
+        "CRG62Y1ZD6VRM",
+        "Y9QP3CG84TPCJ"
+      ]
+    },
+    "T42P8Z74P7TCP": {
+      "id": "T42P8Z74P7TCP",
+      "name": "Burgers",
+      "sortOrder": 21,
+      "items": []
+    },
+    "KJ5JY2BPWEVPG": {
+      "id": "KJ5JY2BPWEVPG",
+      "name": "Soup Of The Day",
+      "sortOrder": 20,
+      "items": []
+    },
+    "F9MW4DWVVC4G8": {
+      "id": "F9MW4DWVVC4G8",
+      "name": "Specialty Pizza",
+      "sortOrder": 8,
+      "items": [
+        "TDNK4TG8EAEB8",
+        "XC45760YEP6PE",
+        "WJRWX2QZZ31F0",
+        "RPF001ATS5A2W",
+        "6PQZV47CXDQ1G",
+        "J8DXY7GXYC2CJ",
+        "5E23XMS95NE7R",
+        "6JVAJWEC0D0QG",
+        "W7F9609SA8GZG",
+        "9XA9QHEAHDK9Y",
+        "V72SZSDRTDEVA",
+        "N8KZ9CGTNVFQG",
+        "59Z8WAAYAQK74",
+        "QD7ZCJR0972FJ",
+        "NCRC76RDYTGKW",
+        "5TG29VZ5HN5Q6",
+        "QC6JTPWMJPZAT",
+        "1GFKGNCERM4K6",
+        "9YFSXB7EZPZH4",
+        "PEA4X2TQWSTYY",
+        "9MNNK7MRDBJ5P",
+        "TPTPR9D1NE0PM",
+        "KJMD91G7XFRJY",
+        "FCX99BNP4KH5Y",
+        "G5JABJ70R4YB2",
+        "J38652FFMGEZC",
+        "3TAMASE78VND0",
+        "94B2KHXQN84W4",
+        "4VSRGBNWEEKW8",
+        "968PKWFD19J7Y",
+        "EY29W1G4ZHA6A",
+        "ZMTTSVB8J8TPP"
+      ]
+    },
+    "R4YSK9TKX02CC": {
+      "id": "R4YSK9TKX02CC",
+      "name": "Pasta",
+      "sortOrder": 5,
+      "items": [
+        "GXV5ANPZHJGN4",
+        "FP81HMCDPQQY4",
+        "NGQQPM3YENFJM",
+        "K47F4JGQBF2R2",
+        "QGHR4XK6NYQE4",
+        "25Y0JJBH59ZM8",
+        "YXAZVB91MPW94",
+        "7YK7HRFS3MPS6",
+        "MWEYY2ZS2Q7M6",
+        "NVB0RPJKWZT2T",
+        "0DC1PE41PC9DR",
+        "9HNS823WXYZKR",
+        "0EJDKEX2EJ5EP"
+      ]
+    },
+    "W4XFH360NMWBJ": {
+      "id": "W4XFH360NMWBJ",
+      "name": "Marina Summer Special",
+      "sortOrder": 17,
+      "items": [
+        "KVA45W4TTWCZE",
+        "PE2ZWQ3DT2S3P",
+        "QWB1B00GARPS4",
+        "90Z57M0CY7RYA",
+        "X57P2DC3VV8EW",
+        "D3FC0DQ1FN3TJ",
+        "FFMEPX1MQGRSG",
+        "9X9WNNWBGH5QR",
+        "BXPKJ1E9J4VVP",
+        "ZJJCAMYTADHD0"
+      ]
+    },
+    "3HK0GYX3F9MTY": {
+      "id": "3HK0GYX3F9MTY",
+      "name": "Dinner Specials 5:00PM TO 11:00PM",
+      "sortOrder": 15,
+      "items": [
+        "QVYCRZMMC7K20",
+        "DPXSW7F8ABTC8",
+        "GB40ZHJRKAJ7E",
+        "8GG7SAW5YG8P0",
+        "TBR9Z7RNCMYHR",
+        "XTJYAY2YGYWDG",
+        "S1HVH27B49P4C"
+      ]
+    },
+    "6DQHM29WHYWZC": {
+      "id": "6DQHM29WHYWZC",
+      "name": "Weekly Specials",
+      "sortOrder": 18,
+      "items": [
+        "M6WJ2QSENKCPG",
+        "8KBDY60YF06KA",
+        "HTJG3XENGYSY6",
+        "8GZZ0RSJE2MNY",
+        "DQ9MB7288QJAG"
+      ]
+    },
+    "RNMTEWBFC9PSW": {
+      "id": "RNMTEWBFC9PSW",
+      "name": "Coupon Special",
+      "sortOrder": 16,
+      "items": [
+        "86ZNDYW5QVAHT",
+        "TXPP6AF3P516W",
+        "C4HFPANGN1CJA",
+        "9PAEM9XKF07S0",
+        "GBRH7EB961A1E",
+        "XZNZPC88W4XDC"
+      ]
+    },
+    "51BBVFD4R06KJ": {
+      "id": "51BBVFD4R06KJ",
+      "name": "Subs (Cold)",
+      "sortOrder": 11,
+      "items": [
+        "VYR12N5DV8T4C",
+        "6Z9MCN3DC8QAJ",
+        "0EHZAWAAZ9YJA",
+        "R07B6GCE0W58G",
+        "MQXFCTW68CST2",
+        "Z2V108ASVTXRT"
+      ]
+    },
+    "VKRJNNTNW2P3E": {
+      "id": "VKRJNNTNW2P3E",
+      "name": "Subs (Hot)",
+      "sortOrder": 10,
+      "items": [
+        "CWZ3Z6AGXYTHA",
+        "6C6RFGN70EK92",
+        "SN7J4778SM9AA",
+        "2VG1ZWRZWGHCT",
+        "GERA28MSV87BE",
+        "XKX9MAK47CNJ6",
+        "WTEP14V42XSVC",
+        "M8HX7Q35RFXDC",
+        "44JGC3CQ1SYBE",
+        "7XAR2MFCW6ZQ8",
+        "YM4TBFCD37MKM",
+        "38DM96SX6Y6GR",
+        "9XR950J4EZ68Y"
+      ]
+    },
+    "7BYHQPQYB309W": {
+      "id": "7BYHQPQYB309W",
+      "name": "Stromboli",
+      "sortOrder": 9,
+      "items": [
+        "VVT1G2KCYATX0",
+        "NS9RTEKV8T75Y",
+        "WXT9R5W1AMWQT",
+        "017HTEETPWW8C",
+        "JKXJNTN4477J6",
+        "KAG520DESAXV0",
+        "B14BWMH46KHH4",
+        "05DQPRBG8QXG8",
+        "VA2TXW0N6249M"
+      ]
+    },
+    "YNJAS13Z5P6AM": {
+      "id": "YNJAS13Z5P6AM",
+      "name": "Salads",
+      "sortOrder": 7,
+      "items": [
+        "1NDP7SX7K08W6",
+        "G8HEX1VJAV8XT",
+        "D1A46FCFNRT4W",
+        "NSAHJMGDWGZ4G",
+        "PTAESQS7KE1NJ",
+        "X4ENYG9051FRA",
+        "88EQY5QTGDRC8",
+        "K6W35BHC3JCQG",
+        "77E4TC8VJFG44",
+        "6JXQZ1WBWBKFT",
+        "E03JWX8SNNRSP",
+        "N49FZ3G0183JC",
+        "19RBHQY231R7R",
+        "HQETRQT6QMHF6"
+      ]
+    },
+    "BAMWENC3GWSQW": {
+      "id": "BAMWENC3GWSQW",
+      "name": "Marina Mile Breakfast",
+      "sortOrder": 25,
+      "items": []
+    },
+    "FZ0WARG5YG9KW": {
+      "id": "FZ0WARG5YG9KW",
+      "name": "Drinks",
+      "sortOrder": 3,
+      "items": [
+        "8C36NFC4N9CB0",
+        "7ZXTNT4BBXS76",
+        "JNPP5FTKEGK16",
+        "74SNAZVQ6XRR0",
+        "N5V6FJSR5K9VY"
+      ]
+    },
+    "HWZ59HYMV7K96": {
+      "id": "HWZ59HYMV7K96",
+      "name": "Chicken Wings",
+      "sortOrder": 1,
+      "items": [
+        "Q2N3Q802KVBPW",
+        "RG6R7A1K13ZR4",
+        "J946CBMS6ATWP",
+        "A0RY9SECKTS1W",
+        "YCCQ9T2V89MQA",
+        "8XZ1HFF8D3ASW"
+      ]
+    },
+    "508TQPNQK36R8": {
+      "id": "508TQPNQK36R8",
+      "name": "TO Go Packet",
+      "sortOrder": 19,
+      "items": [
+        "HS4XJ7ENXYAR6"
+      ]
+    },
+    "0EV4ZS33M52H4": {
+      "id": "0EV4ZS33M52H4",
+      "name": "By Slice",
+      "sortOrder": 0,
+      "items": [
+        "WCCA9BH0RJXP6",
+        "PBJWMQ6A2Q72E",
+        "DD73QJXCB6FKT",
+        "S3P03GH41BK66",
+        "Z10CDNPKQWCA4",
+        "T4NW0WREM1XEW",
+        "QA80HM5E6Q3AG"
+      ]
+    },
+    "5KQS28708DN8C": {
+      "id": "5KQS28708DN8C",
+      "name": "Lunch Specials 11am To 4pm ONLY",
+      "sortOrder": 14,
+      "items": [
+        "WTBKK38ST2PPM",
+        "42ZPT28YNG9JG",
+        "98N555NAWFXKP",
+        "A7Y1VDVRMVWDA",
+        "D0RJC0K4QRSS0",
+        "Z5W7C90B3VB0Y",
+        "BBRME01N2PMJA",
+        "V4E5V90SFT102",
+        "NK7D4RSZD1HME",
+        "ADYJF8RAYMWBA",
+        "D3WSY957A8E1T",
+        "2BVDSHT5TJYDP"
+      ]
+    },
+    "7M6S3XB7PSEQJ": {
+      "id": "7M6S3XB7PSEQJ",
+      "name": "Garlic Knots",
+      "sortOrder": 4,
+      "items": [
+        "BQBWT9SVHYJW8",
+        "Q2Z6PH6HFWSF2",
+        "M51KVMKHHZ55M"
+      ]
+    }
+  },
+  "modifierGroups": {
+    "ZD4QAFCPFPJ78": {
+      "id": "ZD4QAFCPFPJ78",
+      "name": "Free Side Special",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "G04PFQZ9BXVB4": {
+      "id": "G04PFQZ9BXVB4",
+      "name": "Stromboli Upgrade 2",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "2ZQCRPZQ1YZP8": {
+      "id": "2ZQCRPZQ1YZP8",
+      "name": "1 Garlic Knot",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "C6RQEGPZJAD7C": {
+      "id": "C6RQEGPZJAD7C",
+      "name": "Cold Subs With Additions",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "6YNFKCAN05YST": {
+      "id": "6YNFKCAN05YST",
+      "name": "Hot Subs Without Sauce Or Additions",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "5D0HVAH6DS9EE": {
+      "id": "5D0HVAH6DS9EE",
+      "name": "Y.Gluten Free Crust",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "8QF44JW6Q017Y": {
+      "id": "8QF44JW6Q017Y",
+      "name": "Green Goodness Free Salads",
+      "minRequired": 4,
+      "maxAllowed": 4,
+      "modifiers": []
+    },
+    "W2EJTCT7FF7DT": {
+      "id": "W2EJTCT7FF7DT",
+      "name": "Left 1/2 Topping",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "0E2T0GWQPE01R": {
+      "id": "0E2T0GWQPE01R",
+      "name": "Type Pasta",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "MG2KE0CNDGF80": {
+      "id": "MG2KE0CNDGF80",
+      "name": "Lunch Sub Modifier",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "GQZ4SA5KNQTQJ": {
+      "id": "GQZ4SA5KNQTQJ",
+      "name": "Hot Subs With Additions",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "4K1D18KJZ4SYW": {
+      "id": "4K1D18KJZ4SYW",
+      "name": "Stromboli Toppings  ",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "KCQ02Z3522J50": {
+      "id": "KCQ02Z3522J50",
+      "name": "Hot Sub With Sauces & Additions",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "JSZ8G46Q1KJ62": {
+      "id": "JSZ8G46Q1KJ62",
+      "name": "Half Dozen Garlic Roll Free",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "V8054M1Z0A8TY": {
+      "id": "V8054M1Z0A8TY",
+      "name": "18\" Cash Only",
+      "minRequired": 0,
+      "maxAllowed": 7,
+      "modifiers": []
+    },
+    "G6TDY0EVQKHCW": {
+      "id": "G6TDY0EVQKHCW",
+      "name": "Pasta No Charge",
+      "minRequired": 2,
+      "maxAllowed": 2,
+      "modifiers": []
+    },
+    "H44FXH0M5GPRM": {
+      "id": "H44FXH0M5GPRM",
+      "name": "",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "GMMBEZ3YZYH3J": {
+      "id": "GMMBEZ3YZYH3J",
+      "name": "14\" Cash Only",
+      "minRequired": 0,
+      "maxAllowed": 7,
+      "modifiers": []
+    },
+    "8E5QC2YCKTX1W": {
+      "id": "8E5QC2YCKTX1W",
+      "name": "Soda ",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "E5B96YTF5FGWR": {
+      "id": "E5B96YTF5FGWR",
+      "name": "Soda 2L",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "74KPGTV097P78": {
+      "id": "74KPGTV097P78",
+      "name": "SS Soda",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "XM4ZX40VW95RR": {
+      "id": "XM4ZX40VW95RR",
+      "name": "Garlic Roll Free",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "ZQRM5QTZPEFFR": {
+      "id": "ZQRM5QTZPEFFR",
+      "name": "2 Liter No Charge",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "TPC4QQ6QGPRV8": {
+      "id": "TPC4QQ6QGPRV8",
+      "name": "Add Slice Topping ",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "XJJK4CC17ZS7E": {
+      "id": "XJJK4CC17ZS7E",
+      "name": "Calzone Upgrade 1",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "6N0W5D07VZ7BM": {
+      "id": "6N0W5D07VZ7BM",
+      "name": "Upgrade",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "HF075X4C75AR0": {
+      "id": "HF075X4C75AR0",
+      "name": "1/2 Specialty Pizza R",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "0PZ3JGFQRKKAP": {
+      "id": "0PZ3JGFQRKKAP",
+      "name": "1/2 Specialty Topping 18''",
+      "minRequired": 0,
+      "maxAllowed": 3,
+      "modifiers": []
+    },
+    "XSYHZTE2MY1C8": {
+      "id": "XSYHZTE2MY1C8",
+      "name": "Add Chicken",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "TQV9BTV5SSXHG": {
+      "id": "TQV9BTV5SSXHG",
+      "name": "Cold Subs Without",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "GNTE3VNGGZB7W": {
+      "id": "GNTE3VNGGZB7W",
+      "name": "Dipping Sauce Extrs",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "VMY41MPQVAQX8": {
+      "id": "VMY41MPQVAQX8",
+      "name": "SS One Topping 18\" Pizza",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "AJG9FZPX4B6RR": {
+      "id": "AJG9FZPX4B6RR",
+      "name": "Pizza 3",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "6J52M5BXS7GG6": {
+      "id": "6J52M5BXS7GG6",
+      "name": "Free Sub Summer Special",
+      "minRequired": 4,
+      "maxAllowed": 4,
+      "modifiers": []
+    },
+    "79VHHN71444CG": {
+      "id": "79VHHN71444CG",
+      "name": "Pies",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "V8NC6ZK6WJH06": {
+      "id": "V8NC6ZK6WJH06",
+      "name": "Meats",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "R10A92C93JTKE": {
+      "id": "R10A92C93JTKE",
+      "name": "2 Liter Soda",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "AA9G4X5KHZK80": {
+      "id": "AA9G4X5KHZK80",
+      "name": "Speciality Pizza (One Lg S Pizza)",
+      "minRequired": 2,
+      "maxAllowed": 2,
+      "modifiers": []
+    },
+    "9E96T0SNRQZ3M": {
+      "id": "9E96T0SNRQZ3M",
+      "name": "Pizza Two Topping 14\" Pizza",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "MJPHV3MKJTA6Y": {
+      "id": "MJPHV3MKJTA6Y",
+      "name": "Free Fries",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "KAQR6RY3M5W46": {
+      "id": "KAQR6RY3M5W46",
+      "name": "Garlic Roll Special",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "3QQKF99WW1FFE": {
+      "id": "3QQKF99WW1FFE",
+      "name": "1/2 Specialty Topping 14\" R",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "ET6KA4SXH2QJ8": {
+      "id": "ET6KA4SXH2QJ8",
+      "name": "Free Soda 2L",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "ZJEFNGDDD9PPY": {
+      "id": "ZJEFNGDDD9PPY",
+      "name": "Salad Special Coupon No Charge",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "AEG2P0GQ5AEEG": {
+      "id": "AEG2P0GQ5AEEG",
+      "name": "SS Sauces 1",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "WYH5E69ZR2W1P": {
+      "id": "WYH5E69ZR2W1P",
+      "name": "TO Go Packet",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "JF0RHEK9S7BVM": {
+      "id": "JF0RHEK9S7BVM",
+      "name": "1/2 Price Pizza",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "YTRFD3RGNJ436": {
+      "id": "YTRFD3RGNJ436",
+      "name": "Dinner Special Salad",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "RCQ442V5GGF22": {
+      "id": "RCQ442V5GGF22",
+      "name": "Two Salads Special",
+      "minRequired": 2,
+      "maxAllowed": 2,
+      "modifiers": []
+    },
+    "CD4NDYV718EMA": {
+      "id": "CD4NDYV718EMA",
+      "name": "Two One Topper",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "VKFTMH0ZXWCBC": {
+      "id": "VKFTMH0ZXWCBC",
+      "name": "Dipping Sauce No Charge",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "7F8XK75GPVMD2": {
+      "id": "7F8XK75GPVMD2",
+      "name": "Ten Wings With A Free Side Of Fries",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "K72DX3RXTS82C": {
+      "id": "K72DX3RXTS82C",
+      "name": "Add Slice Topping",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "2AS48BZZPWEBR": {
+      "id": "2AS48BZZPWEBR",
+      "name": " Pasta Sauces",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "ACXR5A95B9MWJ": {
+      "id": "ACXR5A95B9MWJ",
+      "name": "Stromboli Toppings LG",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "WKF87BEAKZ7Q0": {
+      "id": "WKF87BEAKZ7Q0",
+      "name": "Right 1/2 Topping",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "CZS02V2CHZF7A": {
+      "id": "CZS02V2CHZF7A",
+      "name": "1/2 Specialty Topping 14\" L",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "RCS1ZK6NN5STM": {
+      "id": "RCS1ZK6NN5STM",
+      "name": "Upgrade Salad Dressing",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "S8JADVK9BP3GE": {
+      "id": "S8JADVK9BP3GE",
+      "name": "Free Ceaser Salad",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "0DFG3D0CCPKEA": {
+      "id": "0DFG3D0CCPKEA",
+      "name": "Pizza One Topping 14\" Pizza",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "2F1GJ0VY27DKP": {
+      "id": "2F1GJ0VY27DKP",
+      "name": " The Special One 2 Lg Specialty Pizza",
+      "minRequired": 0,
+      "maxAllowed": 2,
+      "modifiers": []
+    },
+    "SWD391GDWYC98": {
+      "id": "SWD391GDWYC98",
+      "name": "Chicken Speciality",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "36XJ1VKZ51B16": {
+      "id": "36XJ1VKZ51B16",
+      "name": "Pizza Upgrade 1",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "BV3E00HWN2JAT": {
+      "id": "BV3E00HWN2JAT",
+      "name": "Light Topping",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "P0ZVJQF822X02": {
+      "id": "P0ZVJQF822X02",
+      "name": "Marina Mania",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "84A32QMSMYD2R": {
+      "id": "84A32QMSMYD2R",
+      "name": "Salad Dressing",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "5JDKH59R32Y5C": {
+      "id": "5JDKH59R32Y5C",
+      "name": "Calzone Upgrade 2",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "48Y67C2DWFB0Y": {
+      "id": "48Y67C2DWFB0Y",
+      "name": "One Topping 14\" Pizza",
+      "minRequired": 0,
+      "maxAllowed": 2,
+      "modifiers": []
+    },
+    "32MYXW1CQN7D8": {
+      "id": "32MYXW1CQN7D8",
+      "name": "Pizza 2",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "Z5EGM51N72GBG": {
+      "id": "Z5EGM51N72GBG",
+      "name": "Small Pasta",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "KA0753GQ15VKR": {
+      "id": "KA0753GQ15VKR",
+      "name": "small type of pasta",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "85Y5BM4YZ5ZX0": {
+      "id": "85Y5BM4YZ5ZX0",
+      "name": "",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "R29PTBC3JBVRC": {
+      "id": "R29PTBC3JBVRC",
+      "name": "Meatball/Sausage/Chicken",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "B4VVZ7JFJQE5G": {
+      "id": "B4VVZ7JFJQE5G",
+      "name": "specialty pizza",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "67QVKN3FP75ZY": {
+      "id": "67QVKN3FP75ZY",
+      "name": "Dinner Special Pasta",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "VRBM9ZYB49BAY": {
+      "id": "VRBM9ZYB49BAY",
+      "name": "One Topping 18\" Pizza",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "4WYAVE8CRB28G": {
+      "id": "4WYAVE8CRB28G",
+      "name": "Pizza Upgrade 2",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "CMAZC53V8ASEP": {
+      "id": "CMAZC53V8ASEP",
+      "name": "Pizza 1",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "BYS8JNVFWD93M": {
+      "id": "BYS8JNVFWD93M",
+      "name": "Sandwiches Options",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "M4B6RRYMKHZ7G": {
+      "id": "M4B6RRYMKHZ7G",
+      "name": "Chicken Wing Sauces",
+      "minRequired": 0,
+      "maxAllowed": 3,
+      "modifiers": []
+    },
+    "GC620GWZ6KKC2": {
+      "id": "GC620GWZ6KKC2",
+      "name": "Hot Sub Sauces No Charge",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "7PFTVMV9SYFYC": {
+      "id": "7PFTVMV9SYFYC",
+      "name": "Summer Special Free Appetizer",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "H8SS6S07YSJT4": {
+      "id": "H8SS6S07YSJT4",
+      "name": "Fountain Drink No Charge",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "48KGHPN92EJC2": {
+      "id": "48KGHPN92EJC2",
+      "name": "Small Pasta",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "9M2JNZECBS58E": {
+      "id": "9M2JNZECBS58E",
+      "name": "",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "Q7RYF1P034ZK6": {
+      "id": "Q7RYF1P034ZK6",
+      "name": "Twenty Wings With A Free Side Of Fries",
+      "minRequired": 2,
+      "maxAllowed": 2,
+      "modifiers": []
+    },
+    "WFJF71KTFCE6A": {
+      "id": "WFJF71KTFCE6A",
+      "name": "Free Sub Special",
+      "minRequired": 2,
+      "maxAllowed": 2,
+      "modifiers": []
+    },
+    "52V1M4R94NETE": {
+      "id": "52V1M4R94NETE",
+      "name": "Ten Wings ",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "8ZEDMS44TTC6T": {
+      "id": "8ZEDMS44TTC6T",
+      "name": "Off The Griddle",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "7HC3B3GPDG22J": {
+      "id": "7HC3B3GPDG22J",
+      "name": "Sauces 1",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "YQE990WCMFFVP": {
+      "id": "YQE990WCMFFVP",
+      "name": "1/2 Specialty Pizza L",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "V0CJF0D992Y9Y": {
+      "id": "V0CJF0D992Y9Y",
+      "name": "Dressings",
+      "minRequired": 0,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "7JP8Z56QVN7A4": {
+      "id": "7JP8Z56QVN7A4",
+      "name": "Gluten Free Pizza",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    }
+  },
+  "modifiers": [
+    {
+      "id": "9NTXBW8WKXEME",
+      "name": "Meatball Parmigiana",
+      "price": 0,
+      "groupId": "MG2KE0CNDGF80",
+      "sortOrder": 0,
+      "available": true
+    },
+    {
+      "id": "J1K0K02JJEJE0",
+      "name": "Chicken Parmigiana",
+      "price": 0,
+      "groupId": "MG2KE0CNDGF80",
+      "sortOrder": 1,
+      "available": true
+    },
+    {
+      "id": "FJ11WZ748TEHM",
+      "name": "Sausage & Peppers Parmigiana",
+      "price": 0,
+      "groupId": "MG2KE0CNDGF80",
+      "sortOrder": 2,
+      "available": true
+    },
+    {
+      "id": "VZ7HMX8R4A0ZG",
+      "name": "Philly Cheese Steak",
+      "price": 0,
+      "groupId": "MG2KE0CNDGF80",
+      "sortOrder": 3,
+      "available": true
+    },
+    {
+      "id": "AEEB0NEP3RWNA",
+      "name": "Chicken Philly",
+      "price": 0,
+      "groupId": "MG2KE0CNDGF80",
+      "sortOrder": 4,
+      "available": true
+    },
+    {
+      "id": "YB91AHK4X3DBP",
+      "name": "Spaghetti & Meatballs Pasta",
+      "price": 0,
+      "groupId": "67QVKN3FP75ZY",
+      "sortOrder": 5,
+      "available": true
+    },
+    {
+      "id": "6WKR1XHZSR3BA",
+      "name": "Alfredo & Chicken Pasta",
+      "price": 0,
+      "groupId": "67QVKN3FP75ZY",
+      "sortOrder": 6,
+      "available": true
+    },
+    {
+      "id": "ESX1F3BN52NQE",
+      "name": "Bolognese Pasta",
+      "price": 0,
+      "groupId": "67QVKN3FP75ZY",
+      "sortOrder": 7,
+      "available": true
+    },
+    {
+      "id": "TN4ZMBPNCDPR0",
+      "name": "Chicken Parmigiana Pasta",
+      "price": 0,
+      "groupId": "67QVKN3FP75ZY",
+      "sortOrder": 8,
+      "available": true
+    },
+    {
+      "id": "KE7FZ4TBPD6GT",
+      "name": "Baked Ziti Pasta",
+      "price": 0,
+      "groupId": "67QVKN3FP75ZY",
+      "sortOrder": 9,
+      "available": true
+    },
+    {
+      "id": "1BP5A5BFA14A6",
+      "name": "Cheese Ravioli Pasta",
+      "price": 0,
+      "groupId": "67QVKN3FP75ZY",
+      "sortOrder": 10,
+      "available": true
+    },
+    {
+      "id": "BPAVPRH0AGNNW",
+      "name": "Lasagna",
+      "price": 0,
+      "groupId": "67QVKN3FP75ZY",
+      "sortOrder": 11,
+      "available": true
+    },
+    {
+      "id": "9PT3EKJ4Y0FWY",
+      "name": "Tortellini Pasta",
+      "price": 0,
+      "groupId": "67QVKN3FP75ZY",
+      "sortOrder": 12,
+      "available": true
+    },
+    {
+      "id": "JD72B0WBW8HXE",
+      "name": "Greek",
+      "price": 0,
+      "groupId": "YTRFD3RGNJ436",
+      "sortOrder": 13,
+      "available": true
+    },
+    {
+      "id": "5Q0HA7R5DWWH4",
+      "name": "Garden",
+      "price": 0,
+      "groupId": "YTRFD3RGNJ436",
+      "sortOrder": 14,
+      "available": true
+    },
+    {
+      "id": "A78SC590QTMK6",
+      "name": "Ceasar",
+      "price": 0,
+      "groupId": "YTRFD3RGNJ436",
+      "sortOrder": 15,
+      "available": true
+    },
+    {
+      "id": "V6809XE8778QR",
+      "name": "Antipasto",
+      "price": 0,
+      "groupId": "YTRFD3RGNJ436",
+      "sortOrder": 16,
+      "available": true
+    },
+    {
+      "id": "46M77XV48QVG0",
+      "name": "Chef",
+      "price": 0,
+      "groupId": "YTRFD3RGNJ436",
+      "sortOrder": 17,
+      "available": true
+    },
+    {
+      "id": "9WB57P0FV6T24",
+      "name": "Caprese",
+      "price": 0,
+      "groupId": "YTRFD3RGNJ436",
+      "sortOrder": 18,
+      "available": true
+    }
+  ],
+  "items": [
+    {
+      "id": "ENV34E736X3GT",
+      "name": "Calamari ",
+      "price": 1200,
+      "modifierGroupIds": [
+        "MJPHV3MKJTA6Y"
+      ],
+      "categoryIds": [
+        "CXJ2N51CJXV0J"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NZTYZHQCKH7ZG",
+      "name": "Chocolate Temptation",
+      "description": "",
+      "price": 729,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "AQDYH5DBZ7SG8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NZTYZHQCKH7ZG_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "859XW3PJ4593W",
+      "name": "Lalipop Waffle",
+      "description": "",
+      "price": 419,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "AQDYH5DBZ7SG8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ADYJF8RAYMWBA",
+      "name": "#11 - Alfredo Pasta W/Chicken & 1 Garlic Knot",
+      "description": "",
+      "price": 1129,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -40,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "PBJWMQ6A2Q72E",
+      "name": "1 Pepperoni Slice Only",
+      "description": "",
+      "price": 479,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "0EV4ZS33M52H4"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -452,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PBJWMQ6A2Q72E_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "2BVDSHT5TJYDP",
+      "name": "1 - Cheese Calzone",
+      "description": "",
+      "price": 884,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -8,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "D3WSY957A8E1T",
+      "name": "1 - Stromboli W/Drink",
+      "description": "",
+      "price": 884,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -33,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QA80HM5E6Q3AG",
+      "name": "2 Slice Spcialty Special W/Drink",
+      "description": "",
+      "price": 939,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "0EV4ZS33M52H4"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -458,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NMYE81TRZXZH4",
+      "name": "Vegetable Soup",
+      "price": 839,
+      "modifierGroupIds": [],
+      "categoryIds": [],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2,
+      "images": [],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "29RKF05BAVC2R",
+      "name": "Creamy Chicken Soup",
+      "price": 839,
+      "modifierGroupIds": [],
+      "categoryIds": [],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1,
+      "images": [],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "S1HVH27B49P4C",
+      "name": "#7 - Any 2 Pastas, 4 Garlic Knots, Large Salad, & 2 Lt. Soda",
+      "description": "",
+      "price": 3639,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "67QVKN3FP75ZY",
+        "YTRFD3RGNJ436"
+      ],
+      "categoryIds": [
+        "3HK0GYX3F9MTY"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -12,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "XTJYAY2YGYWDG",
+      "name": "#6 - 2 Calzone, & 2 Lt. Soda",
+      "description": "",
+      "price": 3639,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "ET6KA4SXH2QJ8",
+        "CMAZC53V8ASEP"
+      ],
+      "categoryIds": [
+        "3HK0GYX3F9MTY"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "TBR9Z7RNCMYHR",
+      "name": "#5 - Large 2 Toppings Pizza, 10pc Wings, & 2 Lt. Soda",
+      "description": "",
+      "price": 3639,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "ET6KA4SXH2QJ8",
+        "32MYXW1CQN7D8"
+      ],
+      "categoryIds": [
+        "3HK0GYX3F9MTY"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -101,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "8GG7SAW5YG8P0",
+      "name": "#4 - Stromboli, 6pc Boneless Wings, 1 Salad & 2 Lt. Soda",
+      "description": "",
+      "price": 3119,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "ET6KA4SXH2QJ8",
+        "CMAZC53V8ASEP"
+      ],
+      "categoryIds": [
+        "3HK0GYX3F9MTY"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -3,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "GB40ZHJRKAJ7E",
+      "name": "#3 - Lasagna, Salad, 4 Garlic Knots, & 2 Lt Soda",
+      "description": "",
+      "price": 2709,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "3HK0GYX3F9MTY"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "DPXSW7F8ABTC8",
+      "name": "#2 - 10pc Wings, 1 Sm Fries Or 1 Sm Onion Rings, & 2 Lt Soda",
+      "description": "",
+      "price": 2499,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "ET6KA4SXH2QJ8"
+      ],
+      "categoryIds": [
+        "3HK0GYX3F9MTY"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -7,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "6PQZV47CXDQ1G",
+      "name": "Any Style Chicken Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "SWD391GDWYC98",
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -47,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "RPF001ATS5A2W",
+      "name": "Any Style Chicken Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "SWD391GDWYC98",
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -54,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "WJRWX2QZZ31F0",
+      "name": "Any Style Chicken Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "SWD391GDWYC98",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -26,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QVYCRZMMC7K20",
+      "name": "#1 - MEDIUM ONE TOPPING PIZZA WITH 2L SODA",
+      "description": "",
+      "price": 1669,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "ET6KA4SXH2QJ8",
+        "CMAZC53V8ASEP"
+      ],
+      "categoryIds": [
+        "3HK0GYX3F9MTY"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -127,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NK7D4RSZD1HME",
+      "name": "#10 - 5 Piece Boneless Wings Sm Fries & Fountain Drink",
+      "description": "",
+      "price": 939,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "M4B6RRYMKHZ7G"
+      ],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -84,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/NK7D4RSZD1HME_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "D0RJC0K4QRSS0",
+      "name": "#5 - 4 Chicken WIngs Sm Fries and Fountain Drink",
+      "description": "",
+      "price": 1129,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -88,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "42ZPT28YNG9JG",
+      "name": "#2 - 4 Garlic Knots with Fountain Drink",
+      "description": "",
+      "price": 689,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -5,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "WTBKK38ST2PPM",
+      "name": "#1 - 6 Ravioli In Marinara, 1 Garlic Knot &  Fountain Drink",
+      "description": "",
+      "price": 939,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -92,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "G8HEX1VJAV8XT",
+      "name": "Any Style Chicken Small Salad",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "SWD391GDWYC98"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -9,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "K6W35BHC3JCQG",
+      "name": "Caprese Small Salad",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -12,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6W35BHC3JCQG_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Y9QP3CG84TPCJ",
+      "name": "Lg 18\" Pepperoni Pizza",
+      "description": "",
+      "price": 2189,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "QZWXW6K7Z9QE6"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -775,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Y9QP3CG84TPCJ_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "CRG62Y1ZD6VRM",
+      "name": "Med 14\" Pepperoni Pizza",
+      "price": 1769,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "QZWXW6K7Z9QE6"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -434,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "2ASBB6GEM897Y",
+      "name": "Sm 10\" Pepperoni Pizza",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "QZWXW6K7Z9QE6"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -304,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Q2N3Q802KVBPW",
+      "name": "5 PC Chicken Wings",
+      "description": "",
+      "price": 889,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "M4B6RRYMKHZ7G",
+        "7HC3B3GPDG22J",
+        "6N0W5D07VZ7BM"
+      ],
+      "categoryIds": [
+        "HWZ59HYMV7K96"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -113,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2N3Q802KVBPW_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "0EJDKEX2EJ5EP",
+      "name": "Small Pasta",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "Z5EGM51N72GBG"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -14,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "N5V6FJSR5K9VY",
+      "name": "Juice",
+      "description": "",
+      "price": 259,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "FZ0WARG5YG9KW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2,
+      "images": [],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "70X1CGND17220",
+      "name": "Loaded Fries",
+      "description": "",
+      "price": 839,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "NZFJZ350EWDHR"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -54,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "1NDP7SX7K08W6",
+      "name": "Any Style Chicken Salad",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "SWD391GDWYC98"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -20,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FCX99BNP4KH5Y",
+      "name": "Tomato Basil Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "CZS02V2CHZF7A",
+        "3QQKF99WW1FFE",
+        "TPC4QQ6QGPRV8",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "968PKWFD19J7Y",
+      "name": "White Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "CZS02V2CHZF7A",
+        "3QQKF99WW1FFE",
+        "TPC4QQ6QGPRV8",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -37,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "3TAMASE78VND0",
+      "name": "Veggie Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "CZS02V2CHZF7A",
+        "3QQKF99WW1FFE",
+        "TPC4QQ6QGPRV8",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -52,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "J8DXY7GXYC2CJ",
+      "name": "Greek Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -4,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "N8KZ9CGTNVFQG",
+      "name": "Margarita Pizza 10\"",
+      "price": 1559,
+      "modifierGroupIds": [
+        "CZS02V2CHZF7A",
+        "3QQKF99WW1FFE",
+        "TPC4QQ6QGPRV8",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -77,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "W7F9609SA8GZG",
+      "name": "Hawaiian Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -108,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "9MNNK7MRDBJ5P",
+      "name": "Supreme Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "CZS02V2CHZF7A",
+        "3QQKF99WW1FFE",
+        "TPC4QQ6QGPRV8",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -147,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NCRC76RDYTGKW",
+      "name": "Meatlovers Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -143,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "05DQPRBG8QXG8",
+      "name": "Philly Steak Stromboli SM",
+      "description": "",
+      "price": 1879,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "4K1D18KJZ4SYW"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -16,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "017HTEETPWW8C",
+      "name": "Traditional Stromboli SM",
+      "price": 1669,
+      "modifierGroupIds": [
+        "4K1D18KJZ4SYW"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -41,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NS9RTEKV8T75Y",
+      "name": "Stromboli  SM",
+      "description": "",
+      "price": 1459,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "4K1D18KJZ4SYW"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -82,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "1GFKGNCERM4K6",
+      "name": "Philly Steak Pizza 10\"",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -23,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "KAG520DESAXV0",
+      "name": "Chicken Philly Stromboli SM",
+      "description": "",
+      "price": 1879,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "4K1D18KJZ4SYW"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "S3P03GH41BK66",
+      "name": "2 Slice Pepperoni Only",
+      "description": "",
+      "price": 769,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "TPC4QQ6QGPRV8"
+      ],
+      "categoryIds": [
+        "0EV4ZS33M52H4"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -319,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/S3P03GH41BK66_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "DD73QJXCB6FKT",
+      "name": "2 Slice Cheese Only",
+      "description": "",
+      "price": 709,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "TPC4QQ6QGPRV8"
+      ],
+      "categoryIds": [
+        "0EV4ZS33M52H4"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -371,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/DD73QJXCB6FKT_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Z6DHCMQ1FF018",
+      "name": "Sm 10\" Cheese Pizza",
+      "description": "",
+      "price": 1039,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "QZWXW6K7Z9QE6"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -534,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "A7Y1VDVRMVWDA",
+      "name": "#4 - 2 Slice Pepperoni with fountain drink",
+      "description": "",
+      "price": 829,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2223,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "98N555NAWFXKP",
+      "name": "#3 - 2 Slice Cheese with fountain drink",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2124,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "V4E5V90SFT102",
+      "name": "#9 - 8 Inch Sub with fries & Fountain Drink",
+      "description": "",
+      "price": 1129,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "MG2KE0CNDGF80"
+      ],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -277,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "BBRME01N2PMJA",
+      "name": "#8 - Chicken Tender Sandwich w/Fries & Fountain Drink",
+      "description": "",
+      "price": 1039,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -58,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Z5W7C90B3VB0Y",
+      "name": "#7 - Spaghetti and Meatballs & 1 Garlic Knot",
+      "description": "",
+      "price": 1029,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "5KQS28708DN8C"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -299,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "DQ9MB7288QJAG",
+      "name": "Friday Special One Hot Or Cold Sub, Onion Rings Or Fries& Fountain Drink",
+      "description": "",
+      "price": 1879,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "C6RQEGPZJAD7C",
+        "TQV9BTV5SSXHG",
+        "MJPHV3MKJTA6Y",
+        "GC620GWZ6KKC2",
+        "GQZ4SA5KNQTQJ",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "6DQHM29WHYWZC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "8GZZ0RSJE2MNY",
+      "name": "Thursday Special Any 2 Med Speciality Pizzas",
+      "description": "",
+      "price": 3639,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "6DQHM29WHYWZC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -4,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "HTJG3XENGYSY6",
+      "name": "Wed Special 10pc Wings, Fries and A Sauce Of Choice",
+      "description": "",
+      "price": 1879,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "6DQHM29WHYWZC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "M6WJ2QSENKCPG",
+      "name": "Monday Special One Cheese Slice & Fountain Drink",
+      "description": "",
+      "price": 519,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "6DQHM29WHYWZC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -4,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "8KBDY60YF06KA",
+      "name": "Tuesday Special Two Pasta & Two Fountain Drink",
+      "description": "",
+      "price": 2709,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "6DQHM29WHYWZC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ZJJCAMYTADHD0",
+      "name": "#12 Sub And Side (Buy One Sub and Get A Side Free)",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "ZD4QAFCPFPJ78",
+        "WFJF71KTFCE6A"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "BXPKJ1E9J4VVP",
+      "name": "#11 Leafy Feelings(Buy Two Salads and Get Two Garlic Knots Free)",
+      "description": "",
+      "price": 2189,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "XM4ZX40VW95RR",
+        "RCQ442V5GGF22"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "9X9WNNWBGH5QR",
+      "name": "#10Fly Away Special(20 Wings And Free Side OF French Fries)",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "ZD4QAFCPFPJ78",
+        "Q7RYF1P034ZK6"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FFMEPX1MQGRSG",
+      "name": "#7 The Special One(Two Large Specialty Pizza Free 1/2 Dozen Garlic Rolls",
+      "description": "",
+      "price": 4679,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2F1GJ0VY27DKP",
+        "JSZ8G46Q1KJ62"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "7XAR2MFCW6ZQ8",
+      "name": "Philly Cheese Steak Hot Sub Summer Special",
+      "description": "",
+      "price": 0,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "6J52M5BXS7GG6",
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "9XR950J4EZ68Y",
+      "name": "Sausage & Peppers Parm Hot Summer Special Sub",
+      "price": 0,
+      "modifierGroupIds": [
+        "6J52M5BXS7GG6",
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Z2V108ASVTXRT",
+      "name": "Smoked Ham & Roast Beef Summer Special",
+      "description": "",
+      "price": 0,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "C6RQEGPZJAD7C",
+        "TQV9BTV5SSXHG",
+        "6J52M5BXS7GG6",
+        "GQZ4SA5KNQTQJ"
+      ],
+      "categoryIds": [
+        "51BBVFD4R06KJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "44JGC3CQ1SYBE",
+      "name": "Meatball Parmigiana Hot Sub Summer Special",
+      "description": "",
+      "price": 0,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "6J52M5BXS7GG6",
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "GERA28MSV87BE",
+      "name": "Chicken Philly Sub Summer Special",
+      "description": "",
+      "price": 0,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "6J52M5BXS7GG6"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "WTEP14V42XSVC",
+      "name": "Chicken Parmigiana Summer Special",
+      "description": "",
+      "price": 0,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "6J52M5BXS7GG6",
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "0EHZAWAAZ9YJA",
+      "name": "Italian Cold Sub Summer Special",
+      "description": "",
+      "price": 0,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "C6RQEGPZJAD7C",
+        "TQV9BTV5SSXHG",
+        "6J52M5BXS7GG6",
+        "GQZ4SA5KNQTQJ"
+      ],
+      "categoryIds": [
+        "51BBVFD4R06KJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "6C6RFGN70EK92",
+      "name": "Chicken Tender Sub Summer Specisl",
+      "description": "",
+      "price": 0,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "6J52M5BXS7GG6",
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "D3FC0DQ1FN3TJ",
+      "name": "#6 Sub-Travaganza(Buy Any Three Subs and get the Fourth Free)",
+      "description": "",
+      "price": 3749,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "6J52M5BXS7GG6"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "X57P2DC3VV8EW",
+      "name": "#5 Green Goodness(Buy Three Salads Get The Fourth Free)",
+      "description": "",
+      "price": 3639,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "8QF44JW6Q017Y"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "90Z57M0CY7RYA",
+      "name": "#4 Start Right(One Large Specialty Pizza Get The Second 1/2 Price Off)",
+      "description": "",
+      "price": 2189,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "7PFTVMV9SYFYC"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QWB1B00GARPS4",
+      "name": "#3 Marina Mania(One Large Specialty Pizza Get The Second 1/2 Price Off)",
+      "description": "",
+      "price": 3749,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "AA9G4X5KHZK80"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "2VG1ZWRZWGHCT",
+      "name": "Chicken Philly Sub",
+      "price": 1359,
+      "modifierGroupIds": [
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "GQZ4SA5KNQTQJ",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -10,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "PE2ZWQ3DT2S3P",
+      "name": "#2 Pasta Frenzy(Buy Any Two Pasta One Free Caesar Salad)",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "S8JADVK9BP3GE",
+        "G6TDY0EVQKHCW",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "KVA45W4TTWCZE",
+      "name": "#1 Pizza Wing Combo(One Large One Topping Pizza Ten Wings & One 2L Soda",
+      "description": "",
+      "price": 3639,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "VMY41MPQVAQX8",
+        "AEG2P0GQ5AEEG",
+        "74KPGTV097P78"
+      ],
+      "categoryIds": [
+        "W4XFH360NMWBJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "XZNZPC88W4XDC",
+      "name": "One Hot Sub One Side Fries One Soda",
+      "price": 1669,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "RNMTEWBFC9PSW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "HS4XJ7ENXYAR6",
+      "name": "TO Go Pack",
+      "price": 209,
+      "modifierGroupIds": [
+        "WYH5E69ZR2W1P"
+      ],
+      "categoryIds": [
+        "508TQPNQK36R8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "WCCA9BH0RJXP6",
+      "name": "1 Cheese Slice Only",
+      "description": "",
+      "price": 429,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "TPC4QQ6QGPRV8"
+      ],
+      "categoryIds": [
+        "0EV4ZS33M52H4"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1008,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/WCCA9BH0RJXP6_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "GBRH7EB961A1E",
+      "name": "10 Piece wing Special with 2 garlic knots, large fries and 2 liter soda",
+      "price": 2599,
+      "modifierGroupIds": [
+        "ZQRM5QTZPEFFR",
+        "MJPHV3MKJTA6Y",
+        "7HC3B3GPDG22J"
+      ],
+      "categoryIds": [
+        "RNMTEWBFC9PSW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "B14BWMH46KHH4",
+      "name": "Chicken Philly Stromboli LG",
+      "price": 2599,
+      "modifierGroupIds": [
+        "4K1D18KJZ4SYW"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "HEA04V47RZZ5J",
+      "name": "Onion Rings",
+      "description": "",
+      "price": 579,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "NZFJZ350EWDHR"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -13,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/HEA04V47RZZ5J_576x576.jpeg"
+        }
+      ],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "XKX9MAK47CNJ6",
+      "name": "Chicken Tender Sub",
+      "price": 1359,
+      "modifierGroupIds": [
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "GQZ4SA5KNQTQJ",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -9,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FP81HMCDPQQY4",
+      "name": "Alfredo Pasta W/Chicken",
+      "description": "",
+      "price": 1459,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -230,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/FP81HMCDPQQY4_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QGHR4XK6NYQE4",
+      "name": "Cajun Chicken & Shrimp Pasta",
+      "description": "",
+      "price": 1459,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -153,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QGHR4XK6NYQE4_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "88EQY5QTGDRC8",
+      "name": "Caprese Salad",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "XSYHZTE2MY1C8",
+        "V0CJF0D992Y9Y",
+        "84A32QMSMYD2R",
+        "RCS1ZK6NN5STM"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QD7ZCJR0972FJ",
+      "name": "Margarita Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "0PZ3JGFQRKKAP",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -110,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "59Z8WAAYAQK74",
+      "name": "Margarita Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "CZS02V2CHZF7A",
+        "3QQKF99WW1FFE",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -16,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "9HNS823WXYZKR",
+      "name": "Tortellini",
+      "price": 1039,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -3,
+      "images": [],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "VVT1G2KCYATX0",
+      "name": "Calzone ",
+      "price": 1559,
+      "modifierGroupIds": [
+        "XJJK4CC17ZS7E",
+        "5JDKH59R32Y5C"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -15,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NA7GN3S4NEHNG",
+      "name": "Blue Cheese",
+      "price": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "XC45760YEP6PE",
+      "name": "1/2 Specialty Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "YQE990WCMFFVP",
+        "HF075X4C75AR0",
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -139,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "TDNK4TG8EAEB8",
+      "name": "1/2 Specialty Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "YQE990WCMFFVP",
+        "HF075X4C75AR0",
+        "CZS02V2CHZF7A",
+        "3QQKF99WW1FFE",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -106,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "HQETRQT6QMHF6",
+      "name": "Greek Small Salad",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -134,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "N49FZ3G0183JC",
+      "name": "Garden Small Salad",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -110,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "X4ENYG9051FRA",
+      "name": "Ceasar Small Salad",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -97,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NSAHJMGDWGZ4G",
+      "name": "Antipasto Small Salad",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -39,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "8XNV9XAE14ZH6",
+      "name": "Chocolate Brownies",
+      "description": "",
+      "price": 519,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "AQDYH5DBZ7SG8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 23,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8XNV9XAE14ZH6_576x576.jpeg"
+        }
+      ],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "B55GD2ABZNYRY",
+      "name": "Red Velvet Cake",
+      "description": "",
+      "price": 629,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "AQDYH5DBZ7SG8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/B55GD2ABZNYRY_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "F6G11C2PBZR72",
+      "name": "Sauce Lg",
+      "price": 319,
+      "modifierGroupIds": [
+        "V0CJF0D992Y9Y"
+      ],
+      "categoryIds": [
+        "54XW458EWFW08"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "RFEZX3S1RPD24",
+      "name": "Sauce Sm",
+      "price": 109,
+      "modifierGroupIds": [
+        "V0CJF0D992Y9Y"
+      ],
+      "categoryIds": [
+        "54XW458EWFW08"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -11,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "T4NW0WREM1XEW",
+      "name": "2 Slices Pepperoni Special W/Drink",
+      "description": "",
+      "price": 839,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "TPC4QQ6QGPRV8"
+      ],
+      "categoryIds": [
+        "0EV4ZS33M52H4"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -7484,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/T4NW0WREM1XEW_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "PEA4X2TQWSTYY",
+      "name": "Philly Steak Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "9YFSXB7EZPZH4",
+      "name": "Philly Steak Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -3,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9YFSXB7EZPZH4_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ZMTTSVB8J8TPP",
+      "name": "White Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "BV3E00HWN2JAT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -91,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "4VSRGBNWEEKW8",
+      "name": "Veggie Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "BV3E00HWN2JAT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -208,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/4VSRGBNWEEKW8_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "6JVAJWEC0D0QG",
+      "name": "Greek Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -44,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "TPTPR9D1NE0PM",
+      "name": "Supreme Pizza 14\"",
+      "price": 2079,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "BV3E00HWN2JAT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -752,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "J38652FFMGEZC",
+      "name": "Tomato Basil Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0",
+        "G04PFQZ9BXVB4"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -12,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QC6JTPWMJPZAT",
+      "name": "Meatlovers Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -575,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QC6JTPWMJPZAT_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "V72SZSDRTDEVA",
+      "name": "Hawaiian Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -279,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "8C36NFC4N9CB0",
+      "name": "Bottled Soda 2L",
+      "description": "",
+      "price": 469,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "E5B96YTF5FGWR"
+      ],
+      "categoryIds": [
+        "FZ0WARG5YG9KW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 8,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "6JXQZ1WBWBKFT",
+      "name": "Chef Small Salad",
+      "description": "",
+      "price": 779,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -9,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "C4HFPANGN1CJA",
+      "name": "Monday & Tuesday Special One Medium Cheese Pizza Limit 2 Topping",
+      "price": 1869,
+      "modifierGroupIds": [
+        "ET6KA4SXH2QJ8",
+        "48Y67C2DWFB0Y"
+      ],
+      "categoryIds": [
+        "RNMTEWBFC9PSW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -10,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "9PAEM9XKF07S0",
+      "name": "Buy One Hot Or Cold Sub Get Second 1/2 Off",
+      "price": 1879,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "RNMTEWBFC9PSW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "TXPP6AF3P516W",
+      "name": "Family Special For 4 Any Pasta 4 Garlic Rolls, 1 Salad And 2L Soda",
+      "price": 3639,
+      "modifierGroupIds": [
+        "ZQRM5QTZPEFFR",
+        "KAQR6RY3M5W46",
+        "G6TDY0EVQKHCW",
+        "ZJEFNGDDD9PPY"
+      ],
+      "categoryIds": [
+        "RNMTEWBFC9PSW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "86ZNDYW5QVAHT",
+      "name": "Family Special LG 1 Topping Pizza/10 Wings/2L Drink",
+      "price": 3639,
+      "modifierGroupIds": [
+        "ZQRM5QTZPEFFR",
+        "M4B6RRYMKHZ7G",
+        "VRBM9ZYB49BAY"
+      ],
+      "categoryIds": [
+        "RNMTEWBFC9PSW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Z10CDNPKQWCA4",
+      "name": "2 Slices Cheese Special W/ Drink",
+      "description": "",
+      "price": 789,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "TPC4QQ6QGPRV8"
+      ],
+      "categoryIds": [
+        "0EV4ZS33M52H4"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1399,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Z10CDNPKQWCA4_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "C2JW4AAYEN15E",
+      "name": "Pasta Fagioli",
+      "price": 839,
+      "modifierGroupIds": [],
+      "categoryIds": [],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "K39TRVA28F7E0",
+      "name": "Tiramisu",
+      "description": "",
+      "price": 679,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "AQDYH5DBZ7SG8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 15,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K39TRVA28F7E0_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QWWB10FQS81S4",
+      "name": "Cheese Cake",
+      "description": "",
+      "price": 679,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "AQDYH5DBZ7SG8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 2,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/QWWB10FQS81S4_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "SN7J4778SM9AA",
+      "name": "Eggplant Parmigiana",
+      "price": 1249,
+      "modifierGroupIds": [
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "VA2TXW0N6249M",
+      "name": "Philly Steak Stromboli LG",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "4K1D18KJZ4SYW"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "JKXJNTN4477J6",
+      "name": "Traditional Stromboli LG",
+      "description": "",
+      "price": 2289,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "4K1D18KJZ4SYW"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -6,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "WXT9R5W1AMWQT",
+      "name": "Stromboli  LG",
+      "description": "",
+      "price": 1979,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "4K1D18KJZ4SYW"
+      ],
+      "categoryIds": [
+        "7BYHQPQYB309W"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -32,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "EY29W1G4ZHA6A",
+      "name": "White Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "BV3E00HWN2JAT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -151,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/EY29W1G4ZHA6A_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "94B2KHXQN84W4",
+      "name": "Veggie Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -238,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "5E23XMS95NE7R",
+      "name": "Greek Pizza 14",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -77,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "G5JABJ70R4YB2",
+      "name": "Tomato Basil Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -20,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "5TG29VZ5HN5Q6",
+      "name": "Meatlovers Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -632,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "9XA9QHEAHDK9Y",
+      "name": "Hawaiian Pizza 14\"",
+      "description": "",
+      "price": 2079,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -397,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/9XA9QHEAHDK9Y_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "KJMD91G7XFRJY",
+      "name": "Supreme Pizza 18\"",
+      "description": "",
+      "price": 2599,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "BV3E00HWN2JAT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "F9MW4DWVVC4G8"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -696,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KJMD91G7XFRJY_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "MXKEN7BRR0Z7R",
+      "name": "Med 14\" Cheese Pizza",
+      "description": "",
+      "price": 1559,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "QZWXW6K7Z9QE6"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -2488,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "K6WC8RK9T9W78",
+      "name": "Lg 18\" Cheese Pizza",
+      "description": "",
+      "price": 1979,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "W2EJTCT7FF7DT",
+        "36XJ1VKZ51B16",
+        "4WYAVE8CRB28G",
+        "WKF87BEAKZ7Q0"
+      ],
+      "categoryIds": [
+        "QZWXW6K7Z9QE6"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -3634,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K6WC8RK9T9W78_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "74SNAZVQ6XRR0",
+      "name": "Fountain Drinks",
+      "description": "",
+      "price": 259,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "FZ0WARG5YG9KW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -4121,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/74SNAZVQ6XRR0_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "7ZXTNT4BBXS76",
+      "name": "Bottled Water",
+      "description": "",
+      "price": 209,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "FZ0WARG5YG9KW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 40,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "JNPP5FTKEGK16",
+      "name": "Canned Soda",
+      "description": "",
+      "price": 259,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "8E5QC2YCKTX1W"
+      ],
+      "categoryIds": [
+        "FZ0WARG5YG9KW"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": 86,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JNPP5FTKEGK16_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "R07B6GCE0W58G",
+      "name": "Smoked Ham ",
+      "price": 1249,
+      "modifierGroupIds": [
+        "C6RQEGPZJAD7C",
+        "TQV9BTV5SSXHG"
+      ],
+      "categoryIds": [
+        "51BBVFD4R06KJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -72,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "MQXFCTW68CST2",
+      "name": "Roast Beef & Swiss",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "C6RQEGPZJAD7C",
+        "TQV9BTV5SSXHG",
+        "GQZ4SA5KNQTQJ"
+      ],
+      "categoryIds": [
+        "51BBVFD4R06KJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "VYR12N5DV8T4C",
+      "name": "Fresh Mozzarella Sandwich",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "C6RQEGPZJAD7C",
+        "TQV9BTV5SSXHG",
+        "GQZ4SA5KNQTQJ"
+      ],
+      "categoryIds": [
+        "51BBVFD4R06KJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -40,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "6Z9MCN3DC8QAJ",
+      "name": "Italian Cold Sub",
+      "price": 1249,
+      "modifierGroupIds": [
+        "C6RQEGPZJAD7C",
+        "TQV9BTV5SSXHG",
+        "GQZ4SA5KNQTQJ"
+      ],
+      "categoryIds": [
+        "51BBVFD4R06KJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -479,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "25Y0JJBH59ZM8",
+      "name": "Cheese Ravioli Pasta",
+      "description": "",
+      "price": 1149,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "R29PTBC3JBVRC",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -94,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/25Y0JJBH59ZM8_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NGQQPM3YENFJM",
+      "name": "Baked Ziti Pasta",
+      "description": "",
+      "price": 1459,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -181,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "MWEYY2ZS2Q7M6",
+      "name": "Lasagna Pasta",
+      "description": "",
+      "price": 1459,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -177,
+      "images": [],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "YXAZVB91MPW94",
+      "name": "Chicken Parmigiana Pasta",
+      "description": "",
+      "price": 1459,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -312,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "0DC1PE41PC9DR",
+      "name": "Spagheti Marinara Pasta W/ Meatballs",
+      "description": "",
+      "price": 1459,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "R29PTBC3JBVRC",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -160,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/0DC1PE41PC9DR_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "K47F4JGQBF2R2",
+      "name": "Bolognese Pasta",
+      "description": "",
+      "price": 1459,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -160,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/K47F4JGQBF2R2_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "GXV5ANPZHJGN4",
+      "name": "Alfredo Pasta",
+      "description": "",
+      "price": 1149,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -188,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GXV5ANPZHJGN4_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "7YK7HRFS3MPS6",
+      "name": "Garlic & Extra Virgin Olive Oil Pasta",
+      "description": "",
+      "price": 1149,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -56,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7YK7HRFS3MPS6_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NVB0RPJKWZT2T",
+      "name": "Spagheti Marinara Pasta",
+      "description": "",
+      "price": 1149,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "2AS48BZZPWEBR",
+        "V8NC6ZK6WJH06",
+        "0E2T0GWQPE01R"
+      ],
+      "categoryIds": [
+        "R4YSK9TKX02CC"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -279,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "M51KVMKHHZ55M",
+      "name": "Homemade Garlic Knots (1 Dozen)",
+      "description": "",
+      "price": 1039,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "7M6S3XB7PSEQJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -206,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Q2Z6PH6HFWSF2",
+      "name": "Homemade Garlic Knots (1/2 Dozen)",
+      "description": "",
+      "price": 629,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "7M6S3XB7PSEQJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -679,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/Q2Z6PH6HFWSF2_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "BQBWT9SVHYJW8",
+      "name": "Homemade Garlic Knots (Each)",
+      "description": "",
+      "price": 109,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "7M6S3XB7PSEQJ"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1394,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "BSHP4QAG3CZ86",
+      "name": "Side Of French Fries",
+      "price": 469,
+      "modifierGroupIds": [
+        "GNTE3VNGGZB7W",
+        "VKFTMH0ZXWCBC"
+      ],
+      "categoryIds": [
+        "NZFJZ350EWDHR"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1462,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BSHP4QAG3CZ86_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "2SJQ40MWWKAGA",
+      "name": "Crispy Chicken Fingers",
+      "description": "",
+      "price": 939,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "GNTE3VNGGZB7W",
+        "VKFTMH0ZXWCBC"
+      ],
+      "categoryIds": [
+        "NZFJZ350EWDHR"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -229,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/2SJQ40MWWKAGA_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "KWYEBEJ9KVYZY",
+      "name": "Mozzarella Sticks",
+      "description": "",
+      "price": 839,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "GNTE3VNGGZB7W",
+        "VKFTMH0ZXWCBC"
+      ],
+      "categoryIds": [
+        "NZFJZ350EWDHR"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -978,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/KWYEBEJ9KVYZY_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "YM4TBFCD37MKM",
+      "name": "Philly Cheese Steak Hot Sub",
+      "price": 1359,
+      "modifierGroupIds": [
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "GQZ4SA5KNQTQJ",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -1312,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "38DM96SX6Y6GR",
+      "name": "Sausage & Peppers Parm Hot Sub",
+      "description": "",
+      "price": 1359,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -133,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "CWZ3Z6AGXYTHA",
+      "name": "Chicken Parmigiana Hot Sub",
+      "price": 1359,
+      "modifierGroupIds": [
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "GQZ4SA5KNQTQJ",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -512,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "M8HX7Q35RFXDC",
+      "name": "Meatball Parmigiana Hot Sub",
+      "description": "",
+      "price": 1359,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "GC620GWZ6KKC2",
+        "KCQ02Z3522J50",
+        "6YNFKCAN05YST"
+      ],
+      "categoryIds": [
+        "VKRJNNTNW2P3E"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -495,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "77E4TC8VJFG44",
+      "name": "Chef Salad",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "XSYHZTE2MY1C8",
+        "84A32QMSMYD2R",
+        "RCS1ZK6NN5STM"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -98,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "D1A46FCFNRT4W",
+      "name": "Antipasto Salad",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "XSYHZTE2MY1C8",
+        "84A32QMSMYD2R",
+        "RCS1ZK6NN5STM"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -154,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "PTAESQS7KE1NJ",
+      "name": "Caesar Salad",
+      "description": "",
+      "price": 1039,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "XSYHZTE2MY1C8",
+        "84A32QMSMYD2R",
+        "RCS1ZK6NN5STM"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -379,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/PTAESQS7KE1NJ_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "E03JWX8SNNRSP",
+      "name": "Garden Salad",
+      "description": "",
+      "price": 1039,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "XSYHZTE2MY1C8",
+        "84A32QMSMYD2R",
+        "RCS1ZK6NN5STM"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -315,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/E03JWX8SNNRSP_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "19RBHQY231R7R",
+      "name": "Greek Salad",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "XSYHZTE2MY1C8",
+        "84A32QMSMYD2R",
+        "RCS1ZK6NN5STM"
+      ],
+      "categoryIds": [
+        "YNJAS13Z5P6AM"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -423,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/19RBHQY231R7R_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "8XZ1HFF8D3ASW",
+      "name": "12 Pc Boneless Wings",
+      "description": "",
+      "price": 1249,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "M4B6RRYMKHZ7G",
+        "6N0W5D07VZ7BM"
+      ],
+      "categoryIds": [
+        "HWZ59HYMV7K96"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -241,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "YCCQ9T2V89MQA",
+      "name": "9 Pc Boneless Wings",
+      "description": "",
+      "price": 1029,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "M4B6RRYMKHZ7G",
+        "6N0W5D07VZ7BM"
+      ],
+      "categoryIds": [
+        "HWZ59HYMV7K96"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -249,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "A0RY9SECKTS1W",
+      "name": "6 Pc Boneless Wings",
+      "description": "",
+      "price": 759,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "M4B6RRYMKHZ7G",
+        "6N0W5D07VZ7BM"
+      ],
+      "categoryIds": [
+        "HWZ59HYMV7K96"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -388,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "J946CBMS6ATWP",
+      "name": "20 Pc Chicken Wings",
+      "description": "",
+      "price": 2809,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "M4B6RRYMKHZ7G",
+        "6N0W5D07VZ7BM"
+      ],
+      "categoryIds": [
+        "HWZ59HYMV7K96"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -59,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "RG6R7A1K13ZR4",
+      "name": "10 Pc Chicken Wings",
+      "description": "",
+      "price": 1669,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "M4B6RRYMKHZ7G",
+        "6N0W5D07VZ7BM"
+      ],
+      "categoryIds": [
+        "HWZ59HYMV7K96"
+      ],
+      "taxIds": [
+        "V3D280410ZFSG"
+      ],
+      "stock": -328,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    }
+  ]
+}

@@ -2,6 +2,11 @@
 import { CONFIG } from "../config/agentConfig.js";
 import { INSTANCE_ID } from "../utils/agentUtils.js";
 import { MenuIntelligenceService } from "./menuIntelligence.js";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 let menuCache = { items: [], lastFetch: 0 };
 
@@ -57,6 +62,25 @@ export async function getMenu(credentials, restaurantId) {
 
 // ... existing code
 
+  // --- TEST MODE INTERCEPT ---
+  if (credentials && credentials.apiKey === "TEST_MODE_KEY") {
+      console.log(`🍔 [${INSTANCE_ID}] TEST MODE: Loading menu from fixture for ${restaurantId}...`);
+      const fixturePath = path.join(__dirname, '../tests/fixtures', `${restaurantId}.json`);
+      
+      try {
+          if (fs.existsSync(fixturePath)) {
+              const fileData = fs.readFileSync(fixturePath, 'utf8');
+              const json = JSON.parse(fileData);
+              const items = json.items || [];
+              menuCache = { items, lastFetch: now };
+              console.log(`🍔 [${INSTANCE_ID}] Mock Menu Loaded: ${items.length} items`);
+              return menuCache;
+          } else {
+              console.error(`❌ Fixture not found at ${fixturePath}`);
+          }
+      } catch(e) { console.error("Mock Load Error:", e); }
+  }
+
   try {
     console.log(`🍔 [${INSTANCE_ID}] Fetching menu from Clover...`);
     const data = await cloverRequest("/items?limit=1000&expand=categories", {}, credentials, fetchWithTimeout);
@@ -101,6 +125,15 @@ export async function createCloverOrder(cart, customerName, customerPhone, crede
   });
   
   try {
+    if (credentials && credentials.apiKey === "TEST_MODE_KEY") {
+        console.log(`✅ [Mock] Order created successfully in Test Mode`);
+        return { 
+           id: `MOCK-ORDER-${Date.now()}`, 
+           state: 'open',
+           total: cart.reduce((sum, i) => sum + (i.price * i.qty), 0)
+        };
+    }
+
     // Step 1: Create empty order
     console.log(`   Step 1: Creating empty order...`);
     const order = await cloverRequest("/orders", {
