@@ -97,30 +97,51 @@ const agent = defineAgent({
     // 3. Resolve background tasks
     const restaurantConfig = metadataDetails;
     
-    // Aggressive Context Lookup: Ensure we have twilioCallSid for human handoff
-    if ((!restaurantConfig.id || !restaurantConfig.twilioCallSid) && ctx.job?.room?.name) {
-       try {
-         const roomName = ctx.job.room.name;
-         console.log(`🌐 [${INSTANCE_ID}] Fetching latest Context for room: ${roomName}`);
-         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001";
-         const res = await fetch(`${apiUrl}/api/internal/room-context/${encodeURIComponent(roomName)}`);
-         
-         if (res.ok) {
-            const context = await res.json();
-            // Deep merge or update config
-            Object.assign(restaurantConfig, context); 
-            console.log(`✅ [${INSTANCE_ID}] Context Resolved via API. ID: ${restaurantConfig.id}, Name: ${restaurantConfig.name}, CallSid: ${restaurantConfig.twilioCallSid ? '✅ Found' : '❌ Missing'}`);
+    // Aggressive Context Lookup with Retry
+    // FORCE lookup if it's a SIP room (starts with call-) OR ID is missing
+    const isSipRoom = ctx.job?.room?.name?.startsWith("call-");
+    
+    if ((isSipRoom || !restaurantConfig.id || !restaurantConfig.twilioCallSid) && ctx.job?.room?.name) {
+       let attempts = 0;
+       const maxAttempts = 3; // Increased for SIP resolution stability
+       
+       while (attempts < maxAttempts) {
+         try {
+           const roomName = ctx.job.room.name;
+           console.log(`🌐 [${INSTANCE_ID}] Fetching latest Context for room: ${roomName} (Attempt ${attempts + 1}/${maxAttempts})`);
+           const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001";
+           const res = await fetch(`${apiUrl}/api/internal/room-context/${encodeURIComponent(roomName)}`);
+           
+           if (res.ok) {
+              const context = await res.json();
+              
+              // If it's a fallback but we're in a SIP room, keep retrying to find the real mapping
+              // Unless it's our last attempt
+              if (context.isFallback && isSipRoom && attempts < maxAttempts - 1) {
+                  console.log(`⚠️ [${INSTANCE_ID}] Received fallback context. Waiting for real SIP mapping...`);
+              } else {
+                  Object.assign(restaurantConfig, context); 
+                  console.log(`✅ [${INSTANCE_ID}] Context Resolved via API. ID: ${restaurantConfig.id}, Name: ${restaurantConfig.name}`);
 
-            // RE-LOAD CUISINE PROFILE if context provides it
-            if (context.cuisineType) {
-                console.log(`🔄 [${INSTANCE_ID}] Updating Cuisine Profile to: ${context.cuisineType}`);
-                cuisineProfile = getCuisineProfile(context.cuisineType);
-            }
-
-         } else {
-             console.warn(`⚠️ [${INSTANCE_ID}] Context API returned ${res.status} for room ${roomName}`);
+                  if (context.cuisineType) {
+                      console.log(`🔄 [${INSTANCE_ID}] Updating Cuisine Profile to: ${context.cuisineType}`);
+                      cuisineProfile = getCuisineProfile(context.cuisineType);
+                  }
+                  break; // Successful (or final fallback) resolution
+              }
+           } else {
+               console.warn(`⚠️ [${INSTANCE_ID}] Context API attempt ${attempts + 1} failed with status ${res.status}`);
+           }
+         } catch(e) { 
+           console.error(`❌ [${INSTANCE_ID}] Context Fetch Attempt ${attempts + 1} Failed`, e); 
          }
-       } catch(e) { console.error(`❌ [${INSTANCE_ID}] Context Fetch Failed`, e); }
+         
+         attempts++;
+         if (attempts < maxAttempts) {
+           console.log(`⏳ [${INSTANCE_ID}] Retrying context fetch in 1.5s...`);
+           await new Promise(resolve => setTimeout(resolve, 1500));
+         }
+       }
     }
 
     // ULTIMATE SECURITY: Fail Closed
@@ -131,12 +152,7 @@ const agent = defineAgent({
         await connectPromise;
         const failureMessage = "We're sorry, our system is currently undergoing maintenance. Please try calling back later. Goodbye!";
         
-        // STABILITY FIX: Explicitly disconnect room BEFORE returning to prevent libc++abi crashes
-        if (ctx.room) {
-            console.log("🔌 Explicitly disconnecting room to prevent mutex errors.");
-            ctx.room.disconnect();
-        }
-        
+        // Removed disconnect call to prevent mutex errors
         return; 
     }
 
@@ -172,12 +188,17 @@ const agent = defineAgent({
     let sessionCart = [];
     let isFinalized = false;
 
-    let initialGreeting = restaurantConfig.greeting;
+    let initialGreeting = restaurantConfig.greeting || "Hello! Welcome to our restaurant. How may I help you today?";
     
     // Personalize if known customer
     if (customerDetails.name !== "Guest") {
         const greetingPrefix = cuisineType === 'indian' ? "Namaste" : "Hello";
         initialGreeting = `${greetingPrefix} ${customerDetails.name}! Welcome back to ${restaurantConfig.name}.`;
+    }
+
+    // Safety check: ensure string
+    if (!initialGreeting || initialGreeting === "null") {
+        initialGreeting = "Hello! Welcome to our restaurant. How may I help you today?";
     }
 
     // LOGGING: Start Call

@@ -20,6 +20,7 @@
         {
             "id": "italian-pulcinella",
             "name": "Pulcinella Grille",
+            "greeting": "Welcome to Pulcinella Grille, offering authentic Italian cuisine. How may I be of service?",
             "cuisine": "Italian",
             "provider": "clover",
             "merchant_id": "Y7CHFWKJDFA01",

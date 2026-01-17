@@ -257,6 +257,37 @@ app.post("/api/webhook", async (req, res) => {
       );
     }
 
+    // 2b. Listen for participant joined (For late-resolution of attributes)
+    if (event.event === "participant_joined") {
+      const participant = event.participant;
+      const attributes = participant.attributes || {};
+      const trunkNumber = attributes["sip.trunkPhoneNumber"];
+
+      if (trunkNumber && event.room?.name) {
+        console.log(`📡 [WEBHOOK] SIP Participant Joined. Trunk: ${trunkNumber} Room: ${event.room.name}`);
+        const normalizedTrunk = normalizePhone(trunkNumber);
+        
+        try {
+          const restaurant = await getRestaurantByPhone(normalizedTrunk);
+          if (restaurant) {
+             await prisma.call.upsert({
+                where: { roomName: event.room.name },
+                update: { restaurantId: restaurant.id },
+                create: {
+                   roomName: event.room.name,
+                   restaurantId: restaurant.id,
+                   customerPhone: normalizePhone(participant.identity || ""),
+                   status: "IDENTIFIED"
+                }
+             });
+             console.log(`✅ [WEBHOOK] Mapped Room ${event.room.name} to Restaurant: ${restaurant.name} via Trunk Attribute`);
+          }
+        } catch (e) {
+          console.error("❌ Failed to map participant metadata to DB:", e);
+        }
+      }
+    }
+
     res.status(200).send("ok");
   } catch (error) {
     console.error("Webhook Error:", error);
@@ -370,26 +401,45 @@ app.get("/api/internal/room-context/:roomName", async (req, res) => {
         console.warn(`⚠️ [CONTEXT] DB Lookup failed: ${e.message}`);
     }
     
-    // 2. SELF-HEALING FALLBACK: Parse phone from room name if DB fails
+    // 2. SELF-HEALING FALLBACK: Check Participant Attributes via Room Service
     if (!context) {
-      console.log(`🔍 [CONTEXT] Miss for ${roomName}. Attempting regex recovery...`);
+      console.log(`🔍 [CONTEXT] Miss for ${roomName}. Inspecting participant attributes...`);
+      try {
+          const participants = await roomService.listParticipants(roomName);
+          const sipParticipant = participants.find(p => p.attributes?.["sip.trunkPhoneNumber"]);
+          
+          if (sipParticipant) {
+             const trunkNumber = normalizePhone(sipParticipant.attributes["sip.trunkPhoneNumber"]);
+             console.log(`📞 [CONTEXT] Found SIP Trunk Attribute: "${trunkNumber}"`);
+             context = await getRestaurantByPhone(trunkNumber);
+             
+             if (context) {
+                console.log(`✨ [CONTEXT] Self-Healed context for ${roomName} via Participant Attributes: ${trunkNumber} -> ${context.name}`);
+                // Backfill DB for next lookup
+                try {
+                  await prisma.call.upsert({
+                    where: { roomName },
+                    update: { restaurantId: context.id },
+                    create: { roomName, restaurantId: context.id, customerPhone: normalizePhone(sipParticipant.identity) }
+                  });
+                } catch(e) {}
+             }
+          }
+      } catch (e) {
+        console.warn(`⚠️ [CONTEXT] Participant inspection failed: ${e.message}`);
+      }
+    }
+
+    // 3. LEGACY FALLBACK: Parse phone from room name (Only if attributes fail)
+    if (!context) {
+      console.log(`🔍 [CONTEXT] Attributes miss for ${roomName}. Attempting regex recovery...`);
       const phoneMatch = roomName.match(/call-_(\+?\d+)_/);
       if (phoneMatch) {
          const phoneNumber = phoneMatch[1];
-         console.log(`📞 [CONTEXT] Extracted phone: "${phoneNumber}"`);
+         // ... rest stays same but wrapped better
          try {
            context = await getRestaurantByPhone(phoneNumber);
-           if (context) {
-              console.log(`✨ [CONTEXT] Self-Healed context for ${roomName} via Phone: ${phoneNumber} -> ${context.name}`);
-              // Should we save to DB here? Maybe. But let's keep it simple.
-           } else {
-              console.warn(`❌ [CONTEXT] getRestaurantByPhone returned null for ${phoneNumber}`);
-           }
-         } catch (e) {
-           console.warn(`⚠️ [CONTEXT] Phone recovery failed for ${phoneNumber}: ${e.message}`);
-         }
-      } else {
-         console.warn(`❌ [CONTEXT] Regex failed to extract phone from ${roomName}`);
+         } catch(e) {}
       }
     }
 
@@ -417,6 +467,7 @@ app.get("/api/internal/room-context/:roomName", async (req, res) => {
             }
 
             if (fullConfig) {
+               fullConfig.isFallback = true; // Mark as guessed
                console.log(`✅ [DEV MODE] Served fallback: ${fullConfig.name}`);
                return res.json(fullConfig);
             }
