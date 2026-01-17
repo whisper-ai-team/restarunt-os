@@ -1,0 +1,239 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id                String    @id @default(cuid())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Identity
+  name              String
+  slug              String    @unique
+  phoneNumber       String    @unique
+  
+  // Clover Integration (encrypted)
+  cloverMerchantId  String
+  cloverApiKey      String    // Encrypted with AES-256
+  cloverEcommerceToken String? // Encrypted with AES-256
+  cloverEnvironment String    @default("production")
+  
+  // Location
+  address           String
+  city              String
+  state             String
+  zipCode           String
+  country           String    @default("US")
+  
+  // Cuisine & Branding
+  cuisineType       String    // "Indian", "Chinese", "Mexican", etc.
+  logo              String?
+  primaryColor      String?
+  
+  // POS Device Settings
+  defaultPrinterId  String?
+  autoPrint         Boolean   @default(true)
+  deviceId          String?   // Clover device ID for order routing
+  
+  // Voice AI Settings
+  aiName            String    @default("Hayman")
+  voiceSelection    String    @default("alloy")
+  greeting          String?
+  agentGuidelines   String?   @db.Text
+  
+  // Workflow Configuration
+  voiceLanguage     String?   @default("en-US")
+  voiceSpeed        Float?    @default(1.0)
+  endCallMessage    String?
+  notificationConfig Json?    // Stores email recipients, SMS numbers, promotions
+  
+  // Operational Settings
+  businessHours     Json?     // { "monday": { "open": "09:00", "close": "22:00", "closed": false }, ... }
+  timezone          String    @default("America/New_York")
+
+  // Subscription & Billing
+  subscriptionPlan    String   @default("free")  // "free", "basic", "premium", "pro"
+  subscriptionStatus  String   @default("active") // "active", "cancelled", "past_due"
+  billingCycle        String   @default("monthly") // "monthly", "yearly"
+  nextBillingDate     DateTime?
+  paymentMethodType   String?  // "visa", "mastercard", "amex"
+  paymentMethodLast4  String?
+  paymentMethodExpiry String?  // Format: "MM/YY"
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  
+  // Status
+  isActive          Boolean   @default(true)
+  
+  // Relations
+  orders            Order[]
+  printers          Printer[]
+  calls             Call[]
+  reviews           Review[]
+  feedback          Feedback[]
+  menuItems         MenuItem[]
+}
+
+model Call {
+  id              String      @id @default(cuid())
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  endedAt         DateTime?
+  duration        Int         @default(0) // seconds
+  
+  // Caller Info
+  customerPhone   String
+  status          String      @default("ONGOING") // ONGOING, COMPLETED_SUCCESS, COMPLETED_DROPPED, MISSED
+  
+  // Intelligence
+  sentiment       String?     // POSITIVE, NEUTRAL, NEGATIVE
+  summary         String?
+  transcript      Json?
+  recordingUrl    String?
+  twilioCallSid   String?     @unique // Twilio SID for call redirection/handoff
+  roomName        String?     @unique // LiveKit Room Name (Persistent Context Key)
+  isTakeoverActive Boolean   @default(false) // Whether a human has taken over the call
+  
+  // Relations
+  restaurantId    String
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id])
+  
+  orderId         String?
+  order           Order?      @relation(fields: [orderId], references: [id])
+}
+
+model Printer {
+  id            String      @id @default(cuid())
+  name          String
+  deviceId      String
+  categories    String[]    // Trigger categories: ["Drinks"] or ["*"]
+  isDefault     Boolean     @default(false)
+  
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
+  restaurantId  String
+  
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+model Order {
+  id            String      @id @default(uuid())
+  customerName  String
+  customerPhone String
+  status        String      @default("PENDING")
+  totalAmount   Int
+  cloverOrderId String?
+  paymentUrl    String?     // Store the Clover payment link
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  
+  // Multi-tenant link
+  restaurantId  String
+  restaurant    Restaurant  @relation(fields: [restaurantId], references: [id])
+  calls         Call[]
+  
+  @@index([restaurantId])
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  name      String
+  quantity  Int
+  price     Int      // Stored in cents
+  notes     String?
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+}
+
+// --- Reputation & Review Management ---
+
+model Review {
+  id            String    @id @default(cuid())
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  
+  source        String    // "GOOGLE", "YELP", "FACEBOOK"
+  externalId    String?   // ID from the external platform
+  authorName    String
+  rating        Int
+  content       String    @db.Text
+  postedAt      DateTime
+  
+  // Status
+  status        String    @default("UNANSWERED") // "UNANSWERED", "ANSWERED", "IGNORED"
+  
+  // Reply
+  replyContent  String?   @db.Text
+  replySentAt   DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([restaurantId])
+}
+
+model Feedback {
+  id            String    @id @default(cuid())
+  restaurantId  String
+  restaurant    Restaurant @relation(fields: [restaurantId], references: [id])
+  
+  customerName  String?
+  customerPhone String?
+  email         String?
+  rating        Int
+  content       String    @db.Text
+  
+  isResolved    Boolean   @default(false)
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([restaurantId])
+}
+
+// --- AI Menu Intelligence ---
+
+model MenuItem {
+  id              String   @id @default(cuid())
+  cloverId        String?  // ID from Clover/POS
+  restaurantId    String
+  restaurant      Restaurant @relation(fields: [restaurantId], references: [id])
+  
+  name            String
+  price           Int      // in cents
+  description     String?  @db.Text
+  category        String?
+  
+  hidden          Boolean  @default(false)
+  available       Boolean  @default(true)
+  
+  intelligence    MenuItemIntelligence?
+  
+  updatedAt       DateTime @updatedAt
+  createdAt       DateTime @default(now())
+  
+  @@unique([restaurantId, cloverId])
+  @@index([restaurantId])
+}
+
+model MenuItemIntelligence {
+  id              String   @id @default(cuid())
+  menuItemId      String   @unique
+  menuItem        MenuItem @relation(fields: [menuItemId], references: [id])
+  
+  // AI-Generated Safety Tags
+  dietaryTags     String[] // ["nuts", "dairy", "vegan", "gluten"]
+  ingredients     String[] // ["cashew", "cream", "chicken"]
+  
+  // Anti-Hallucination & STT
+  phoneticName    String?  // "Butter Chicken" (lowercase, normalized)
+  sttKeywords     String[] // ["butter chicken", "makhani", "murgh"]
+  
+  processedAt     DateTime @default(now())
+}

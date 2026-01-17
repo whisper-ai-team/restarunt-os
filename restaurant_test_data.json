@@ -1,0 +1,58 @@
+{
+    "meta": {
+        "description": "Test data for multi-cuisine restaurant menu ingestion via Clover Public API",
+        "note": "These URLs are public read-only endpoints. Cart operations require authentication or local simulation."
+    },
+    "restaurants": [
+        {
+            "id": "pizza-repo-001",
+            "name": "Generic Pizza Restaurant",
+            "cuisine": "Pizza",
+            "provider": "clover",
+            "merchant_id": "6PF071GH7NBZ1",
+            "api_url": "https://www.clover.com/oloservice/v1/merchants/6PF071GH7NBZ1/menu?orderType=PICKUP",
+            "test_scenarios": [
+                "modifiers (toppings)",
+                "sizes",
+                "combos"
+            ]
+        },
+        {
+            "id": "italian-pulcinella",
+            "name": "Pulcinella Grille",
+            "cuisine": "Italian",
+            "provider": "clover",
+            "merchant_id": "Y7CHFWKJDFA01",
+            "api_url": "https://www.clover.com/oloservice/v1/merchants/Y7CHFWKJDFA01/menu",
+            "test_scenarios": [
+                "pasta options",
+                "wine list",
+                "courses"
+            ]
+        },
+        {
+            "id": "italian-generic-002",
+            "name": "Generic Italian Restaurant",
+            "cuisine": "Italian",
+            "provider": "clover",
+            "merchant_id": "4XGG3CG2ZS111",
+            "api_url": "https://www.clover.com/oloservice/v1/merchants/4XGG3CG2ZS111/menu",
+            "test_scenarios": [
+                "standard menu structure"
+            ]
+        },
+        {
+            "id": "indian-repo-001",
+            "name": "Generic Indian Restaurant",
+            "cuisine": "Indian",
+            "provider": "clover",
+            "merchant_id": "689T3QFXRDMB1",
+            "api_url": "https://www.clover.com/oloservice/v1/merchants/689T3QFXRDMB1/menu?orderType=PICKUP",
+            "test_scenarios": [
+                "spice levels",
+                "vegetarian options",
+                "breads"
+            ]
+        }
+    ]
+}

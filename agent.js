@@ -1,11 +1,19 @@
-// agent.js
-import "dotenv/config"; // Replaces require("dotenv").config()
+// agent.js - Main entry point for the Restaurant OS Voice Agent
+import "dotenv/config";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-// Convert CommonJS __filename to ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Load Google Cloud credentials (Used for STT only)
+import { readFileSync } from "node:fs";
+let googleCredentials = null;
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+  try {
+    googleCredentials = JSON.parse(readFileSync(process.env.GOOGLE_APPLICATION_CREDENTIALS, "utf8"));
+  } catch (err) {}
+}
 
 import {
   defineAgent,
@@ -13,448 +21,533 @@ import {
   WorkerOptions,
   initializeLogger,
   voice,
-  runWithJobContextAsync,
-  llm,
 } from "@livekit/agents";
 
 import * as openai from "@livekit/agents-plugin-openai";
 import * as deepgram from "@livekit/agents-plugin-deepgram";
-import * as elevenlabs from "@livekit/agents-plugin-elevenlabs";
-import * as silero from "@livekit/agents-plugin-silero";
 
-// Your custom voice map
-import { getNextRotatedVoice } from "./voiceMap.js";
+// Import our modular components
+import { isOpen, redact, INSTANCE_ID, startHeartbeat } from "./utils/agentUtils.js";
+import { generateSTTKeywords } from "./utils/sttHelpers.js";
+import { MOCK_DB, parseJobMetadata, COMMON_WORD_BLACKLIST } from "./config/agentConfig.js";
+import { vadLoadPromise } from "./config/vadConfig.js";
+import { getMenu } from "./services/cloverService.js";
+import { finalizeSession } from "./services/sessionManager.js";
+import { RestaurantAgent } from "./agent/RestaurantAgent.js";
 
-// -----------------------------
-// 1. CONFIGURATION & STATE
-// -----------------------------
-const CONFIG = {
-  cloverApiKey: process.env.CLOVER_API_KEY,
-  cloverMerchantId: process.env.CLOVER_MERCHANT_ID,
-  cloverBaseUrl:
-    process.env.CLOVER_BASE_URL || "https://apisandbox.dev.clover.com",
-  twilioSid: process.env.TWILIO_ACCOUNT_SID,
-  twilioToken: process.env.TWILIO_AUTH_TOKEN,
-  twilioPhone: process.env.TWILIO_PHONE_NUMBER,
-  menuCacheTtl: 10 * 60 * 1000, // 10 Minutes Cache
-};
+import { getVoiceFromSelection } from "./voiceMap.js";
+import { getCuisineProfile } from "./cuisines/cuisineRegistry.js";
+import { sendSMS } from "./services/notificationService.js";
+import { PrismaClient } from "@prisma/client";
 
-// Global State
-let menuCache = {
-  items: [],
-  nameToItem: {},
-  lastFetch: 0,
-};
+const prisma = new PrismaClient();
 
-// -----------------------------
-// 2. HELPERS (Formatting & SMS)
-// -----------------------------
-function formatCurrency(cents) {
-  if (typeof cents !== "number" || Number.isNaN(cents)) return "$0.00";
-  return `$${(cents / 100).toFixed(2)}`;
-}
-
-function formatCurrencyForSpeech(cents) {
-  if (typeof cents !== "number" || Number.isNaN(cents)) return "0 dollars";
-  const dollars = Math.floor(cents / 100);
-  const remainder = cents % 100;
-  if (remainder === 0) return `${dollars} dollars`;
-  return `${dollars} dollars and ${remainder} cents`;
-}
-
-function normalizePhone(phone) {
-  if (!phone) return "";
-  return String(phone).replace(/^sip:/, "").replace(/\D/g, "");
-}
-
-async function sendSms(to, body) {
-  if (!CONFIG.twilioSid || !CONFIG.twilioToken || !CONFIG.twilioPhone) {
-    console.warn("⚠️ SMS Skipped: Missing Twilio Credentials");
-    return;
-  }
-
-  const url = `https://api.twilio.com/2010-04-01/Accounts/${CONFIG.twilioSid}/Messages.json`;
-  const params = new URLSearchParams({
-    To: to,
-    From: CONFIG.twilioPhone,
-    Body: body,
-  });
-
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        Authorization:
-          "Basic " +
-          Buffer.from(`${CONFIG.twilioSid}:${CONFIG.twilioToken}`).toString(
-            "base64"
-          ),
-        "Content-Type": "application/x-www-form-urlencoded",
-      },
-      body: params,
-    });
-    if (res.ok) console.log(`✅ SMS Sent to ${to}`);
-    else console.error(`❌ SMS Failed: ${await res.text()}`);
-  } catch (err) {
-    console.error("❌ SMS Network Error:", err);
-  }
-}
-
-// -----------------------------
-// 3. CLOVER SERVICE (With Caching)
-// -----------------------------
-async function cloverRequest(path, { method = "GET", body } = {}) {
-  if (!CONFIG.cloverApiKey || !CONFIG.cloverMerchantId) {
-    throw new Error("Missing Clover credentials");
-  }
-
-  const url = `${CONFIG.cloverBaseUrl}/v3/merchants/${CONFIG.cloverMerchantId}${path}`;
-  const res = await fetch(url, {
-    method,
-    headers: {
-      Authorization: `Bearer ${CONFIG.cloverApiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Clover error ${res.status}: ${text}`);
-  }
-  return res.json();
-}
-
-async function getMenu() {
-  const now = Date.now();
-  if (
-    menuCache.items.length > 0 &&
-    now - menuCache.lastFetch < CONFIG.menuCacheTtl
-  ) {
-    return menuCache;
-  }
-
-  console.log("🔄 Refreshing Menu from Clover API...");
-  try {
-    const data = await cloverRequest("/items?limit=1000");
-    const items = data.elements || [];
-    const nameToItem = {};
-
-    for (const item of items) {
-      if (!item.name || !item.id) continue;
-      const key = item.name.trim().toLowerCase();
-      nameToItem[key] = {
-        id: item.id,
-        name: item.name,
-        price: typeof item.price === "number" ? item.price : 0,
-      };
-    }
-
-    menuCache = { items, nameToItem, lastFetch: now };
-    console.log(`✅ Menu Refreshed: ${items.length} items.`);
-    return menuCache;
-  } catch (err) {
-    console.error("❌ Menu Fetch Failed:", err);
-    return menuCache;
-  }
-}
-
-// -----------------------------
-// 4. ORDER LOGIC
-// -----------------------------
-async function createOrder({ items, note, orderType, phoneNumber }) {
-  if (!Array.isArray(items) || items.length === 0) throw new Error("No items");
-  const { nameToItem } = await getMenu();
-
-  const noteParts = [];
-  if (orderType) noteParts.push(`Type: ${orderType}`);
-  if (note) noteParts.push(`Note: ${note}`);
-  if (phoneNumber) noteParts.push(`Phone: ${phoneNumber}`);
-  const headerNote = noteParts.join(" | ");
-
-  const order = await cloverRequest("/orders", {
-    method: "POST",
-    body: { state: "open", title: headerNote },
-  });
-
-  const unmatched = [];
-  let totalCents = 0;
-  const orderSummaryLines = [];
-
-  const bulkLineItems = {
-    items: items.map((it) => {
-      const rawName = (it.name || "").trim();
-      const key = rawName.toLowerCase();
-      const qty = it.quantity || 1;
-      const mods = it.modifications || "";
-
-      const inv = nameToItem[key];
-      const kitchenFriendlyName = mods ? `${rawName} **[${mods}]**` : rawName;
-
-      orderSummaryLines.push(`${qty}x ${kitchenFriendlyName}`);
-
-      if (inv && inv.id) {
-        totalCents += inv.price * qty;
-        return {
-          item: { id: inv.id },
-          name: kitchenFriendlyName,
-          price: inv.price,
-          unitQty: qty,
-        };
-      }
-
-      unmatched.push({ name: rawName, qty });
-      return { name: kitchenFriendlyName, price: 0, unitQty: qty };
-    }),
-  };
-
-  await cloverRequest(`/orders/${order.id}/bulk_line_items`, {
-    method: "POST",
-    body: bulkLineItems,
-  });
-
-  await cloverRequest(`/orders/${order.id}`, {
-    method: "POST",
-    body: { total: totalCents },
-  });
-
-  if (phoneNumber) {
-    const smsBody = `Bawarchi Biryanis: Order Confirmed!\n\n${orderSummaryLines.join(
-      "\n"
-    )}\n\nTotal: ${formatCurrency(totalCents)}\nPickup in ~20 mins.`;
-    sendSms(phoneNumber, smsBody);
-  }
-
-  return { order, totalCents };
-}
-
-// -----------------------------
-// 5. AGENT DEFINITION
-// -----------------------------
+process.setMaxListeners(50);
 initializeLogger({ level: "info", destination: "stdout" });
 
-// -----------------------------
-// 1. RESTAURANT KNOWLEDGE BASE
-// (Edit these details to match your restaurant)
-// -----------------------------
-const RESTAURANT_INFO = {
-  address: "5959 Long Point Rd, Houston, TX 77055",
-  phone: "(713) 461-4500",
-  hours: "11:00 AM to 10:00 PM every day",
-  dietary: {
-    halal: "Yes, all our meats are 100% Halal certified.",
-    vegetarian:
-      "Yes, we have a large selection of vegetarian curries and biryanis.",
-    vegan:
-      "We offer vegan options like Chana Masala and Aloo Gobi. Please ask to remove ghee/cream.",
-    glutenFree:
-      "Most of our curries are gluten-free, but please avoid Naan bread.",
-  },
-};
+console.log("🚀 Restaurant AI Agent Starting...");
+console.log("📋 Google Credentials:", googleCredentials ? "✅ Loaded" : "❌ Not found");
+
+// Start heartbeat monitoring
+startHeartbeat();
 
 // -----------------------------
-// 2. UPDATED AGENT CLASS
-// -----------------------------
-class RestaurantAgent extends voice.Agent {
-  constructor({ restaurantName, systemPrompt, initialMenu, activeRoom }) {
-    super({
-      instructions: `
-        You are the efficient, polite, and Indian-accented front-desk AI for ${restaurantName}.
-        
-        **CORE BEHAVIOR**
-        - Keep answers short (1–2 sentences max).
-        - Wait patiently if the user pauses.
-
-        **STORE INFORMATION (Use this for FAQ)**
-        - Location: ${RESTAURANT_INFO.address}
-        - Phone: ${RESTAURANT_INFO.phone}
-        - Hours: ${RESTAURANT_INFO.hours}
-        - Halal Status: ${RESTAURANT_INFO.dietary.halal}
-        - Vegetarian/Vegan: ${RESTAURANT_INFO.dietary.vegetarian} ${RESTAURANT_INFO.dietary.vegan}
-        - Gluten Free: ${RESTAURANT_INFO.dietary.glutenFree}
-
-        **SMART MENU SEARCH**
-        - You have a list of "Popular Items" in your context.
-        - IF the user asks for something NOT in that list, use the \`searchMenu\` tool.
-        
-        **ORDERING RULES**
-        - Always ask for **Spice Level** (Mild/Med/Spicy) for Biryanis/Curries.
-        - Always ask for **Quantity**.
-        
-        **ENDING THE CALL**
-        - When \`createCloverOrder\` returns success, say: "Order confirmed! Check your texts. Goodbye!" then call \`hangUp\`.
-
-        **SYSTEM CONTEXT**
-        ${systemPrompt}
-
-        **POPULAR ITEMS**
-        ${initialMenu}
-      `,
-      tools: {
-        searchMenu: llm.tool({
-          description: "Search full menu database.",
-          parameters: {
-            type: "object",
-            properties: { query: { type: "string" } },
-            required: ["query"],
-          },
-          execute: async ({ query }) => {
-            const { items } = await getMenu();
-            const q = query.toLowerCase();
-            const matches = items
-              .filter((i) => i.name.toLowerCase().includes(q))
-              .slice(0, 10);
-            if (matches.length === 0) return "No items found.";
-            return matches
-              .map((m) => `${m.name} ($${(m.price / 100).toFixed(2)})`)
-              .join("\n");
-          },
-        }),
-
-        createCloverOrder: llm.tool({
-          description: "Place order. REQUIRED: items, phoneNumber.",
-          parameters: {
-            type: "object",
-            properties: {
-              items: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: { type: "string" },
-                    quantity: { type: "integer" },
-                    modifications: { type: "string" },
-                  },
-                  required: ["name"],
-                },
-              },
-              note: { type: "string" },
-              orderType: { type: "string", enum: ["pickup", "delivery"] },
-              phoneNumber: { type: "string" },
-            },
-            required: ["items", "phoneNumber"],
-          },
-          execute: async ({ items, note, orderType, phoneNumber }) => {
-            try {
-              const { order, totalCents } = await createOrder({
-                items,
-                note,
-                orderType: orderType || "pickup",
-                phoneNumber,
-              });
-              const speechTotal = formatCurrencyForSpeech(totalCents);
-              return `SUCCESS. Total: ${speechTotal}. SMS Sent.`;
-            } catch (err) {
-              return { success: false, error: err.message };
-            }
-          },
-        }),
-
-        hangUp: llm.tool({
-          description: "Call this IMMEDIATELY after saying Goodbye.",
-          parameters: { type: "object", properties: {} },
-          execute: async () => {
-            console.log("✂️ HangUp requested.");
-            if (activeRoom) {
-              setTimeout(() => {
-                console.log("📞 DISCONNECTING.");
-                activeRoom.disconnect();
-              }, 4000);
-            }
-            return "Ending call...";
-          },
-        }),
-      },
-    });
-  }
-}
-
-// -----------------------------
-// 6. MAIN ENTRY
+// MAIN ENTRY
 // -----------------------------
 const agent = defineAgent({
   name: "restaurant-os-agent",
 
   entry: async (ctx) => {
-    console.log("🔌 Connecting...");
-    await ctx.connect();
+    console.log("🔌 Parallel Boot: Connecting room & loading menu...");
+    
+    // 1. Kick off parallel tasks immediately
+    const connectPromise = ctx.connect();
+    
+    // DEBUG: Log all available metadata sources
+    console.log("🔍 DEBUG ctx.job:", JSON.stringify({
+      metadata: ctx.job?.metadata,
+      dispatchMetadata: ctx.job?.dispatch?.metadata,
+      agentDispatchId: ctx.job?.dispatchId,
+      room: ctx.job?.room?.name,
+      namespace: ctx.job?.namespace
+    }, null, 2));
+    
+    // Try multiple metadata sources
+    const rawMetadata = ctx.job?.metadata || ctx.job?.dispatch?.metadata || "";
+    console.log(`📋 Raw metadata string: "${rawMetadata}"`);
+    
+    const metadataDetails = parseJobMetadata(rawMetadata); // Local parse
+    const menuPromise = getMenu(metadataDetails.clover, metadataDetails.id);
+    
+    await connectPromise;
+    console.log("✅ Connected to LiveKit room");
 
-    let config = {};
-    try {
-      config = JSON.parse(ctx.job.metadata || "{}");
-    } catch (e) {}
-    const restaurantName = config.restaurantName || "Bawarchi Biryanis";
-    const systemPrompt = config.systemPrompt || "You are a helpful assistant.";
+    console.log("⏳ Waiting for caller...");
+    const participant = await ctx.waitForParticipant();
+    console.log(`👤 Caller Connected: ${participant.identity}`);
+    
+    console.log(`[DEBUG] Step 1: Loading Cuisine Profile...`);
+    // 2. Load Enterprise Cuisine Profile
+    const cuisineType = metadataDetails.cuisine || "indian"; 
+    let cuisineProfile = getCuisineProfile(cuisineType);
+    
+    console.log(`🌍 [${INSTANCE_ID}] Cuisine Profile Loaded: ${cuisineProfile.name}`);
 
-    let initialMenu = "Loading...";
-    try {
-      const { items } = await getMenu();
-      initialMenu = items
-        .slice(0, 20)
-        .map((i) => `- ${i.name}`)
-        .join("\n");
-      initialMenu += "\n\n(Use searchMenu tool to find other items)";
-    } catch (e) {
-      initialMenu = "Menu unavailable.";
+    console.log(`[DEBUG] Step 2: Resolving Menu Promise...`);
+    // 3. Resolve background tasks
+    const restaurantConfig = metadataDetails;
+    
+    // Aggressive Context Lookup: Ensure we have twilioCallSid for human handoff
+    if ((!restaurantConfig.id || !restaurantConfig.twilioCallSid) && ctx.job?.room?.name) {
+       try {
+         const roomName = ctx.job.room.name;
+         console.log(`🌐 [${INSTANCE_ID}] Fetching latest Context for room: ${roomName}`);
+         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3001";
+         const res = await fetch(`${apiUrl}/api/internal/room-context/${encodeURIComponent(roomName)}`);
+         
+         if (res.ok) {
+            const context = await res.json();
+            // Deep merge or update config
+            Object.assign(restaurantConfig, context); 
+            console.log(`✅ [${INSTANCE_ID}] Context Resolved via API. ID: ${restaurantConfig.id}, Name: ${restaurantConfig.name}, CallSid: ${restaurantConfig.twilioCallSid ? '✅ Found' : '❌ Missing'}`);
+
+            // RE-LOAD CUISINE PROFILE if context provides it
+            if (context.cuisineType) {
+                console.log(`🔄 [${INSTANCE_ID}] Updating Cuisine Profile to: ${context.cuisineType}`);
+                cuisineProfile = getCuisineProfile(context.cuisineType);
+            }
+
+         } else {
+             console.warn(`⚠️ [${INSTANCE_ID}] Context API returned ${res.status} for room ${roomName}`);
+         }
+       } catch(e) { console.error(`❌ [${INSTANCE_ID}] Context Fetch Failed`, e); }
     }
 
-    const participant = await ctx.waitForParticipant();
-    let callerPhone = normalizePhone(participant.identity);
-    if (callerPhone.length === 10) callerPhone = `+1${callerPhone}`;
-    else if (callerPhone.length > 10 && !callerPhone.startsWith("+"))
-      callerPhone = `+${callerPhone}`;
+    // ULTIMATE SECURITY: Fail Closed
+    // No default tenant allowed. If ID is missing, we must end the call for safety.
+    if (!restaurantConfig.id) {
+        console.error("🚨 CRITICAL SECURITY ERROR: Restaurant ID missing after all lookups. Failing closed.");
+        
+        await connectPromise;
+        const failureMessage = "We're sorry, our system is currently undergoing maintenance. Please try calling back later. Goodbye!";
+        
+        // STABILITY FIX: Explicitly disconnect room BEFORE returning to prevent libc++abi crashes
+        if (ctx.room) {
+            console.log("🔌 Explicitly disconnecting room to prevent mutex errors.");
+            ctx.room.disconnect();
+        }
+        
+        return; 
+    }
 
-    const restaurantAgent = new RestaurantAgent({
-      restaurantName,
-      systemPrompt,
-      initialMenu,
+    // 4. CHECK BUSINESS HOURS & AUTO-REJECT
+    const isOpenNow = isOpen(restaurantConfig.businessHours, restaurantConfig.timezone);
+    if (!isOpenNow && restaurantConfig.voiceSelection !== "test_mode") { // Allow bypass for testing if needed
+        console.log(`⛔ [${INSTANCE_ID}] Restaurant is CLOSED (Schedule: ${JSON.stringify(restaurantConfig.businessHours)}). Auto-declining.`);
+        
+        // Connect just to say we are closed
+        await connectPromise;
+        
+        // Let agent handle closed state through instructions
+        console.log(`🔒 [${INSTANCE_ID}] Proceeding with CLOSED state instructions.`);
+    }
+
+    const { items: menuItems } = await menuPromise;
+    console.log(`[DEBUG] Step 2b: Menu Promise Resolved. Items: ${menuItems ? menuItems.length : 0}`);
+
+    const menuSummary = menuItems
+      .slice(0, 150) // Show first 150 items to LLM (was 50)
+      .map((i) => `- ${i.name} ($${((i.price || 0) / 100).toFixed(2)})`)
+      .join("\n");
+      
+    console.log(`🚀 [${INSTANCE_ID}] Data ready. Menu items: ${menuItems.length}`);
+
+    const callerPhone = participant.identity.replace("sip_", "");
+    let customerDetails = { name: "Guest", phone: callerPhone };
+    if (MOCK_DB[callerPhone]) {
+      customerDetails = { name: MOCK_DB[callerPhone].name, phone: callerPhone };
+    }
+    console.log(`[DEBUG] Step 3: Customer Identified as ${customerDetails.name}`);
+
+    let sessionCart = [];
+    let isFinalized = false;
+
+    let initialGreeting = restaurantConfig.greeting;
+    
+    // Personalize if known customer
+    if (customerDetails.name !== "Guest") {
+        const greetingPrefix = cuisineType === 'indian' ? "Namaste" : "Hello";
+        initialGreeting = `${greetingPrefix} ${customerDetails.name}! Welcome back to ${restaurantConfig.name}.`;
+    }
+
+    // LOGGING: Start Call
+    let callRecord = null;
+    try {
+        if (restaurantConfig.id) {
+           callRecord = await prisma.call.create({
+             data: {
+               restaurantId: restaurantConfig.id,
+               customerPhone: callerPhone,
+               status: "ongoing",
+               twilioCallSid: metadataDetails.twilioCallSid || restaurantConfig.twilioCallSid
+             }
+           });
+           console.log(`📞 Call Logged: ${callRecord.id}`);
+        } else {
+           console.warn("⚠️ No Restaurant ID - cannot log call.");
+        }
+    } catch (e) { 
+        console.error("❌ CRITICAL: Call Log Start Failed!", e);
+        console.error("   Details:", {
+            restaurantId: restaurantConfig.id,
+            customerPhone: callerPhone,
+            error: e.message
+        });
+    }
+
+    // 4. Generate STT Keywords Dynamically from menu
+    // 4. Generate STT Keywords Dynamically from menu
+    console.log(`[DEBUG] Step 3a: Generating keywords from menu...`);
+    
+    let deepgramKeywords = []; 
+    
+    try {
+      const rawKeywords = generateSTTKeywords(menuItems);
+      // Format for Deepgram adapter: Must be Array<[string, boost?]>
+      // e.g. [["samosa"], ["biryani"]]
+      deepgramKeywords = rawKeywords.map(word => [word]);
+      
+      console.log(`🛰️  [${INSTANCE_ID}] Injected ${deepgramKeywords.length} keywords from Menu Intelligence.`);
+    } catch (err) {
+      console.error(`⚠️ Keyword generation failed: ${err.message}`);
+      deepgramKeywords = [];
+    }
+
+    // Transcript Logger - MUST be declared before finalize() for proper scope
+    const transcriptLog = [];
+    let restaurantAgent = null;
+    let session = null; // Declare early for visibility in finalize
+
+    // Helper to finalize session and log to DB
+    const finalize = async (reason) => {
+      console.log(`🛑 [${INSTANCE_ID}] Finalizing session. Reason: ${reason} (Transcript length: ${transcriptLog.length})`);
+      if (isFinalized) return;
+      isFinalized = true;
+      
+      // FLUSH DELAY: Give events a split second to finish emitting before we commit to DB
+      await new Promise(r => setTimeout(r, 1000));
+
+      // --- EXHAUSTIVE RECOVERY ---
+      if (transcriptLog.length === 0) {
+          console.log(`🔍 [${INSTANCE_ID}] Deep Searching for history...`);
+          const possiblePaths = [
+              { name: 'session.history', data: session?.history?.messages },
+              { name: 'session._chatCtx', data: session?._chatCtx?.messages },
+              { name: 'session.chat_ctx', data: session?.chat_ctx?.messages },
+              { name: 'agent.chat_ctx', data: restaurantAgent?.chat_ctx?.messages },
+              { name: 'session.llm.chat_ctx', data: session?.llm?.chat_ctx?.messages }
+          ];
+
+          for (const path of possiblePaths) {
+              if (path.data && path.data.length > 0) {
+                  console.log(`🎯 [${INSTANCE_ID}] Found history in ${path.name} (${path.data.length} items)`);
+                  path.data.forEach(msg => {
+                      if (msg.role === 'user' || msg.role === 'assistant') {
+                          let text = typeof msg.content === 'string' ? msg.content : (Array.isArray(msg.content) ? msg.content.map(c => c.text || "").join(" ") : "");
+                          if (text && text.trim()) {
+                              transcriptLog.push({ role: msg.role === 'assistant' ? 'agent' : 'user', text: redact(text), time: new Date() });
+                          }
+                      }
+                  });
+                  break; 
+              }
+          }
+      }
+
+      // LOGGING: Final DB Save
+      if (callRecord) {
+         try {
+             const duration = Math.round((Date.now() - callRecord.createdAt.getTime()) / 1000);
+             const hasInteraction = transcriptLog.length > 0 || duration > 10;
+             
+             let finalStatus = "missed";
+             if (sessionCart.length > 0) finalStatus = "order_placed";
+             else if (reason === "Caller Hangup" || hasInteraction) finalStatus = "completed";
+             
+             // Fix summary to include Price for Dashboard visibility
+             const totalCents = sessionCart.reduce((acc, item) => acc + (item.price * item.qty), 0);
+             const summaryText = sessionCart.length > 0 
+                ? `Order Placed: $${(totalCents/100).toFixed(2)} (${sessionCart.length} items)` 
+                : (hasInteraction ? "Call completed" : "Missed call");
+
+             console.log(`💾 [${INSTANCE_ID}] Saving ${transcriptLog.length} items to DB. Status: ${finalStatus}. Summary: ${summaryText}`);
+             
+             await prisma.call.update({
+                 where: { id: callRecord.id },
+                 data: {
+                   endedAt: new Date(),
+                   status: finalStatus,
+                   duration: duration,
+                   transcript: transcriptLog,
+                   summary: summaryText
+                 }
+             });
+             console.log(`✅ [${INSTANCE_ID}] DB Save Complete.`);
+         } catch(e) { console.error(`❌ [${INSTANCE_ID}] DB Save Failed:`, e); }
+      }
+
+      // Use restaurantConfig.id OR fall back to callRecord.restaurantId (which was set successfully)
+      const restId = restaurantConfig?.id || callRecord?.restaurantId;
+      console.log(`🔍 [finalize] restaurantId = ${restId}`);
+      await finalizeSession(reason, sessionCart, customerDetails, restId, callRecord?.id);
+
+      // --- DYNAMIC POST-CALL PROMOTION ---
+      try {
+        const notifs = restaurantConfig.notificationConfig;
+        // Only send if configured AND call was meaningful (Order Placed or Completed)
+        if (notifs && notifs.customMessage && (sessionCart.length > 0 || reason === "Caller Hangup")) {
+             console.log(`📨 [${INSTANCE_ID}] Preparing Post-Call SMS...`);
+             let promoMessage = notifs.customMessage;
+             
+             if (notifs.promotions && notifs.promotions.length > 0) {
+                 promoMessage += "\n\n🌟 Special Offers:\n" + notifs.promotions.map(p => "• " + p).join("\n");
+             }
+             
+             await sendSMS(customerDetails.phone, promoMessage);
+             console.log(`✅ [${INSTANCE_ID}] Post-Call SMS Sent.`);
+        }
+      } catch (promoErr) {
+        console.error(`⚠️ Failed to send post-call SMS: ${promoErr.message}`);
+      }
+    };
+
+    const onHangup = async () => await finalize("Caller Hangup");
+    const onRoomClose = async () => await finalize("Room Closed");
+    
+    // Use 'once' to prevent double-firing, though our boolean guard handles it
+    ctx.room.once("participant_disconnected", onHangup);
+    ctx.room.once("disconnected", onRoomClose);
+
+    console.log(`[DEBUG] Step 3b: Awaiting VAD Load...`);
+    let vadModel;
+    try {
+      // Race VAD load against a 5s timeout
+      vadModel = await Promise.race([
+        vadLoadPromise,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("VAD Load Timeout")), 5000))
+      ]);
+      console.log(`[DEBUG] Step 4: VAD Model Loaded`);
+    } catch (err) {
+      console.error(`🚨 [CRITICAL] VAD Failed to Load: ${err.message}`);
+      throw err; 
+    }
+    
+    const selectedVoice = getVoiceFromSelection(restaurantConfig.voiceSelection);
+    console.log(`[DEBUG] Step 5: Voice Selected: ${selectedVoice.id}`);
+
+    // Assign to outer let variable reference
+    restaurantAgent = new RestaurantAgent({
+      restaurantConfig,
+      initialMenu: menuSummary,
       activeRoom: ctx.room,
+      cuisineProfile,
+      customerDetails,
+      sessionCart,
+      callRecord,
+      finalizeCallback: finalize // Pass local finalize function to agent
     });
+    console.log(`[DEBUG] Step 6: Restaurant Agent Instantiated`);
 
-    const vad = await silero.VAD.load({
-      minSpeechDuration: 0.1,
-      minSilenceDuration: 1.0,
-      threshold: 0.5,
-    });
+    console.log(`🎤 [${INSTANCE_ID}] Pipeline ready. Voice: ${selectedVoice.name} (${selectedVoice.id})`);
 
-    // 🚀 NEW: Get Rotated Voice
-    const currentVoice = getNextRotatedVoice();
-
-    const session = new voice.AgentSession({
-      vad,
-      stt: new deepgram.STT({ model: "nova-3" }),
+    session = new voice.AgentSession({
+      vad: vadModel,
+      stt: new deepgram.STT({
+        model: "nova-2",
+        language: "en-IN",
+        keywords: deepgramKeywords, // Re-enabled with proper formatting
+        smartFormat: true,
+        endpointing: 150,
+        interimResults: true,
+        utteranceEndMs: 800,
+      }),
       llm: new openai.LLM({ model: "gpt-4o-mini" }),
-      tts: new elevenlabs.TTS({
-        modelID: "eleven_multilingual_v2",
-        voice: { id: currentVoice.id, name: currentVoice.name },
+      tts: new openai.TTS({ 
+        voice: selectedVoice.id, 
+        model: "tts-1",
+        speed: restaurantConfig.voiceSpeed || 1.0
       }),
     });
 
-    // Inject System Prompt about the voice persona
-    session.systemPrompt = `You are ${currentVoice.name}. You are the ${
-      currentVoice.category || "professional"
-    } front-desk assistant for ${restaurantName}.`;
+    console.log(`✅ [${INSTANCE_ID}] Session Initialized with OpenAI Voice: ${selectedVoice.name}`);
 
-    session.on("error", (err) => console.error("🔥 Session Error:", err));
+    // Add comprehensive logs for speech events
+    session.on("user_started_speaking", () => {
+      console.log("🎤 User started speaking...");
+    });
+
+    session.on("user_stopped_speaking", () => {
+      console.log("🎤 User stopped speaking.");
+    });
+
+    // Generic Transcription Listener (Often more robust than user_started/stopped)
+    session.on("transcription", (trans) => {
+        console.log(`📝 [${INSTANCE_ID}] [RAW] session:transcription:`, JSON.stringify(trans));
+    });
+
+    // --- ULTRA-ROBUST ROOM-LEVEL LISTENER ---
+    // If AgentSession events fail, the Room will still see the text.
+    ctx.room.on("transcriptionReceived", (transcriptions, participant) => {
+        console.log(`📝 [${INSTANCE_ID}] [ROOM EVENT] Received from ${participant?.identity || 'unknown'}`);
+        transcriptions.forEach(t => {
+            const text = redact(t.text || "");
+            if (!text.trim()) return;
+            
+            const role = (participant?.identity?.includes('agent') || participant?.identity === ctx.room.localParticipant.identity) ? 'agent' : 'user';
+            
+            console.log(`   [ROOM TRANSCRIPT] ${role.toUpperCase()}: "${text}"`);
+            
+            // Check for duplicates before pushing
+            const isDuplicate = transcriptLog.some(existing => existing.text === text && existing.role === role);
+            if (!isDuplicate) {
+                transcriptLog.push({ role, text, time: new Date() });
+                
+                // Real-time Save
+                if (callRecord) {
+                    prisma.call.update({
+                        where: { id: callRecord.id },
+                        data: { transcript: transcriptLog }
+                    }).catch(() => {});
+                }
+            }
+        });
+    });
+
+    // Transcript event handlers (using correct event names for @livekit/agents v1.x)
+    session.on("user_input_transcribed", (ev) => {
+      console.log(`📝 [${INSTANCE_ID}] [DEBUG] User Input Transcribed. isFinal: ${ev.isFinal}, text: "${ev.transcript}"`);
+      
+      if (ev.isFinal) {
+        const text = redact(ev.transcript || "");
+        if (text.trim()) {
+            console.log(`📝 [${INSTANCE_ID}] Pushing User Final: "${text}"`);
+            transcriptLog.push({ role: "user", text, time: new Date() });
+            
+            // --- AUTO-SAVE ON EVERY TURN ---
+            if (callRecord) {
+                prisma.call.update({
+                    where: { id: callRecord.id },
+                    data: { transcript: transcriptLog }
+                }).catch(() => {});
+            }
+        }
+      }
+    });
+
+    session.on("conversation_item_added", (ev) => {
+      const msg = ev.item;
+      console.log(`💬 [${INSTANCE_ID}] Conversation Item Added. Role: ${msg.role}`);
+      
+      if (msg.role === 'assistant') {
+        const text = redact(typeof msg.content === 'string' ? msg.content : (Array.isArray(msg.content) ? msg.content.map(c => typeof c === 'string' ? c : (c.text || "")).join(" ") : ""));
+        if (text.trim()) {
+            // Check for duplicates
+            const isDuplicate = transcriptLog.some(existing => existing.text === text && existing.role === 'agent');
+            if (!isDuplicate) {
+                console.log(`🤖 [${INSTANCE_ID}] Pushing Agent Final: "${text}"`);
+                transcriptLog.push({ role: "agent", text, time: new Date() });
+                
+                // --- AUTO-SAVE ON EVERY TURN ---
+                if (callRecord) {
+                    prisma.call.update({
+                        where: { id: callRecord.id },
+                        data: { transcript: transcriptLog }
+                    }).catch(() => {});
+                }
+            }
+        }
+      }
+    });
+
+    session.on("agent_started_speaking", () => {
+      console.log("🗣️  Agent started speaking...");
+    });
+
+    session.on("agent_stopped_speaking", () => {
+      console.log("🗣️  Agent stopped speaking.");
+    });
+
+    // Add error listener to session for unexpected failures
+    session.on("error", (err) => {
+      console.error("🚨 Session error event:", err);
+    });
 
     try {
-      await runWithJobContextAsync(ctx, async () => {
-        await session.start({ agent: restaurantAgent, room: ctx.room });
-        await session.generateReply({
-          instructions: `Greet cheerfully with "Namaste" from ${restaurantName}.`,
-        });
+      console.log(`🎬 [${INSTANCE_ID}] Starting agent session...`);
+      
+      // DIAGNOSTIC: Log session properties to find where chat history is hidden
+      console.log(`🔍 [${INSTANCE_ID}] Session properties:`, Object.keys(session).filter(k => !k.startsWith('_')));
 
-        await new Promise((resolve) => ctx.room.on("disconnected", resolve));
+      // --- THE "DIFFERENT ROUTE": BACKGROUND AUTO-SAVE ---
+      // Instead of waiting for the end, we poll the session context every 5 seconds.
+      const autoSaveInterval = setInterval(async () => {
+          if (isFinalized) return;
+          
+          const activeHistory = session?.history?.messages || session?._chatCtx?.messages;
+          if (!activeHistory || activeHistory.length <= transcriptLog.length) return;
+
+          console.log(`💾 [${INSTANCE_ID}] Auto-saving transcript snapshot (${activeHistory.length} messages)...`);
+          const newTrace = [];
+          activeHistory.forEach(msg => {
+              if (msg.role === 'user' || msg.role === 'assistant') {
+                  let text = typeof msg.content === 'string' ? msg.content : (Array.isArray(msg.content) ? msg.content.map(c => c.text || "").join(" ") : "");
+                  if (text && text.trim()) {
+                      newTrace.push({ role: msg.role === 'assistant' ? 'agent' : 'user', text: redact(text), time: new Date() });
+                  }
+              }
+          });
+
+          if (newTrace.length > 0 && callRecord) {
+              try {
+                  await prisma.call.update({
+                      where: { id: callRecord.id },
+                      data: { transcript: newTrace }
+                  });
+              } catch (e) {
+                  console.error(`⚠️ [${INSTANCE_ID}] Auto-save failed:`, e.message);
+              }
+          }
+      }, 5000);
+
+      await session.start({ agent: restaurantAgent, room: ctx.room });
+      console.log(`✅ [${INSTANCE_ID}] Session started successfully`);
+      
+      console.log(`🗣️  Generating greeting: "${initialGreeting}"`);
+      await session.generateReply({
+        instructions: `Say exactly: "${initialGreeting}"`,
       });
+      
+      await new Promise((resolve) => ctx.room.on("disconnected", resolve));
+      clearInterval(autoSaveInterval);
     } catch (err) {
-      console.error("❌ Fatal Error:", err);
+      // Silence known shutdown errors
+      if (err?.code === 'APIUserAbortError' || err?.message?.includes('aborted')) {
+          console.log("ℹ️ Session ended normally (User Abort / Hangup).");
+      } else {
+          console.error("❌ Unexpected Session Error:", err);
+      }
+    } finally {
+      // Ensure finalize runs even if we crash out of the session
+      if (!isFinalized) await finalize("Session Ended (Finally Block)");
+      
+      ctx.room.off("participant_disconnected", onHangup);
+      ctx.room.off("disconnected", onRoomClose);
     }
   },
 });
 
 export default agent;
 
-// ESM equivalent of "if (require.main === module)"
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   cli.runApp(new WorkerOptions({ agent: fileURLToPath(import.meta.url) }));
 }

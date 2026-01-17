@@ -33,3 +33,7 @@ pnpm-debug.log*
 # Editors
 .vscode/
 .idea/
+
+# Google Cloud credentials
+google-credentials.json
+/generated/prisma

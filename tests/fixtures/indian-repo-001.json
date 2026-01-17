@@ -1,0 +1,3145 @@
+{
+  "categories": {
+    "QXGGQ3GFM1H60": {
+      "id": "QXGGQ3GFM1H60",
+      "name": "Breads",
+      "sortOrder": 8,
+      "items": [
+        "MT08188WK3XYC",
+        "M7T0E5ER0K6HA",
+        "YF0T9VK1GQ24P",
+        "ET89M9A64MN4T",
+        "NJQK9QXWHT5SE",
+        "4RFBQ0Y6Y0WNT",
+        "Y9A2TWQP2GF1M"
+      ]
+    },
+    "HH2FSES1Y0GGM": {
+      "id": "HH2FSES1Y0GGM",
+      "name": "Desserts",
+      "sortOrder": 11,
+      "items": [
+        "GMG4KEM07VB92",
+        "342NM73N26C6R",
+        "RP3Q71PEQKVT0"
+      ]
+    },
+    "0MH0RTTR7WFF0": {
+      "id": "0MH0RTTR7WFF0",
+      "name": "Dal & Sides",
+      "sortOrder": 9,
+      "items": [
+        "G8VCT71ECHYFJ",
+        "FR6M7B9B1D5GE",
+        "B2VKH7DWWHE7W",
+        "V68RAJDQ4SA6P",
+        "7B2EG94C0G7RY",
+        "ZK8H8MNTYZF56",
+        "ZEXANMVF18SHY",
+        "M3K2HW2FPZ8RC",
+        "ZGCQ8DTFYH0EA",
+        "Q61H1YDTMW6KJ"
+      ]
+    },
+    "37TJ0YG4WDM7T": {
+      "id": "37TJ0YG4WDM7T",
+      "name": "Biryani & Pulavo",
+      "sortOrder": 7,
+      "items": [
+        "1G8RV0VHKK8PY",
+        "E2TE5ZG9GQ3F2",
+        "P6X0AQM8F5YAC"
+      ]
+    },
+    "RFK2DQCEJ6Y9M": {
+      "id": "RFK2DQCEJ6Y9M",
+      "name": "Indo - Chinese",
+      "sortOrder": 12,
+      "items": [
+        "HH4QTWB3TDM7W",
+        "F3QQHZJW7KP04",
+        "NV5N4QSSQ45JT",
+        "FB9NFKAYY9B36",
+        "SNAX8XG9T675G",
+        "JABA27PYNQFFP",
+        "2CX0CDEY8SF4T",
+        "ESMGD6VRRS5EP",
+        "JH9NY908ZGK4W",
+        "624EWM3GB4NN6"
+      ]
+    },
+    "97DWJTX3JCQ84": {
+      "id": "97DWJTX3JCQ84",
+      "name": "Grill & Tandoor",
+      "sortOrder": 4,
+      "items": [
+        "FCZJR3RK3GART",
+        "G36DSCXZX0TXP",
+        "K67D15NTNEJGR",
+        "Y1RC7V9V23G0G",
+        "G3VYXE24P2WRA",
+        "FJ215C9BJ4918"
+      ]
+    },
+    "FN2Z3A4S9HESA": {
+      "id": "FN2Z3A4S9HESA",
+      "name": "Non-Veg Starters",
+      "sortOrder": 2,
+      "items": [
+        "JK4QW7J5EJY5Y",
+        "F81HH4P8PYA9J",
+        "G6FMAXXZ9BPXE",
+        "88S89FV5NNFVC",
+        "RP463ET4WC6XE",
+        "K83B2PQ1GQQFE",
+        "7DX92KDXK7GC0"
+      ]
+    },
+    "06BGN2K6HZBQ8": {
+      "id": "06BGN2K6HZBQ8",
+      "name": "Dosas",
+      "sortOrder": 5,
+      "items": [
+        "ZTR1S1CPMYZT0",
+        "MGA2AR60PTTMA",
+        "WF6WY9F7WYSZ0",
+        "1QJTJWS49RNYY",
+        "7V80J1K6MGJDM",
+        "2E3HDR1NXXM96",
+        "AGK93DR21DHM6"
+      ]
+    },
+    "M0MBQ7JR1F0R4": {
+      "id": "M0MBQ7JR1F0R4",
+      "name": "Veg Starters",
+      "sortOrder": 1,
+      "items": [
+        "JA18333VH140R",
+        "21E7QG6C2F862",
+        "624EWM3GB4NN6",
+        "3WT6YAETDQJYG",
+        "8KK1QVW5FDGAE",
+        "BFT5VCE79X64R",
+        "7RWR0P5HSA5YG",
+        "JA68V5P59D0CE",
+        "VNWWRKMZ42V80",
+        "RTJ9VGTCDD7KA",
+        "25CSN3832E3A0",
+        "J5AWDQ9YHY7BC",
+        "VEXWPVRC49150"
+      ]
+    },
+    "87YGXM4YM6P82": {
+      "id": "87YGXM4YM6P82",
+      "name": "Entrees",
+      "sortOrder": 6,
+      "items": [
+        "5XBJ952KX1H8M",
+        "HY0NY45N1RHAT",
+        "5BYBWMAN38BCW",
+        "FXSQF0946BBKT",
+        "9KWQ8V6QNCJN4",
+        "QXKRN28JR5B9Y",
+        "66ZAW4WA5H8ST",
+        "X4CXFKAT9JA7T",
+        "A5EYDWQASWQK6",
+        "FSE0YAA90H7B2",
+        "67PE6NC1ZFNXA",
+        "QPXEPA9G0JPWG",
+        "4QVWFRGGBXD58"
+      ]
+    },
+    "14C9YFSG164C0": {
+      "id": "14C9YFSG164C0",
+      "name": "Catering",
+      "sortOrder": 15,
+      "items": []
+    },
+    "STHWBS9GHKBEC": {
+      "id": "STHWBS9GHKBEC",
+      "name": "Soups & Papad",
+      "sortOrder": 3,
+      "items": [
+        "RGMYP536E8DA2",
+        "F7SJ82AJD9QCJ",
+        "3QR2YNB7ZSE96",
+        "GDMJJZ0H4W05Y"
+      ]
+    },
+    "5FY6C9V3Z538R": {
+      "id": "5FY6C9V3Z538R",
+      "name": "Combos",
+      "sortOrder": 16,
+      "items": [
+        "5HR0B4VWR2VC4"
+      ]
+    },
+    "T2TVM9HC64NA4": {
+      "id": "T2TVM9HC64NA4",
+      "name": "Weekend Specials",
+      "sortOrder": 0,
+      "items": []
+    },
+    "D2W12MVZR4MB6": {
+      "id": "D2W12MVZR4MB6",
+      "name": "Drinks",
+      "sortOrder": 10,
+      "items": [
+        "JQXKPJ13CK7QC",
+        "3PDP5MY9DKYVG",
+        "1RM8E2V08RQEA",
+        "BAH5650DR530Y"
+      ]
+    }
+  },
+  "modifierGroups": {
+    "CJWNVFJA1S43C": {
+      "id": "CJWNVFJA1S43C",
+      "name": "Apollo Chicken/Fish",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "MM7T44NDMP9BJ": {
+      "id": "MM7T44NDMP9BJ",
+      "name": "Samosa",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "FT2HK3CP67EG2": {
+      "id": "FT2HK3CP67EG2",
+      "name": "Soup protein - Non-Veg",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "C3Z6J8BBRRCQR": {
+      "id": "C3Z6J8BBRRCQR",
+      "name": "Soup protein -Veg",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "B3498HZE4ZKEG": {
+      "id": "B3498HZE4ZKEG",
+      "name": "Kulcha",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "YS49N4EV073TR": {
+      "id": "YS49N4EV073TR",
+      "name": "Choice of Meat",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "ZGSB1K5REY7J2": {
+      "id": "ZGSB1K5REY7J2",
+      "name": "Choice of any 3 breads",
+      "minRequired": 0,
+      "maxAllowed": 3,
+      "modifiers": []
+    },
+    "KFT5D1TF63BB6": {
+      "id": "KFT5D1TF63BB6",
+      "name": "Kulfi Flavor",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "CQ3DM8RH84REP": {
+      "id": "CQ3DM8RH84REP",
+      "name": "IndoChi",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "SM97R19PMJ2NE": {
+      "id": "SM97R19PMJ2NE",
+      "name": "Choice of appetizers",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "8AF559QKVJQ1E": {
+      "id": "8AF559QKVJQ1E",
+      "name": "Pulavs- Options",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "YR1MGEA9XFP5R": {
+      "id": "YR1MGEA9XFP5R",
+      "name": "South Indian - Spice level",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "7GNY0KK6QDNSY": {
+      "id": "7GNY0KK6QDNSY",
+      "name": "ICE Cream",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "XTD2V1KX8TEDP": {
+      "id": "XTD2V1KX8TEDP",
+      "name": "Butter",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "T6HBPY1Z6FBFE": {
+      "id": "T6HBPY1Z6FBFE",
+      "name": "Thali Protein - Options",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "C4DAWR8T2RHMM": {
+      "id": "C4DAWR8T2RHMM",
+      "name": "Tea Flavor",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "0K0EFD306SBHE": {
+      "id": "0K0EFD306SBHE",
+      "name": "Tikka",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "DQGXN033T841C": {
+      "id": "DQGXN033T841C",
+      "name": "Tandoori Chicken",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "K3CHE38GA0MJW": {
+      "id": "K3CHE38GA0MJW",
+      "name": "Coffee",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "7RNX081NNJD5W": {
+      "id": "7RNX081NNJD5W",
+      "name": "Pulavs Protein",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "RPW9J29T2G536": {
+      "id": "RPW9J29T2G536",
+      "name": "Soda",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "8Y5V8AZY0ENDY": {
+      "id": "8Y5V8AZY0ENDY",
+      "name": "Thali - Options",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "GYAYJ2JGQ3ZGT": {
+      "id": "GYAYJ2JGQ3ZGT",
+      "name": "Biryani Protein",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "19D2XY1E4308P": {
+      "id": "19D2XY1E4308P",
+      "name": "Choice - Biryani",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "393BVJ5R9VQ42": {
+      "id": "393BVJ5R9VQ42",
+      "name": "Spice Levels",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "GAA0MKZE7F8H0": {
+      "id": "GAA0MKZE7F8H0",
+      "name": "Dum Choice",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "3B1RHMSG9DPGY": {
+      "id": "3B1RHMSG9DPGY",
+      "name": "Paratha",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "S90RFR5RQGKEC": {
+      "id": "S90RFR5RQGKEC",
+      "name": "Choice - Snacks",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "WG0GB7V28WG9J": {
+      "id": "WG0GB7V28WG9J",
+      "name": "Lassi Flavor",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "NH68DR9W2Q3JC": {
+      "id": "NH68DR9W2Q3JC",
+      "name": "Roti",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "N2FSYQDVWVD8P": {
+      "id": "N2FSYQDVWVD8P",
+      "name": "Choice of Protein",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    },
+    "9YF70F17WZM5W": {
+      "id": "9YF70F17WZM5W",
+      "name": "Soda",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "QMG813PA2G6ZE": {
+      "id": "QMG813PA2G6ZE",
+      "name": "Mandi - Flavours",
+      "minRequired": 0,
+      "maxAllowed": 2147483647,
+      "modifiers": []
+    },
+    "VAQNVFTQ552QA": {
+      "id": "VAQNVFTQ552QA",
+      "name": "Naan",
+      "minRequired": 1,
+      "maxAllowed": 1,
+      "modifiers": []
+    }
+  },
+  "modifiers": [
+    {
+      "id": "BEHJSMN3FTPBC",
+      "name": "Fish",
+      "price": 600,
+      "groupId": "CJWNVFJA1S43C",
+      "sortOrder": 0,
+      "available": true
+    },
+    {
+      "id": "5Q46ZBBCCS2TG",
+      "name": "Chicken",
+      "price": 0,
+      "groupId": "CJWNVFJA1S43C",
+      "sortOrder": 1,
+      "available": true
+    },
+    {
+      "id": "WPXYYSDFY3K70",
+      "name": "Veg",
+      "price": 0,
+      "groupId": "GYAYJ2JGQ3ZGT",
+      "sortOrder": 2,
+      "available": true
+    },
+    {
+      "id": "PXAE3XPN1VR9W",
+      "name": "Paneer",
+      "price": 0,
+      "groupId": "GYAYJ2JGQ3ZGT",
+      "sortOrder": 3,
+      "available": true
+    },
+    {
+      "id": "C9BGQEB7GR9GJ",
+      "name": "Chicken",
+      "price": 0,
+      "groupId": "GYAYJ2JGQ3ZGT",
+      "sortOrder": 4,
+      "available": true
+    },
+    {
+      "id": "VHQ6ATEFDVS5C",
+      "name": "Lamb",
+      "price": 200,
+      "groupId": "GYAYJ2JGQ3ZGT",
+      "sortOrder": 5,
+      "available": true
+    },
+    {
+      "id": "AC07E3FD8RY38",
+      "name": "Goat",
+      "price": 400,
+      "groupId": "GYAYJ2JGQ3ZGT",
+      "sortOrder": 6,
+      "available": true
+    },
+    {
+      "id": "HATYNCYJ0GRVG",
+      "name": "Goat",
+      "price": 0,
+      "groupId": "YS49N4EV073TR",
+      "sortOrder": 7,
+      "available": true
+    },
+    {
+      "id": "CYAXXDM5XT2CT",
+      "name": "Lamb",
+      "price": 0,
+      "groupId": "YS49N4EV073TR",
+      "sortOrder": 8,
+      "available": true
+    },
+    {
+      "id": "Y9F9J00CNWK40",
+      "name": "Vegetable",
+      "price": 0,
+      "groupId": "N2FSYQDVWVD8P",
+      "sortOrder": 9,
+      "available": true
+    },
+    {
+      "id": "SV4Q6SEZ9VVPM",
+      "name": "Paneer",
+      "price": 0,
+      "groupId": "N2FSYQDVWVD8P",
+      "sortOrder": 10,
+      "available": true
+    },
+    {
+      "id": "YQXF8DFA5Q2B8",
+      "name": "Chicken",
+      "price": 0,
+      "groupId": "N2FSYQDVWVD8P",
+      "sortOrder": 11,
+      "available": true
+    },
+    {
+      "id": "BW5FGSMQYARYM",
+      "name": "Lamb",
+      "price": 200,
+      "groupId": "N2FSYQDVWVD8P",
+      "sortOrder": 12,
+      "available": true
+    },
+    {
+      "id": "062NC4WTW8DN6",
+      "name": "Fish",
+      "price": 300,
+      "groupId": "N2FSYQDVWVD8P",
+      "sortOrder": 13,
+      "available": true
+    },
+    {
+      "id": "BN2HVK2QV7GYR",
+      "name": "Salmon",
+      "price": 600,
+      "groupId": "N2FSYQDVWVD8P",
+      "sortOrder": 14,
+      "available": true
+    },
+    {
+      "id": "X4ZSKP0WBTZAY",
+      "name": "Goat",
+      "price": 200,
+      "groupId": "N2FSYQDVWVD8P",
+      "sortOrder": 15,
+      "available": true
+    },
+    {
+      "id": "5WWR0P7CCSYXA",
+      "name": "Irani Chai",
+      "price": 399,
+      "groupId": "S90RFR5RQGKEC",
+      "sortOrder": 16,
+      "available": true
+    },
+    {
+      "id": "2K0H2QTFKE0SM",
+      "name": "Street Style Chicken Pakoda",
+      "price": 1599,
+      "groupId": "S90RFR5RQGKEC",
+      "sortOrder": 17,
+      "available": true
+    },
+    {
+      "id": "28SPCFQ40B4GG",
+      "name": "Black",
+      "price": 0,
+      "groupId": "K3CHE38GA0MJW",
+      "sortOrder": 18,
+      "available": true
+    },
+    {
+      "id": "5X1JBP3WMYJ82",
+      "name": "Espresso",
+      "price": 0,
+      "groupId": "K3CHE38GA0MJW",
+      "sortOrder": 19,
+      "available": true
+    },
+    {
+      "id": "CPZQ02AJJ7WXY",
+      "name": "Veg",
+      "price": 0,
+      "groupId": "GAA0MKZE7F8H0",
+      "sortOrder": 20,
+      "available": true
+    },
+    {
+      "id": "SFAKXZQ2928T4",
+      "name": "Chicken",
+      "price": 0,
+      "groupId": "GAA0MKZE7F8H0",
+      "sortOrder": 21,
+      "available": true
+    },
+    {
+      "id": "EB1RNEW00ZRZ0",
+      "name": "Goat",
+      "price": 400,
+      "groupId": "GAA0MKZE7F8H0",
+      "sortOrder": 22,
+      "available": true
+    },
+    {
+      "id": "G6WFY656BSWQC",
+      "name": "Onion",
+      "price": 0,
+      "groupId": "B3498HZE4ZKEG",
+      "sortOrder": 23,
+      "available": true
+    },
+    {
+      "id": "8HCP17RRNHM4M",
+      "name": "Paneer",
+      "price": 0,
+      "groupId": "B3498HZE4ZKEG",
+      "sortOrder": 24,
+      "available": true
+    },
+    {
+      "id": "12XYAVVZBTGVE",
+      "name": "Orange",
+      "price": 0,
+      "groupId": "KFT5D1TF63BB6",
+      "sortOrder": 25,
+      "available": true
+    },
+    {
+      "id": "A2FBJ7WYR3Q24",
+      "name": "Pista",
+      "price": 0,
+      "groupId": "KFT5D1TF63BB6",
+      "sortOrder": 26,
+      "available": true
+    },
+    {
+      "id": "XENNEJFDGF6PY",
+      "name": "Mango",
+      "price": 0,
+      "groupId": "WG0GB7V28WG9J",
+      "sortOrder": 27,
+      "available": true
+    },
+    {
+      "id": "JS1WB9TXFVCFG",
+      "name": "Salt",
+      "price": 0,
+      "groupId": "WG0GB7V28WG9J",
+      "sortOrder": 28,
+      "available": true
+    },
+    {
+      "id": "3YR8AKRYHV59E",
+      "name": "Sweet",
+      "price": 0,
+      "groupId": "WG0GB7V28WG9J",
+      "sortOrder": 29,
+      "available": true
+    },
+    {
+      "id": "VZFKVB825GB9Y",
+      "name": "Plain",
+      "price": 0,
+      "groupId": "VAQNVFTQ552QA",
+      "sortOrder": 30,
+      "available": true
+    },
+    {
+      "id": "75N0B3NHE04VM",
+      "name": "Butter",
+      "price": 0,
+      "groupId": "VAQNVFTQ552QA",
+      "sortOrder": 31,
+      "available": true
+    },
+    {
+      "id": "BEJDPFPKMEFX8",
+      "name": "Garlic",
+      "price": 0,
+      "groupId": "VAQNVFTQ552QA",
+      "sortOrder": 32,
+      "available": true
+    },
+    {
+      "id": "AJ15E7ZQCV1TC",
+      "name": "Cheese",
+      "price": 0,
+      "groupId": "VAQNVFTQ552QA",
+      "sortOrder": 33,
+      "available": true
+    },
+    {
+      "id": "CD0GM26F18V0Y",
+      "name": "Plain",
+      "price": 0,
+      "groupId": "3B1RHMSG9DPGY",
+      "sortOrder": 34,
+      "available": true
+    },
+    {
+      "id": "9T1EHN9PGVESC",
+      "name": "Chili",
+      "price": 0,
+      "groupId": "3B1RHMSG9DPGY",
+      "sortOrder": 35,
+      "available": true
+    },
+    {
+      "id": "J7WB0HX4SM936",
+      "name": "Veg",
+      "price": 0,
+      "groupId": "7RNX081NNJD5W",
+      "sortOrder": 36,
+      "available": true
+    },
+    {
+      "id": "RSGT11ZM44VC4",
+      "name": "Paneer",
+      "price": 0,
+      "groupId": "7RNX081NNJD5W",
+      "sortOrder": 37,
+      "available": true
+    },
+    {
+      "id": "0TK2C7CYWVASW",
+      "name": "Lamb",
+      "price": 200,
+      "groupId": "7RNX081NNJD5W",
+      "sortOrder": 38,
+      "available": true
+    },
+    {
+      "id": "FM20XT77M5DXP",
+      "name": "Chicken",
+      "price": 0,
+      "groupId": "7RNX081NNJD5W",
+      "sortOrder": 39,
+      "available": true
+    },
+    {
+      "id": "PCAM04Z90WJEC",
+      "name": "Goat",
+      "price": 200,
+      "groupId": "7RNX081NNJD5W",
+      "sortOrder": 40,
+      "available": true
+    },
+    {
+      "id": "7JSGXJ89DXK5A",
+      "name": "Jack Fruit",
+      "price": 1599,
+      "groupId": "8AF559QKVJQ1E",
+      "sortOrder": 41,
+      "available": true
+    },
+    {
+      "id": "M6YEA3ZHT75K2",
+      "name": "Gutti Vankya ",
+      "price": 1599,
+      "groupId": "8AF559QKVJQ1E",
+      "sortOrder": 42,
+      "available": true
+    },
+    {
+      "id": "EN8ZRHPTXH58P",
+      "name": "Kodi (Bone-In)",
+      "price": 1799,
+      "groupId": "8AF559QKVJQ1E",
+      "sortOrder": 43,
+      "available": true
+    },
+    {
+      "id": "87NQ5SSME06BY",
+      "name": "Plain",
+      "price": 0,
+      "groupId": "NH68DR9W2Q3JC",
+      "sortOrder": 44,
+      "available": true
+    },
+    {
+      "id": "JQ0Y75M91Q9F2",
+      "name": "Butter",
+      "price": 0,
+      "groupId": "NH68DR9W2Q3JC",
+      "sortOrder": 45,
+      "available": true
+    },
+    {
+      "id": "AY3X1SRCH7ZZM",
+      "name": "Veg",
+      "price": 0,
+      "groupId": "C3Z6J8BBRRCQR",
+      "sortOrder": 46,
+      "available": true
+    },
+    {
+      "id": "8CBEJAWJHF1H2",
+      "name": "Mild",
+      "price": 0,
+      "groupId": "YR1MGEA9XFP5R",
+      "sortOrder": 47,
+      "available": true
+    },
+    {
+      "id": "ZNCDBRRR54J1Y",
+      "name": "Medium",
+      "price": 0,
+      "groupId": "YR1MGEA9XFP5R",
+      "sortOrder": 48,
+      "available": true
+    },
+    {
+      "id": "7QG5KXFZNC7NR",
+      "name": "Spicy",
+      "price": 0,
+      "groupId": "YR1MGEA9XFP5R",
+      "sortOrder": 49,
+      "available": true
+    },
+    {
+      "id": "J3ASV1F7F6FKY",
+      "name": "Extra Spicy",
+      "price": 0,
+      "groupId": "YR1MGEA9XFP5R",
+      "sortOrder": 50,
+      "available": true
+    },
+    {
+      "id": "QVXBRR1W9W8D2",
+      "name": "Half Chicken",
+      "price": 0,
+      "groupId": "DQGXN033T841C",
+      "sortOrder": 51,
+      "available": true
+    },
+    {
+      "id": "CW6G3FEQ5QYQJ",
+      "name": "Full Chicken",
+      "price": 800,
+      "groupId": "DQGXN033T841C",
+      "sortOrder": 52,
+      "available": true
+    },
+    {
+      "id": "GK5AWE0PGXHQR",
+      "name": "English Breakfast",
+      "price": 0,
+      "groupId": "C4DAWR8T2RHMM",
+      "sortOrder": 53,
+      "available": true
+    },
+    {
+      "id": "6X0BJZ5YJ9GJW",
+      "name": "Green",
+      "price": 0,
+      "groupId": "C4DAWR8T2RHMM",
+      "sortOrder": 54,
+      "available": true
+    },
+    {
+      "id": "DFBKWSC2TQM2A",
+      "name": "Ginger Turmeric",
+      "price": 0,
+      "groupId": "C4DAWR8T2RHMM",
+      "sortOrder": 55,
+      "available": true
+    },
+    {
+      "id": "N7FPHMHNMR2XA",
+      "name": "Chicken",
+      "price": 0,
+      "groupId": "0K0EFD306SBHE",
+      "sortOrder": 56,
+      "available": true
+    },
+    {
+      "id": "26KVHZQ4N1HT6",
+      "name": "Lamb",
+      "price": 200,
+      "groupId": "0K0EFD306SBHE",
+      "sortOrder": 57,
+      "available": true
+    },
+    {
+      "id": "TXRCQDGYJA3VC",
+      "name": "Salmon",
+      "price": 600,
+      "groupId": "0K0EFD306SBHE",
+      "sortOrder": 58,
+      "available": true
+    },
+    {
+      "id": "ETCJPKKJA7R50",
+      "name": "Chicken",
+      "price": 0,
+      "groupId": "MM7T44NDMP9BJ",
+      "sortOrder": 59,
+      "available": true
+    },
+    {
+      "id": "DE67FDKG0Q1NP",
+      "name": "Paneer",
+      "price": 0,
+      "groupId": "MM7T44NDMP9BJ",
+      "sortOrder": 60,
+      "available": true
+    },
+    {
+      "id": "W3836D525BCPT",
+      "name": "Onion",
+      "price": 0,
+      "groupId": "MM7T44NDMP9BJ",
+      "sortOrder": 61,
+      "available": true
+    },
+    {
+      "id": "PK7DRH5QCRCF6",
+      "name": "No Butter",
+      "price": 0,
+      "groupId": "XTD2V1KX8TEDP",
+      "sortOrder": 62,
+      "available": true
+    },
+    {
+      "id": "KXSY54YQ2Y0E0",
+      "name": "Butter",
+      "price": 0,
+      "groupId": "XTD2V1KX8TEDP",
+      "sortOrder": 63,
+      "available": true
+    },
+    {
+      "id": "80VS286KEVN4C",
+      "name": "Coke",
+      "price": 0,
+      "groupId": "RPW9J29T2G536",
+      "sortOrder": 64,
+      "available": true
+    },
+    {
+      "id": "4EZMAFHMPG4ER",
+      "name": "Diet Coke",
+      "price": 0,
+      "groupId": "RPW9J29T2G536",
+      "sortOrder": 65,
+      "available": true
+    },
+    {
+      "id": "7W5NHY0EK8D0W",
+      "name": "Sprite",
+      "price": 0,
+      "groupId": "RPW9J29T2G536",
+      "sortOrder": 66,
+      "available": true
+    },
+    {
+      "id": "QMGKM2165EAJ2",
+      "name": "Gingerale",
+      "price": 0,
+      "groupId": "RPW9J29T2G536",
+      "sortOrder": 67,
+      "available": true
+    },
+    {
+      "id": "MC6KG4A8JTM1Y",
+      "name": "Thumps up",
+      "price": 100,
+      "groupId": "RPW9J29T2G536",
+      "sortOrder": 68,
+      "available": true
+    },
+    {
+      "id": "T9DKB5TYX4WWR",
+      "name": "Limca",
+      "price": 100,
+      "groupId": "RPW9J29T2G536",
+      "sortOrder": 69,
+      "available": true
+    },
+    {
+      "id": "VZSV5XY9Q97PG",
+      "name": "Mild",
+      "price": 0,
+      "groupId": "393BVJ5R9VQ42",
+      "sortOrder": 70,
+      "available": true
+    },
+    {
+      "id": "SKZKZGKV2QQX8",
+      "name": "Medium",
+      "price": 0,
+      "groupId": "393BVJ5R9VQ42",
+      "sortOrder": 71,
+      "available": true
+    },
+    {
+      "id": "F8R8N8SRPG4CP",
+      "name": "Hot",
+      "price": 0,
+      "groupId": "393BVJ5R9VQ42",
+      "sortOrder": 72,
+      "available": true
+    },
+    {
+      "id": "ZJXH5RGTTZSW8",
+      "name": "Indian Spicy",
+      "price": 0,
+      "groupId": "393BVJ5R9VQ42",
+      "sortOrder": 73,
+      "available": true
+    }
+  ],
+  "items": [
+    {
+      "id": "5HR0B4VWR2VC4",
+      "name": "Entree with 1 Naan",
+      "description": "",
+      "price": 1099,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "5FY6C9V3Z538R"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "DHB5A1GTA4W6E",
+      "name": "Juice",
+      "price": 500,
+      "modifierGroupIds": [],
+      "categoryIds": [],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "EJNAABXT8TV3R",
+      "name": "Goat Ghee Roast (Bone-in)",
+      "description": "Goat Ghee Roast is a popular side dish of mutton cooked in clarified butter or ghee and other aromatic spices.",
+      "price": 1800,
+      "modifierGroupIds": [
+        "YR1MGEA9XFP5R"
+      ],
+      "categoryIds": [],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "VEXWPVRC49150",
+      "name": "Stuffed Paneer Pakora",
+      "description": "A simple snack recipe prepared with spiced paneer cubes, coated with besan or chickpea flour batter",
+      "price": 1599,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "JH9NY908ZGK4W",
+      "name": "Chicken Manchurian",
+      "price": 1600,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ESMGD6VRRS5EP",
+      "name": "Szechuan Hakka noodles",
+      "price": 1800,
+      "modifierGroupIds": [
+        "CQ3DM8RH84REP",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "2CX0CDEY8SF4T",
+      "name": "Szechuan Fried Rice",
+      "price": 1800,
+      "modifierGroupIds": [
+        "CQ3DM8RH84REP",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "JABA27PYNQFFP",
+      "name": "Egg fried rice",
+      "price": 1800,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FB9NFKAYY9B36",
+      "name": "Hakka Noodles",
+      "description": "",
+      "price": 1800,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "CQ3DM8RH84REP",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NV5N4QSSQ45JT",
+      "name": "Chicken Fried Rice",
+      "description": "",
+      "price": 2000,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "F3QQHZJW7KP04",
+      "name": "Dragon Wings",
+      "description": "Wings made with house dragon sauce",
+      "price": 1400,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "HH4QTWB3TDM7W",
+      "name": "Veg Manchurian",
+      "description": "",
+      "price": 1400,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "SNAX8XG9T675G",
+      "name": "Veg fried rice",
+      "description": "",
+      "price": 1800,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "J5AWDQ9YHY7BC",
+      "name": "Baby Corn Masala",
+      "price": 1400,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "VSWS5VMBW076J",
+      "name": "Sparkling Water ",
+      "price": 400,
+      "modifierGroupIds": [],
+      "categoryIds": [],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "25CSN3832E3A0",
+      "name": "Saath Special Samosa",
+      "description": "Chicken, Paneer, Onion",
+      "price": 900,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "MM7T44NDMP9BJ"
+      ],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "RTJ9VGTCDD7KA",
+      "name": "Chili Paneer ",
+      "description": "Onion, Bell Peppers, tangy sauce",
+      "price": 2000,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "4QVWFRGGBXD58",
+      "name": "Goan Prawns Curry",
+      "description": "Prawns, Coconut, spices, curry leaves tempering",
+      "price": 2400,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QPXEPA9G0JPWG",
+      "name": "Dal Gosht",
+      "description": "Lamb, lentils, onion, tomato, spices",
+      "price": 2200,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "7DX92KDXK7GC0",
+      "name": "Ghee Mutton Roast",
+      "description": "Goat, Clarified butter, dry roasted spices",
+      "price": 2400,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "FN2Z3A4S9HESA"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "VNWWRKMZ42V80",
+      "name": "Gobi 65",
+      "description": "Fried Cauliflower, Flavorful Batter, Spicy tempering",
+      "price": 1600,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "67PE6NC1ZFNXA",
+      "name": "Madras Curry",
+      "description": "Tomato puree, madras style aromatics, spices",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FSE0YAA90H7B2",
+      "name": "Kerala Pepper Curry",
+      "description": "Black Pepper, Kerala style aromatics, spices",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "XBGRAX7SEB6DC",
+      "name": "Rogan Josh",
+      "description": "",
+      "price": 2200,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "K83B2PQ1GQQFE",
+      "name": "Chili Chicken",
+      "description": "Onions, bell peppers, tangy sauce",
+      "price": 2000,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "FN2Z3A4S9HESA"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "JA68V5P59D0CE",
+      "name": "Veg Tikki",
+      "description": "Mashed and spiced vegetable patty",
+      "price": 1200,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Q61H1YDTMW6KJ",
+      "name": "Bhindi Masala",
+      "description": "Fried okra, indian herbs, cilantro, onion, tomato",
+      "price": 1800,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ZGCQ8DTFYH0EA",
+      "name": "Aloo Gobi",
+      "description": "Cumin, cauliflower, potato, onion tomato tadka",
+      "price": 1800,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "M3K2HW2FPZ8RC",
+      "name": "Baingan Bartha",
+      "description": "Roasted egg plant, coriander, cumin, garlic",
+      "price": 2000,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "X4CXFKAT9JA7T",
+      "name": "Malai Kofta",
+      "description": "Cashew, Indian Cottage Cheese, garam masala & fenugreek",
+      "price": 2000,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "66ZAW4WA5H8ST",
+      "name": "Saag",
+      "description": "Cottage cheese, spinach puree, onion and tomato",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "QXKRN28JR5B9Y",
+      "name": "Chettinad",
+      "description": "South Indian spices, red chili, fennel, coconut milk, sesame",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "9KWQ8V6QNCJN4",
+      "name": "Vindaloo",
+      "description": "Garlic, ginger, chillies, malt vinegar",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FXSQF0946BBKT",
+      "name": "Kadai Masala",
+      "description": "Peppers, onion, bell pepper, cashew & tomato",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "5BYBWMAN38BCW",
+      "name": "Butter Masala",
+      "description": "Makhani / Butter sauce",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "HY0NY45N1RHAT",
+      "name": "Korma Masala",
+      "description": "Cashew, roasted onion, coconut cream, whip cream",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "5XBJ952KX1H8M",
+      "name": "Tikka Masala",
+      "description": "Roasted cumin, cashew, onion, tomato",
+      "price": 2000,
+      "modifierGroupIds": [
+        "N2FSYQDVWVD8P",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "RP463ET4WC6XE",
+      "name": "Tandoori Wings",
+      "description": "Marinated spice wing slow roasted, lime",
+      "price": 1400,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "FN2Z3A4S9HESA"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "88S89FV5NNFVC",
+      "name": "Apollo Chicken/Fish",
+      "description": "Spicy yogurt seasoning, onion, ginger, chilli",
+      "price": 1600,
+      "modifierGroupIds": [
+        "CJWNVFJA1S43C",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "FN2Z3A4S9HESA"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/88S89FV5NNFVC_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "G6FMAXXZ9BPXE",
+      "name": "Chicken 65",
+      "description": "Ginger garlic, fenugreek, black pepper, yogurt, curry leaves",
+      "price": 1600,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "FN2Z3A4S9HESA"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/G6FMAXXZ9BPXE_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "F81HH4P8PYA9J",
+      "name": "Lamb Pepper Sauteed",
+      "description": "Black pepper, coconut, onion",
+      "price": 2000,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "FN2Z3A4S9HESA"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/F81HH4P8PYA9J_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "JK4QW7J5EJY5Y",
+      "name": "Chicken Pepper Sauteed",
+      "description": "Black pepper, coconut, onion",
+      "price": 1600,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "FN2Z3A4S9HESA"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JK4QW7J5EJY5Y_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FJ215C9BJ4918",
+      "name": "Tandoori Chicken",
+      "description": "Marinated chicken, Lime, Mint, Garam Masala",
+      "price": 2000,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "DQGXN033T841C",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "97DWJTX3JCQ84"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "G3VYXE24P2WRA",
+      "name": "Classic Tikka",
+      "description": "Yogurt, Ginger garlic, lemon, garam masala",
+      "price": 2000,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "0K0EFD306SBHE",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "97DWJTX3JCQ84"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Y1RC7V9V23G0G",
+      "name": "Malai Tikka",
+      "description": "Yogurt, Ginger garlic, lemon, garam masala",
+      "price": 2000,
+      "modifierGroupIds": [
+        "0K0EFD306SBHE",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "97DWJTX3JCQ84"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "K67D15NTNEJGR",
+      "name": "Tandoori Prawn",
+      "description": "Yogurt, Ginger garlic, lemon, garam masala",
+      "price": 2400,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "97DWJTX3JCQ84"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "G36DSCXZX0TXP",
+      "name": "Gongura Chicken Kabab",
+      "description": "Gongura paste, Giner garlic, Lemon, Garam masala",
+      "price": 2200,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "97DWJTX3JCQ84"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FCZJR3RK3GART",
+      "name": "Paneer Shashlik",
+      "description": "Cottage cheese, Masala Scramble, Peppers",
+      "price": 2000,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "97DWJTX3JCQ84"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "7RWR0P5HSA5YG",
+      "name": "Peri Peri Fries",
+      "description": "Fries, red chilli, chaat masala, indian spice, mango powder",
+      "price": 800,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/7RWR0P5HSA5YG_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "BFT5VCE79X64R",
+      "name": "Apollo Paneer",
+      "description": "Spicy yogurt seasoning, cottage cheese, onion, ginger, chili",
+      "price": 1600,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/BFT5VCE79X64R_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "8KK1QVW5FDGAE",
+      "name": "Sev Puri Dahi Batata (SPDB)",
+      "description": "Semolina, potato, thin spice noodle, yogurt, mint, spices",
+      "price": 1200,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/8KK1QVW5FDGAE_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "21E7QG6C2F862",
+      "name": "Kale Chaat",
+      "description": "Fried Kale, special sauce, spices",
+      "price": 1400,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "GDMJJZ0H4W05Y",
+      "name": "Masala Papad",
+      "description": "Tomato, Onion, Chili, Lime, Chaat masala",
+      "price": 700,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "STHWBS9GHKBEC"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/GDMJJZ0H4W05Y_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "3QR2YNB7ZSE96",
+      "name": "Cream of Broccoli",
+      "description": "Broccoli, puree, whipped cream, butter",
+      "price": 700,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "STHWBS9GHKBEC"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3QR2YNB7ZSE96_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "F7SJ82AJD9QCJ",
+      "name": "Mushroom Garlic Soup",
+      "description": "Portobello Mushroom, roasted garlic, creamy onion",
+      "price": 700,
+      "modifierGroupIds": [
+        "C3Z6J8BBRRCQR",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "STHWBS9GHKBEC"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "AGK93DR21DHM6",
+      "name": "Gunpowder Masala Dosa",
+      "description": "Home made spicy powder dosa with potato & spices spread",
+      "price": 1500,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "06BGN2K6HZBQ8"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "2E3HDR1NXXM96",
+      "name": "Cheese Masala Dosa",
+      "description": "Shredded cheese & potato",
+      "price": 1500,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "06BGN2K6HZBQ8"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "7V80J1K6MGJDM",
+      "name": "Cheese Dosa",
+      "description": "Shredded Cheese",
+      "price": 1500,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "06BGN2K6HZBQ8"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "1QJTJWS49RNYY",
+      "name": "Gunpowder Dosa",
+      "description": "Home made spicy powder dosa",
+      "price": 1500,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "06BGN2K6HZBQ8"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "WF6WY9F7WYSZ0",
+      "name": "Onion Chili Dosa",
+      "description": "Onions, chili & oil",
+      "price": 1500,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "06BGN2K6HZBQ8"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "MGA2AR60PTTMA",
+      "name": "Masala Dosa",
+      "description": "Potato, chili, onion & spices spread",
+      "price": 1500,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "06BGN2K6HZBQ8"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ZTR1S1CPMYZT0",
+      "name": "Plain Dosa",
+      "description": "Urad dal, rice, salt & oil",
+      "price": 1200,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "06BGN2K6HZBQ8"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "P6X0AQM8F5YAC",
+      "name": "Chicken 65 Biryani",
+      "description": "Chicken 65 layering, home made spices, herbs & basmati rice",
+      "price": 2200,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "37TJ0YG4WDM7T"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "E2TE5ZG9GQ3F2",
+      "name": "Special Goat Biryani",
+      "description": "Goat layering, home made spices, herbs & basmati rice",
+      "price": 2400,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "37TJ0YG4WDM7T"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "1G8RV0VHKK8PY",
+      "name": "Saath Biryani",
+      "description": "Home made spices, herbs & basmati rice",
+      "price": 2000,
+      "modifierGroupIds": [
+        "GYAYJ2JGQ3ZGT",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "37TJ0YG4WDM7T"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "1MBTGMVGJ130M",
+      "name": "Safron Vegerable Rice",
+      "description": "Mix Vegetables, Saffron, turmeric & basmati rice",
+      "price": 1400,
+      "modifierGroupIds": [],
+      "categoryIds": [],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": false,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ZEXANMVF18SHY",
+      "name": "Jeera Rice",
+      "description": "Basmatirice, cumin, ginger & butter",
+      "price": 800,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ZK8H8MNTYZF56",
+      "name": "Basmati Rice",
+      "price": 600,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "V68RAJDQ4SA6P",
+      "name": "Roasted Papad",
+      "price": 400,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "FR6M7B9B1D5GE",
+      "name": "Dal Tadka",
+      "description": "Split lentils, aromatic spices & herbs",
+      "price": 1400,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "Y9A2TWQP2GF1M",
+      "name": "Peshawari Naan (Sweet)",
+      "description": "Naan filled with desiccated coconut, sultanas (or raisins), pistachios, and almonds",
+      "price": 700,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "QXGGQ3GFM1H60"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "4RFBQ0Y6Y0WNT",
+      "name": "Bullet Naan",
+      "description": "Green chili spread",
+      "price": 600,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "QXGGQ3GFM1H60"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "NJQK9QXWHT5SE",
+      "name": "Truffle Mushroom Naan",
+      "description": "Truffle , Mushrooms",
+      "price": 700,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "QXGGQ3GFM1H60"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "ET89M9A64MN4T",
+      "name": "Tandoori Roti",
+      "description": "Whole wheat flour",
+      "price": 500,
+      "modifierGroupIds": [
+        "NH68DR9W2Q3JC"
+      ],
+      "categoryIds": [
+        "QXGGQ3GFM1H60"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "YF0T9VK1GQ24P",
+      "name": "Lachha Paratha",
+      "description": "Whole wheat flour",
+      "price": 700,
+      "modifierGroupIds": [
+        "3B1RHMSG9DPGY"
+      ],
+      "categoryIds": [
+        "QXGGQ3GFM1H60"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "M7T0E5ER0K6HA",
+      "name": "Kulcha",
+      "description": "Whole wheat flour",
+      "price": 700,
+      "modifierGroupIds": [
+        "B3498HZE4ZKEG"
+      ],
+      "categoryIds": [
+        "QXGGQ3GFM1H60"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "MT08188WK3XYC",
+      "name": "Naan",
+      "price": 500,
+      "modifierGroupIds": [
+        "VAQNVFTQ552QA"
+      ],
+      "categoryIds": [
+        "QXGGQ3GFM1H60"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "BAH5650DR530Y",
+      "name": "Lassi",
+      "price": 600,
+      "modifierGroupIds": [
+        "WG0GB7V28WG9J"
+      ],
+      "categoryIds": [
+        "D2W12MVZR4MB6"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "1RM8E2V08RQEA",
+      "name": "Bru Instant Coffee",
+      "price": 500,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "D2W12MVZR4MB6"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "RP3Q71PEQKVT0",
+      "name": "Chocolate Cake",
+      "price": 600,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "HH2FSES1Y0GGM"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "JA18333VH140R",
+      "name": "Avacado Vale",
+      "description": "Spiced Avacado, bhel, tamarind, mint, pomegranate",
+      "price": 1200,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/JA18333VH140R_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "624EWM3GB4NN6",
+      "name": "Gobi Manchurian",
+      "description": "Indo Chinese appetizer made with cauliflower, corn flour, soya sauce, vinegar, chilli sauce, ginger & garlic.",
+      "price": 1400,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "RFK2DQCEJ6Y9M",
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/624EWM3GB4NN6_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "3WT6YAETDQJYG",
+      "name": "Samosa",
+      "description": "Crispy fried turnovers stuffed with potato, peas and spices.",
+      "price": 900,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "M0MBQ7JR1F0R4"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/3WT6YAETDQJYG_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "G8VCT71ECHYFJ",
+      "name": "Dal Makhni",
+      "description": "Whole black lentils & red kidney beans, spices, butter & cream",
+      "price": 1600,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "B2VKH7DWWHE7W",
+      "name": "Chana Masala",
+      "description": "Gluten free, vegetarian. Whole black lentils & red kidney beans, spices, butter & cream",
+      "price": 1400,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "A5EYDWQASWQK6",
+      "name": "Lamb Chops.",
+      "description": "Oven roasted lamb chops, indian herbs, ginger, garlic & olive oil",
+      "price": 3000,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "87YGXM4YM6P82"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "342NM73N26C6R",
+      "name": "Gulab Jamun",
+      "description": "Khoya, flour & sugar syrup",
+      "price": 600,
+      "priceWithoutVat": 0,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "HH2FSES1Y0GGM"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "3PDP5MY9DKYVG",
+      "name": "Masala Chai",
+      "price": 500,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "D2W12MVZR4MB6"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "JQXKPJ13CK7QC",
+      "name": "Soda",
+      "price": 400,
+      "modifierGroupIds": [
+        "RPW9J29T2G536"
+      ],
+      "categoryIds": [
+        "D2W12MVZR4MB6"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "7B2EG94C0G7RY",
+      "name": "Raita",
+      "description": "Yogurt sauce.",
+      "price": 400,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "0MH0RTTR7WFF0"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "RGMYP536E8DA2",
+      "name": "Chicken Mulligatawny Soup",
+      "description": "Lentils, rice, coconut milk, green chili, spices",
+      "price": 700,
+      "modifierGroupIds": [
+        "FT2HK3CP67EG2",
+        "393BVJ5R9VQ42"
+      ],
+      "categoryIds": [
+        "STHWBS9GHKBEC"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [
+        {
+          "name": "xhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_162x162.jpeg"
+        },
+        {
+          "name": "xxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_243x243.jpeg"
+        },
+        {
+          "name": "xxxhdpi_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_324x324.jpeg"
+        },
+        {
+          "name": "xhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_750x563.jpeg"
+        },
+        {
+          "name": "xxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_1125x844.jpeg"
+        },
+        {
+          "name": "xxxhdpi_4x3",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_1500x1125.jpeg"
+        },
+        {
+          "name": "small_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_120x120.jpeg"
+        },
+        {
+          "name": "medium_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_375x375.jpeg"
+        },
+        {
+          "name": "large_1x1",
+          "source": "https://cloverstatic.com/menu-assets/items/RGMYP536E8DA2_576x576.jpeg"
+        }
+      ],
+      "available": true,
+      "isAgeRestricted": false
+    },
+    {
+      "id": "GMG4KEM07VB92",
+      "name": "Badam Halwa",
+      "description": "",
+      "price": 600,
+      "modifierGroupIds": [],
+      "categoryIds": [
+        "HH2FSES1Y0GGM"
+      ],
+      "taxIds": [
+        "35PSYAQ0ZHTCE"
+      ],
+      "stock": 0,
+      "images": [],
+      "available": true,
+      "isAgeRestricted": false
+    }
+  ]
+}

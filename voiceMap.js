@@ -2,57 +2,68 @@
 import fs from "fs";
 import path from "path";
 
-// 1. The List of Voices
+// 1. The List of High-Performance OpenAI Voices
 const PROFESSIONAL_VOICES = [
-  { name: "Naina", id: "6BZyx2XekeeXOkTVn8un" },
-  { name: "Sia", id: "6JsmTroalVewG1gA6Jmw" },
-  { name: "Zane", id: "7DkaWvcqvBstUe3167oW" },
-  { name: "Ranbir", id: "9PvnT6XRzlljoaDG6Knu" },
-  { name: "Simran", id: "9w21nMuk8CWXIME31V1S" },
-  { name: "Deepu Nair", id: "KBQXDWhJb2zREeOq95rU" },
-  { name: "Indian Storyteller", id: "Rk0hF1X0z2RQCmWH9SCb" },
-  { name: "Amit Gupta", id: "SV61h9yhBg4i91KIBwdz" },
-  { name: "Leónidas", id: "YKrm0N1EAM9Bw27j8kuD" },
-  { name: "Rahul Bharadwaj", id: "u7bRcYbD7visSINTyAT8" },
-  { name: "Naresh", id: "y6Ao4Y93UrnTbmzdVlFc" },
+  { name: "Nova", id: "nova", tags: ["female", "energetic", "hospitality"] },
+  { name: "Shimmer", id: "shimmer", tags: ["female", "soft", "clear"] },
+  { name: "Alloy", id: "alloy", tags: ["neutral", "balanced", "professional"] },
+  { name: "Echo", id: "echo", tags: ["male", "warm", "deep"] },
+  { name: "Onyx", id: "onyx", tags: ["male", "authoritative", "confidence"] },
+  { name: "Fable", id: "fable", tags: ["neutral", "dynamic", "storyteller"] },
 ];
 
-// 2. File to store the current index
 const STATE_FILE = path.resolve("./voice_state.json");
 
+/**
+ * Gets the next voice in the list using a persistent file.
+ */
 function getNextRotatedVoice() {
   let currentIndex = -1;
-
-  // A. Try to read the last index from the file
   try {
     if (fs.existsSync(STATE_FILE)) {
-      const data = fs.readFileSync(STATE_FILE, "utf8");
-      currentIndex = JSON.parse(data).index;
+      currentIndex = JSON.parse(fs.readFileSync(STATE_FILE, "utf8")).index;
     }
   } catch (err) {
-    // If file error, start from scratch
     currentIndex = -1;
   }
 
-  // B. Increment the index
   currentIndex++;
-
-  // C. Calculate the actual array position (Loop back if at the end)
   const voiceIndex = currentIndex % PROFESSIONAL_VOICES.length;
 
-  // D. Save the new index back to the file
   try {
     fs.writeFileSync(STATE_FILE, JSON.stringify({ index: currentIndex }));
-  } catch (err) {
-    console.error("⚠️ Could not save voice state:", err);
-  }
+  } catch (err) {}
 
   const selected = PROFESSIONAL_VOICES[voiceIndex];
-
-  console.log(
-    `🎙️ Call #${currentIndex + 1}: Switching voice to ${selected.name}`
-  );
+  console.log(`🔄 [VOICE] Selected ${selected.name} (${selected.id}) via rotation.`);
   return selected;
 }
 
-export { getNextRotatedVoice };
+/**
+ * Selects voice based on Metadata preferences or falls back to Rotation.
+ */
+export function getVoiceFromSelection(selection) {
+  if (!selection || (Array.isArray(selection) && selection.length === 0)) {
+    return getNextRotatedVoice();
+  }
+
+  const preferences = Array.isArray(selection) ? selection : [selection];
+  const candidatePool = PROFESSIONAL_VOICES.filter((voice) => {
+    return preferences.some((pref) => {
+      const p = pref.toString().toLowerCase().trim();
+      return (
+        voice.id === p || 
+        voice.name.toLowerCase().includes(p) || 
+        voice.tags.some((tag) => tag.includes(p))
+      );
+    });
+  });
+
+  if (candidatePool.length > 0) {
+    const selected = candidatePool[Math.floor(Math.random() * candidatePool.length)];
+    console.log(`🎯 [VOICE] Targeted: ${selected.name}`);
+    return selected;
+  }
+
+  return getNextRotatedVoice();
+}
