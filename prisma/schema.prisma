@@ -16,6 +16,7 @@ model Restaurant {
   name              String
   slug              String    @unique
   phoneNumber       String    @unique
+  transferPhoneNumber String? // For call handoff (staff mobile)
   
   // Clover Integration (encrypted)
   cloverMerchantId  String

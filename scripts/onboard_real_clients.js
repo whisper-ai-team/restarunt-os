@@ -20,7 +20,7 @@ async function main() {
     create: {
       name: "Pulcinella Pizza & Pasta",
       slug: "pulcinella-pizza",
-      phoneNumber: "+15550000001", // PLACEHOLDER - Needs Update
+      phoneNumber: "+18639009879", // User provided for testing
       cloverMerchantId: "NVA2D9TDW89Y1",
       cloverApiKey: "00d85386-5a64-c2e8-9978-db68765f1c4b",
       cloverEnvironment: "sandbox",
@@ -42,6 +42,7 @@ async function main() {
     where: { slug: "domions-pizza" },
     update: {
       name: "Domions Pizza",
+      phoneNumber: "+18639009879", // User provided for testing
       cloverMerchantId: "F3JYNA54NKEF1",
       cloverApiKey: "7f88802b-8917-7770-0920-0d3c7d61305b",
       cloverEnvironment: "sandbox",
@@ -49,7 +50,7 @@ async function main() {
     create: {
       name: "Domions Pizza",
       slug: "domions-pizza",
-      phoneNumber: "+15550000002", // PLACEHOLDER - Needs Update
+      phoneNumber: "+18639009879", // User provided for testing
       cloverMerchantId: "F3JYNA54NKEF1",
       cloverApiKey: "7f88802b-8917-7770-0920-0d3c7d61305b",
       cloverEnvironment: "sandbox",

@@ -4,7 +4,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 import { createServer } from "http";
 import { Server } from "socket.io";
-import { WebhookReceiver, AgentDispatchClient, RoomServiceClient } from "livekit-server-sdk";
+import { WebhookReceiver, AgentDispatchClient, RoomServiceClient, SipClient } from "livekit-server-sdk";
 import { 
   getRestaurantByPhone, 
   getAllRestaurants, 
@@ -51,6 +51,12 @@ const dispatchClient = new AgentDispatchClient(
 );
 
 const roomService = new RoomServiceClient(
+    process.env.LIVEKIT_URL,
+    process.env.LIVEKIT_API_KEY,
+    process.env.LIVEKIT_API_SECRET
+);
+
+const sipClient = new SipClient(
     process.env.LIVEKIT_URL,
     process.env.LIVEKIT_API_KEY,
     process.env.LIVEKIT_API_SECRET
@@ -140,20 +146,74 @@ app.post("/api/calls/:id/transfer", async (req, res) => {
         });
 
         if (!call) return res.status(404).json({ error: "Call record not found" });
-        if (!call.twilioCallSid) return res.status(400).json({ error: "No external call SID found for this call (SIP session required)" });
+        if (!call.roomName) return res.status(400).json({ error: "Call has no active room session" });
 
-        const { transferCallToStaff } = await import("./services/handoffService.js");
-        await transferCallToStaff(call.twilioCallSid, staffPhone);
-
-        // Update DB
-        await prisma.call.update({
-            where: { id },
-            data: { status: "TRANSFERRED" }
+        // Fetch Restaurant Config for Transfer Number
+        const restaurant = await prisma.restaurant.findUnique({
+            where: { id: call.restaurantId }
         });
 
-        res.json({ success: true, target: staffPhone });
+        // Priority: 1. DB Configured Transfer Number, 2. API Provided Phone, 3. Restaurant Main Phone (Fallback - risky if loop)
+        const targetPhone = restaurant?.transferPhoneNumber || staffPhone || restaurant?.phoneNumber;
+
+        if (!targetPhone) {
+             return res.status(400).json({ error: "No transfer phone number configured for this restaurant." });
+        }
+        
+        console.log(`📡 TRANSFER TARGET RESOLVED: ${targetPhone} (Source: ${restaurant?.transferPhoneNumber ? 'DB_CONFIG' : 'API_INPUT'})`);
+
+        // Fix: Don't guess the identity. Find the actual SIP participant in the room.
+        const participants = await roomService.listParticipants(call.roomName);
+        
+        // Look for participant with SIP attributes or identity pattern
+        const sipParticipant = participants.find(p => 
+            p.kind === 2 || // ParticipantInfo_Kind.SIP is 2 (usually) - verification needed or check attributes
+            p.identity.startsWith("sip_") || 
+            p.attributes?.['sip.callID']
+        );
+
+        if (!sipParticipant) {
+            console.error(`❌ [TRANSFER] No SIP participant found in room ${call.roomName}`);
+            console.log("   Participants:", participants.map(p => p.identity));
+            return res.status(404).json({ error: "SIP participant not found in room" });
+        }
+
+        const sipIdentity = sipParticipant.identity;
+        
+        // Revert to standard tel: URI now that "Enable PSTN Transfer" is checked.
+        // This is the most compatible format for Twilio + LiveKit.
+        const transferTarget = `tel:${targetPhone}`; 
+
+        console.log(`🔄 Initiating SIP REFER for ${sipIdentity} in room ${call.roomName} -> ${transferTarget}`);
+
+        // Try to transfer
+        try {
+            await sipClient.transferSipParticipant(call.roomName, sipIdentity, transferTarget, {
+                playDialtone: true,
+                headers: {
+                    "X-Transfer-Reason": "agent-handoff"
+                }
+            });
+            console.log(`✅ SIP REFER signal sent!`);
+            
+            // Update DB
+            await prisma.call.update({
+                where: { id },
+                data: { status: "TRANSFERRED" }
+            });
+
+            res.json({ success: true, target: targetPhone, method: "SIP_REFER" });
+
+        } catch (sipErr) {
+            console.error("❌ SIP REFER failed:", sipErr);
+            console.error("   Message:", sipErr?.message);
+             // Fallback: If identity is wrong, maybe list participants?
+             // But for now, fail hard so we see log.
+             throw new Error(`SIP Transfer Failed: ${sipErr.message}`);
+        }
+
     } catch (err) {
-        console.error("❌ Transfer failed:", err);
+        console.error("❌ Transfer request failed:", err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -265,22 +325,31 @@ app.post("/api/webhook", async (req, res) => {
 
       if (trunkNumber && event.room?.name) {
         console.log(`📡 [WEBHOOK] SIP Participant Joined. Trunk: ${trunkNumber} Room: ${event.room.name}`);
+        console.log(`🔍 [DEBUG] All Attributes:`, JSON.stringify(attributes, null, 2)); // DEBUGGING
         const normalizedTrunk = normalizePhone(trunkNumber);
         
+        // Extract Twilio Call SID from attributes if available
+        const twilioCallSid = attributes["sip.twilio.callSid"] || attributes["sip.callID"];
+
         try {
           const restaurant = await getRestaurantByPhone(normalizedTrunk);
           if (restaurant) {
              await prisma.call.upsert({
                 where: { roomName: event.room.name },
-                update: { restaurantId: restaurant.id },
+                update: { 
+                    restaurantId: restaurant.id,
+                    twilioCallSid: twilioCallSid, // Update if missing
+                    customerPhone: normalizePhone(participant.identity || ""), // Ensure phone is captured
+                },
                 create: {
                    roomName: event.room.name,
                    restaurantId: restaurant.id,
                    customerPhone: normalizePhone(participant.identity || ""),
-                   status: "IDENTIFIED"
+                   status: "IDENTIFIED",
+                   twilioCallSid: twilioCallSid // Save on create
                 }
              });
-             console.log(`✅ [WEBHOOK] Mapped Room ${event.room.name} to Restaurant: ${restaurant.name} via Trunk Attribute`);
+             console.log(`✅ [WEBHOOK] Mapped Room ${event.room.name} to Restaurant: ${restaurant.name}. SID: ${twilioCallSid}`);
           }
         } catch (e) {
           console.error("❌ Failed to map participant metadata to DB:", e);

@@ -9,7 +9,8 @@ const prisma = new PrismaClient();
 // SESSION FINALIZATION
 // -----------------------------
 export async function finalizeSession(reason, sessionCart, customerDetails, restaurantId, callRecordId) {
-  if (!sessionCart || sessionCart.length === 0) {
+  // Defensive check for non-array cart
+  if (!sessionCart || !Array.isArray(sessionCart) || sessionCart.length === 0) {
     console.log(`🏁 Call ended (${reason}). No order placed.`);
     return null;
   }

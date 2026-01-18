@@ -341,5 +341,56 @@ export function createRestaurantTools({
             return "System: Hanging up call. Say goodbye first.";
           },
         }),
+
+        transferToHuman: llm.tool({
+            description: "Use this tool to physically transfer the call to a human agent. You MUST call this tool if you say you are transferring. Do NOT just say you will transfer. Execute this tool.",
+            parameters: { type: "object", properties: { reason: { type: "string" } } },
+            execute: async ({ reason }) => {
+                // Fix: Prioritize 'transferPhoneNumber' (DB) -> 'phoneNumber' (API Identity) -> 'phone'
+                const targetPhone = restaurantConfig.transferPhoneNumber || restaurantConfig.phoneNumber || restaurantConfig.phone; 
+                
+                console.log(`📡 [${INSTANCE_ID}] Transfer Tool Triggered. Config Phone: ${targetPhone}`);
+
+                if (!targetPhone) {
+                    return "System: Cannot transfer - no phone number configured for this restaurant. Apologize to the user.";
+                }
+
+                console.log(`📡 [${INSTANCE_ID}] Initiating Transfer to ${targetPhone}. Reason: ${reason}`);
+
+                // Call the API to trigger SIP REFER
+                try {
+                     // We need the database Call ID. 
+                     // Assuming 'callRecord' has the ID from the initialization step.
+                     const callId = callRecord?.id;
+                     
+                     if (!callId) {
+                         console.error(`❌ [${INSTANCE_ID}] Transfer failed: Missing Call ID`);
+                         return "System: Technical error: Cannot find active call record to transfer. Apologize.";
+                     }
+
+                     // Fix for Fly.io: Agent runs in separate VM, so localhost doesn't reach API.
+                     // Use NEXT_PUBLIC_API_URL if available (Prod), else localhost (Local Dev).
+                     const API_BASE = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3001}`;
+                     
+                     console.log(`🔗 [${INSTANCE_ID}] Calling Transfer API at: ${API_BASE}/api/calls/${callId}/transfer`);
+                     
+                     const response = await fetch(`${API_BASE}/api/calls/${callId}/transfer`, {
+                         method: "POST",
+                         headers: { "Content-Type": "application/json" },
+                         body: JSON.stringify({ staffPhone: targetPhone })
+                     });
+
+                     if (!response.ok) {
+                        const errText = await response.text();
+                        throw new Error(`API Error ${response.status}: ${errText}`);
+                     }
+
+                     return "System: Transfer initiated. Tell the user: 'I play classical music while I transfer you to a manager. Please hold.' then wait.";
+                } catch (err) {
+                    console.error(`❌ [${INSTANCE_ID}] Transfer API failed:`, err);
+                    return "System: Unable to transfer due to technical error. Apologize.";
+                }
+            }
+        }),
     };
 }

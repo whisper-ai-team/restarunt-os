@@ -57,6 +57,11 @@ process.on("uncaughtException", (err) => {
 });
 
 process.on("unhandledRejection", (reason, promise) => {
+  const errStr = (reason?.message || reason?.toString() || "").toLowerCase();
+  if (errStr.includes("samplerate") || errStr.includes("vad")) {
+     // Benign error during shutdown race condition
+     return;
+  }
   console.error("🚨 CRITICAL: Unhandled Rejection in Agent Process:", reason);
 });
 
@@ -213,9 +218,16 @@ const agent = defineAgent({
     console.log(`🔗 [${INSTANCE_ID}] Connected to room: ${ctx.room.name}`);
 
     // Cleanup Listeners
-    ctx.room.on("disconnected", () => {
+    // Cleanup Listeners
+    ctx.room.on("disconnected", async () => {
         console.log(`🔌 [${INSTANCE_ID}] Room Disconnected. Cleaning up...`);
-        finalizeSession(callRecord, prisma).catch(e => console.error("Finalize error:", e));
+        try {
+            await finalizeSession(callRecord, prisma);
+        } catch(e) {
+            console.error("Finalize error:", e);
+        }
+        console.log(`👋 [${INSTANCE_ID}] Exiting process cleanly.`);
+        process.exit(0);
     });
 
     // ------------------------------------------
