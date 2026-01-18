@@ -151,8 +151,11 @@ export class RestaurantAgent extends voice.Agent {
                 
                 console.log(`📡 [${INSTANCE_ID}] Initiating transfer for Call ID: ${this.callRecord.id} to ${staffPhone}`);
                 
-                const PORT = 3001; // Hardcoded to backend port (avoiding 3000 frontend)
-                const res = await fetch(`http://localhost:${PORT}/api/calls/${this.callRecord.id}/transfer`, {
+                console.log(`📡 [${INSTANCE_ID}] Initiating transfer for Call ID: ${this.callRecord.id} to ${staffPhone}`);
+                
+                // FIX: Use Public URL for Fly.io inter-process communication
+                const API_BASE = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3001}`;
+                const res = await fetch(`${API_BASE}/api/calls/${this.callRecord.id}/transfer`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ staffPhone })
@@ -462,8 +465,11 @@ export class RestaurantAgent extends voice.Agent {
             
             // 2. Persist to our Database
             try {
-              const PORT = process.env.PORT || 3000;
-              await fetch(`http://localhost:${PORT}/api/orders`, {
+              // FIX: Use Public URL for Fly.io inter-process communication
+              const API_BASE = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
+              console.log(`💾 [${INSTANCE_ID}] Persisting order to: ${API_BASE}/api/orders`);
+
+              await fetch(`${API_BASE}/api/orders`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -483,7 +489,7 @@ export class RestaurantAgent extends voice.Agent {
             // 3. Send SMS Confirmation
             await sendOrderConfirmation(customerDetails.phone, restaurantConfig.name, sessionCart, totalCents);
             
-            return `System: Order submitted to Kitchen for ${redact(customerDetails.name)}. Total items: ${itemCount}. You should now say: "Your order is in! I just sent a confirmation text to your phone. We'll let you know when it's ready. Thank you for choosing us!" then use 'hangUp'.`;
+            return `System: Order submitted to Kitchen. Total items: ${itemCount}. You should now say: "Your order is in! I just sent a confirmation text. We'll let you know when it's ready." Then ask: "Is there anything else I can help with?" (Do NOT call hangUp yet).`;
           }
         }),
 
@@ -503,11 +509,11 @@ export class RestaurantAgent extends voice.Agent {
             }
 
             if (activeRoom) {
-                // Add a small delay to allow TTS "Goodbye" to flush if possible
+                // Add a delay to allow TTS "Goodbye" to flush
                 setTimeout(() => {
                     console.log(`🔌 [${INSTANCE_ID}] Disconnecting room now.`);
                     activeRoom.disconnect();
-                }, 1500);
+                }, 4000);
             }
             return "System: Hanging up call. Say goodbye first.";
           },

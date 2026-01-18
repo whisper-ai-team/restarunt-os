@@ -192,6 +192,9 @@ const agent = defineAgent({
                environment: restaurantConfig.cloverEnvironment || "production"
            } : restaurantConfig.clover; // Fallback for default object
 
+           // FIX: Update the main config object so tools see the resolved credentials
+           restaurantConfig.clover = cloverConfig;
+
            if (cloverConfig?.apiKey && cloverConfig?.merchantId) {
                const menuData = await getMenu(cloverConfig, restaurantConfig.id);
                initialMenu = menuData.items;
@@ -206,6 +209,12 @@ const agent = defineAgent({
                    console.log(`🔍 [DEBUG-MENU] Found ${chickenItems.length} 'Chicken' items:`, chickenItems.slice(0, 10)); 
                    console.log(`🔍 [DEBUG-MENU] Found ${kormaItems.length} 'Korma' items:`, kormaItems);
                    console.log(`🔍 [DEBUG-MENU] Found ${fishItems.length} 'Fish' items:`, fishItems);
+                   
+                   // VERIFICATION: Dump ALL items for user check
+                   const allNames = initialMenu.map(i => i.name).sort();
+                   console.log("📜 [FULL MENU DUMP] Starting...");
+                   console.log(JSON.stringify(allNames, null, 2));
+                   console.log("📜 [FULL MENU DUMP] End.");
                } else {
                    console.warn(`⚠️ [${INSTANCE_ID}] STRICT MODE: Menu fetch returned 0 items. Disabling ordering.`);
                    menuLoadSuccess = false;
@@ -321,7 +330,16 @@ const agent = defineAgent({
         stt: new deepgram.STT({
             model: "nova-2-general", 
             smartFormat: true,
-            interimResults: true // Important for interruption detection
+            interimResults: true, // Important for interruption detection
+            // ASR TUNING: Boost menu item recognition
+            // Plugin expects Array<[string, string]> -> joins with ":"
+            keywords: initialMenu.length > 0 ? 
+                initialMenu
+                  .map(i => i.name.replace(/[^a-zA-Z\s]/g, "").trim()) // Remove special chars
+                  .filter(n => n.length > 3) 
+                  // DEEPGRAM FORMAT: [Word, BoostValue]
+                  .map(name => [name, "3.0"]) 
+                : []
         }),
         llm: new openai.LLM({
             model: "gpt-4o-mini", // Low latency model
@@ -338,7 +356,7 @@ const agent = defineAgent({
         // CRITICAL FIX: Pass 'agent' to start() as AgentSession constructor does not retain it in this version
         await session.start({ room: ctx.room, agent: restaurantAgent });
         
-        const initialGreeting = `Hello${customerName && customerName !== "Guest" ? " " + customerName : ""}! Welcome to ${restaurantConfig.name}. How can I help you today?`;
+        const initialGreeting = `Hello${customerName && customerName !== "Guest" ? " " + customerName : ""}! Welcome to ${restaurantConfig.name}. Would you like to place an order for pickup or delivery?`;
         
         await session.say(initialGreeting);
         console.log(`✅ [${INSTANCE_ID}] Session Started. Triggered Greeting.`);

@@ -148,7 +148,7 @@ export const MenuIntelligenceService = {
             }
           });
           
-          console.log(`   ✅ Enriched: ${originalItem.name} -> [${(analysis.dietary_tags || []).join(", ")}]`);
+          // console.log(`   ✅ Enriched: ${originalItem.name} -> [${(analysis.dietary_tags || []).join(", ")}]`);
         }
       }
 

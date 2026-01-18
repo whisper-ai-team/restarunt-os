@@ -1,35 +1,175 @@
-
-import { llm } from "@livekit/agents";
+// RestaurantAgent.js - Voice agent class with all tool definitions
+import { voice, llm } from "@livekit/agents";
 import Fuse from "fuse.js";
-import { metaphone, redact, INSTANCE_ID } from "../utils/agentUtils.js";
+import { buildSystemPrompt } from "../promptBuilder.js";
+import { getVoiceFromSelection } from "../voiceMap.js";
+import { isOpen, redact, metaphone, INSTANCE_ID } from "../utils/agentUtils.js";
 import { validateOrder } from "../utils/dietaryHelpers.js";
 import { DIETARY_MAP } from "../config/agentConfig.js";
 import { getMenu, createCloverOrder } from "../services/cloverService.js";
 import { sendOrderConfirmation } from "../services/notificationService.js";
 import { printOrderToKitchen } from "../cloverPrint.js";
 import { createDeliveryTools } from "./tools/DeliveryTools.js";
+
+// -----------------------------
 import { MenuMatcher } from "../utils/menuMatcher.js";
 
-/**
- * Factory function to create tools with closure context
- */
-export function createRestaurantTools({ 
-  restaurantConfig, 
-  activeRoom, 
-  customerDetails, 
-  sessionCart, 
-  callRecord, 
-  finalizeCallback, 
-  cuisineProfile,
-  activeAllergies,
-  menuLoadSuccess 
-}) {
-    
-    // Helper to guard against duplicate adds
-    let lastProcessedHash = null;
+// -----------------------------
+// RESTAURANT AGENT CLASS
+// -----------------------------
+export class RestaurantAgent extends voice.Agent {
+  constructor({ restaurantConfig, initialMenu, activeRoom, cuisineProfile, customerDetails, sessionCart, callRecord, finalizeCallback }) {
+    const personalizedContext = `
+      You are speaking with ${customerDetails.name}.
+      Cuisine Focus: ${cuisineProfile.name}.
+      Persona Instructions: ${cuisineProfile.personaInstructions}
+    `;
 
-    return {
-        // ... (other tools remain same)
+    const selectedVoice = getVoiceFromSelection(restaurantConfig.voiceSelection);
+    const personaTags = selectedVoice.tags || [];
+    let personaFlavor = "";
+    if (personaTags.includes("energetic")) personaFlavor = "Be high-energy and enthusiastically helpful.";
+    if (personaTags.includes("soft") || personaTags.includes("warm")) personaFlavor = "Be soothing, warm, and gentle in your delivery.";
+    if (personaTags.includes("professional")) personaFlavor = "Be formal, precise, and highly efficient.";
+    if (personaTags.includes("confidence")) personaFlavor = "Speak with authority and clear confidence.";
+
+    const upsellContext = `
+      REVENUE BOOSTER:
+      - If NO DRINK in order, suggest: ${cuisineProfile.upsellItems.drinks.join(", ")}.
+      - If ONLY MAINS/DISHES ordered (no sides), suggest: ${cuisineProfile.upsellItems.sides.join(", ")}.
+      - At the VERY END (during summary), suggest a dessert: ${cuisineProfile.upsellItems.desserts.join(", ")}.
+    `;
+
+    const systemPrompt = buildSystemPrompt({
+      restaurantName: restaurantConfig.name,
+      info: restaurantConfig.info,
+      instructions: restaurantConfig.instructions + personalizedContext + "\n" + personaFlavor + "\n" + upsellContext,
+      menuContext: initialMenu,
+      tone: "friendly",
+    }) + "\n\nCRITICAL: Be extremely concise. Use short sentences for speed.";
+
+    // CLOSED STATE OVERRIDE
+    const isClosed = !isOpen(restaurantConfig.businessHours, restaurantConfig.timezone);
+    let finalInstructions = "";
+    
+    if (isClosed) {
+       finalInstructions = `You are the answering system for ${restaurantConfig.name}. 
+       CRITICAL: The restaurant is CURRENTLY CLOSED.
+       1. Politely inform the user that you are closed.
+       2. Do NOT take any orders.
+       3. Do NOT answer questions about the menu.
+       4. Suggest they check the website for hours.
+       5. Say "Goodbye" and call the 'hangUp' tool immediately.`;
+    } else {
+       // Append standard rules only if OPEN
+       finalInstructions = systemPrompt + `
+       
+       CRITICAL OPERATIONAL RULES:
+       1. CUISINE GUARDRAIL: You represent an AUTHENTIC ${cuisineProfile.name} restaurant. You MUST strictly adhere to this cuisine.
+          - If the user asks for dishes from a different cuisine (e.g., asking for Sushi at an Italian restaurant), politely refuse and say: "I apologize, but we specialize in ${cuisineProfile.name} cuisine. We don't serve that here."
+          - NEVER recommend items that are clearly not ${cuisineProfile.name} (e.g., do not suggest Curry if you are a Pizza place).
+          - ONLY discuss items that exist in the menu provided or are standard staples of ${cuisineProfile.name} cuisine if and only if they match the menu style.
+       2. TOOL USAGE (CART): You MUST call the 'addToOrder' tool EVERY TIME a customer mentions an item they want to order. IMPORTANT: Pass the EXACT item name found in the menu search. Do NOT append allergy names (e.g. use "Butter Chicken", NOT "Butter Chicken Cashew").
+       3. ORDER TYPE: Before finalizing, you MUST confirm if the order is for "Pickup" or "Delivery" using 'setOrderType'. If "Delivery", you MUST collect the address using 'setDeliveryAddress'.
+       4. ALLERGIES (SAFETY): If the user orders more than 2 items AND hasn't mentioned allergies, you MUST ask: "Before I finalize that, do you have any food allergies or dietary restrictions I should note for the kitchen?". 
+       5. ALLERGIES (MATCH): If a user mentions an allergy, immediately use 'logDietaryRestriction'. NEVER guess. This is critical for safety.
+       6. ORDER SUMMARY: Before finalizing, you MUST read back the entire order summary (items, quantities, total) and ask "Is this correct?".
+       7. PAYMENT: If the customer asks how to pay, use 'getPaymentInfo'. Inform them they can pay at the restaurant for pickup or via an SMS link for delivery.
+       8. CONFIRM ORDER: After the user confirms ('yes', 'correct'), you MUST call 'confirmOrder'.
+       9. HUMAN HAND-OFF: If the user is frustrated, use 'transferToHuman'.
+       10. ENDING CALL: When done, say exactly: "${restaurantConfig.endCallMessage || "Goodbye! Have a great day."}" and call 'hangUp'.
+       `;
+    }
+
+    super({
+      instructions: finalInstructions,
+      tools: {
+        getRestaurantInfo: llm.tool({
+          description: "Get info.",
+          parameters: { type: "object", properties: {} },
+          execute: async () =>
+            `Address: ${restaurantConfig.info.address}. Hours: ${restaurantConfig.info.hours}.`,
+        }),
+
+        checkOrderStatus: llm.tool({
+          description: "Check status.",
+          parameters: { type: "object", properties: {} },
+          execute: async () => {
+            if (activeRoom.state === "disconnected") return;
+            return `Latest order for ${customerDetails.name}: Kitchen is preparing it.`;
+          },
+        }),
+
+        bookTable: llm.tool({
+          description: "Book table.",
+          parameters: {
+            type: "object",
+            properties: {
+              partySize: { type: "integer" },
+              time: { type: "string" },
+            },
+            required: ["partySize", "time"],
+          },
+          execute: async ({ partySize, time }) =>
+            `Reservation confirmed for ${partySize} people at ${time}.`,
+        }),
+
+        getPaymentInfo: llm.tool({
+          description: "Explain how payment works.",
+          parameters: { type: "object", properties: {} },
+          execute: async () => {
+             return "Pickup orders: Pay at the restaurant when you arrive. Delivery orders: We will send you an SMS link for secure online payment after the order is confirmed.";
+          }
+        }),
+
+        ...createDeliveryTools(sessionCart, customerDetails, restaurantConfig),
+
+        transferToHuman: llm.tool({
+          description: "Connect the customer to a human manager or restaurant staff.",
+          parameters: {
+            type: "object",
+            properties: {
+              reason: { type: "string", description: "Why the human is needed (e.g. frustration, complex request)" }
+            }
+          },
+          execute: async ({ reason }) => {
+             console.log("\n" + "=".repeat(50));
+             console.log(`🎁 [${INSTANCE_ID}] TRANSFER TRIGGERED. Reason: ${reason}`);
+             console.log("=".repeat(50) + "\n");
+             
+             try {
+                // Get the staff phone from notification config
+                const staffPhone = restaurantConfig.notificationConfig?.phoneNumbers?.[0] || "+18639009879"; // Updated to requested staff number
+                
+                if (!this.callRecord || !this.callRecord.id) {
+                    console.error(`❌ [${INSTANCE_ID}] Transfer Failed: No active callRecord.`, { 
+                        hasRecord: !!this.callRecord, 
+                        hasId: !!this.callRecord?.id 
+                    });
+                    throw new Error("Call record not found or not initialized");
+                }
+                
+                console.log(`📡 [${INSTANCE_ID}] Initiating transfer for Call ID: ${this.callRecord.id} to ${staffPhone}`);
+                
+                const PORT = 3001; // Hardcoded to backend port (avoiding 3000 frontend)
+                const res = await fetch(`http://localhost:${PORT}/api/calls/${this.callRecord.id}/transfer`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ staffPhone })
+                });
+
+                if (!res.ok) {
+                    const errData = await res.json();
+                    throw new Error(errData.error || "Transfer request failed");
+                }
+
+                return "SUCCESS: I'm transferring you to a manager now. Please hold for one moment while I connect you.";
+             } catch (err) {
+                console.error("❌ Transfer Tool Failed:", err.message);
+                return `System Error: I couldn't initiate the transfer (${err.message}). Please apologize and ask the customer if you can take their number for a callback instead.`;
+             }
+          }
+        }),
 
         // --- SMARTEST MENU SEARCH (Minimalist Output) ---
         // --- INTELLIGENT MENU SEARCH (With Descriptions) ---
@@ -42,11 +182,6 @@ export function createRestaurantTools({
           },
           execute: async ({ query }) => {
             if (activeRoom.state === "disconnected") return;
-            
-            // STRICT MODE CHECK
-            if (!menuLoadSuccess) {
-                return "System: CRITICAL - The menu is unavailable (offline mode). You must apologize and tell the user you cannot check the menu right now.";
-            }
 
             console.log(`🔍 User Query: "${query}"`);
 
@@ -68,30 +203,45 @@ export function createRestaurantTools({
                 restaurantConfig.clover,
                 restaurantConfig.id
               );
-              
-              const matchResult = MenuMatcher.findMatch(fixedQuery, cloverItems);
+              const availableItems = cloverItems.filter((i) => !i.hidden);
 
-              // 1. Ambiguous
-              if (matchResult.ambiguous) {
-                 const [a, b] = matchResult.ambiguous;
-                 return `System: Found multiple items. Ask user: "Did you mean ${a.name} or ${b.name}?"`;
-              }
-              
-              // 2. High Confidence Match
-              if (matchResult.match) {
-                 const item = matchResult.match;
-                 const price = item.price ? `$${(item.price / 100).toFixed(2)}` : "Price varies";
-                 return `System: Found "${item.name}" (${price}). Description: ${item.description || "No description"}. You can answer the user's question now.`;
+              const enrichedItems = availableItems.map((cItem) => {
+                const soundCodes = metaphone.process(cItem.name);
+
+                return {
+                  ...cItem,
+                  description: cItem.description || "Freshly prepared from our menu.",
+                  soundCode: soundCodes ? soundCodes[0] : "",
+                };
+              });
+
+              // 2. Phonetic Search
+              const [querySound] = metaphone.process(fixedQuery) || [];
+              if (querySound) {
+                const matches = enrichedItems.filter(
+                  (i) => i.soundCode === querySound
+                );
+                if (matches.length > 0) {
+                  console.log(`   🎯 PHONETIC MATCH: "${matches[0].name}"`);
+                  // Output includes Description now!
+                  return `System: Found "${matches[0].name}" - ${matches[0].description}. Offer this to the user.`;
+                }
               }
 
-              // 3. Medium Confidence (Suggestions) - THE FIX
-              if (matchResult.suggestions && matchResult.suggestions.length > 0) {
-                 const names = matchResult.suggestions.map(s => s.name).join('" or "');
-                 return `System: No exact match for "${query}", but found similar items: "${names}". Ask the user: "Did you mean ${names}?"`;
-              }
+              // 3. Fuzzy Search
+              const fuse = new Fuse(enrichedItems, {
+                keys: ["name", "synonyms"],
+                threshold: 0.5,
+                distance: 100,
+              });
+              const results = fuse.search(fixedQuery);
 
-              // 4. No Match
-              return `System: I searched the menu for "${query}" but found no matching items. Apologize to the user.`;
+              if (results.length === 0)
+                return "System: No items found matching that description.";
+
+              console.log(`   ✅ Fuzzy Match: "${results[0].item.name}"`);
+              const matchedItem = results[0].item;
+              return `System: Found "${matchedItem.name}" ($${(matchedItem.price / 100).toFixed(2)}) - ${matchedItem.description}. Offer this.`;
             } catch (err) {
               return "System: Error accessing menu.";
             }
@@ -129,6 +279,8 @@ export function createRestaurantTools({
           }
         }),
 
+
+
         addToOrder: llm.tool({
           description: "Use this ONLY when the customer explicitly wants to buy/order an item. Requires itemName and quantity. Validates against the menu before adding.",
           parameters: {
@@ -142,18 +294,13 @@ export function createRestaurantTools({
             required: ["itemName", "quantity", "turn_id"],
           },
           execute: async ({ itemName, quantity, notes, turn_id }) => {
-            // STRICT MODE CHECK
-            if (!menuLoadSuccess) {
-                return "System: CRITICAL - The menu system is offline. You CANNOT add items to the order. Apologize to the user.";
-            }
-
             // --- TURN DEDUPLICATION ---
             const turnHash = `${turn_id}-${itemName}-${quantity}`;
-            if (lastProcessedHash === turnHash) {
+            if (this.lastProcessedHash === turnHash) {
                 console.log(`🛡️ [DEDUPE] Blocked duplicate add for: ${itemName}`);
                 return `System: Item ${itemName} was already added in this turn. Proceed with conversation.`;
             }
-            lastProcessedHash = turnHash;
+            this.lastProcessedHash = turnHash;
 
             const { items } = await getMenu(restaurantConfig.clover, restaurantConfig.id);
             
@@ -171,9 +318,10 @@ export function createRestaurantTools({
             if (!matchResult.match) {
                 console.log(`🛡️ [MATCHER] Low confidence for: "${itemName}"`);
                 
-                // NEW: Use Standardized Suggestions from Matcher
-                if (matchResult.suggestions && matchResult.suggestions.length > 0) {
-                     const names = matchResult.suggestions.map(s => s.name).join('" or "');
+                // Try Soft Match for Suggestions (The "Malai Kofta" fix)
+                const suggestions = MenuMatcher.findSuggestions(itemName, items);
+                if (suggestions.length > 0) {
+                     const names = suggestions.map(s => s.name).join('" or "');
                      console.log(`💡 [MATCHER] Suggesting: ${names}`);
                      return `System: I couldn't confidently match "${itemName}", but it sounds like "${names}". Ask the user: "Did you mean ${names}?"`;
                 }
@@ -186,7 +334,7 @@ export function createRestaurantTools({
             
             // --- LAYER C: SAFETY CHECK (The Sentinel Logic) ---
             if (itemData.dietaryTags && itemData.dietaryTags.length > 0) {
-                const active = Array.from(activeAllergies);
+                const active = Array.from(this.activeAllergies);
                 const conflict = active.find(allergy => {
                      // Check if any tag matches the allergy (fuzzy match)
                      return itemData.dietaryTags.some(tag => tag.includes(allergy) || allergy.includes(tag));
@@ -200,7 +348,7 @@ export function createRestaurantTools({
             }
             
             // Legacy Fallback (Optional, but keeping for complete safety net)
-            const safetyCheck = validateOrder(itemData.name, Array.from(activeAllergies));
+            const safetyCheck = validateOrder(itemData.name, Array.from(this.activeAllergies));
             if (!safetyCheck.safe) {
                 console.warn(`🛡️ [SAFETY] Blocked unsafe item: ${itemData.name}. Reason: ${safetyCheck.reason}`);
                 return `System: BLOCKED. You CANNOT add "${itemData.name}" because the customer has a declared allergy. ${safetyCheck.reason}. Inform the customer immediately.`;
@@ -223,12 +371,13 @@ export function createRestaurantTools({
           },
           execute: async ({ restriction }) => {
              const normalized = restriction.toLowerCase();
-             activeAllergies.add(normalized);
-             console.log(`🛡️ [SAFETY] Logged allergy: ${normalized}. Active: ${Array.from(activeAllergies).join(", ")}`);
+             this.activeAllergies.add(normalized);
+             console.log(`🛡️ [SAFETY] Logged allergy: ${normalized}. Active: ${Array.from(this.activeAllergies).join(", ")}`);
              return `System: Recorded ${normalized} allergy. Future orders containing this will be blocked automatically. Confirm this with the user: "I've noted your ${normalized} allergy/restriction."`;
           }
         }),
 
+        // --- NEW SAFETY & REVENUE TOOLS ---
         checkDietaryInfo: llm.tool({
           description: "Check allergens for a specific item using the structural safety map.",
           parameters: {
@@ -313,11 +462,8 @@ export function createRestaurantTools({
             
             // 2. Persist to our Database
             try {
-              // FIX: Use Public URL for Fly.io inter-process communication
-              const API_BASE = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
-              console.log(`💾 [${INSTANCE_ID}] Persisting order to: ${API_BASE}/api/orders`);
-              
-              await fetch(`${API_BASE}/api/orders`, {
+              const PORT = process.env.PORT || 3000;
+              await fetch(`http://localhost:${PORT}/api/orders`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -366,56 +512,13 @@ export function createRestaurantTools({
             return "System: Hanging up call. Say goodbye first.";
           },
         }),
+      },
+    });
 
-        transferToHuman: llm.tool({
-            description: "Use this tool to physically transfer the call to a human agent. You MUST call this tool if you say you are transferring. Do NOT just say you will transfer. Execute this tool.",
-            parameters: { type: "object", properties: { reason: { type: "string" } } },
-            execute: async ({ reason }) => {
-                // Fix: Prioritize 'transferPhoneNumber' (DB) -> 'phoneNumber' (API Identity) -> 'phone'
-                const targetPhone = restaurantConfig.transferPhoneNumber || restaurantConfig.phoneNumber || restaurantConfig.phone; 
-                
-                console.log(`📡 [${INSTANCE_ID}] Transfer Tool Triggered. Config Phone: ${targetPhone}`);
-
-                if (!targetPhone) {
-                    return "System: Cannot transfer - no phone number configured for this restaurant. Apologize to the user.";
-                }
-
-                console.log(`📡 [${INSTANCE_ID}] Initiating Transfer to ${targetPhone}. Reason: ${reason}`);
-
-                // Call the API to trigger SIP REFER
-                try {
-                     // We need the database Call ID. 
-                     // Assuming 'callRecord' has the ID from the initialization step.
-                     const callId = callRecord?.id;
-                     
-                     if (!callId) {
-                         console.error(`❌ [${INSTANCE_ID}] Transfer failed: Missing Call ID`);
-                         return "System: Technical error: Cannot find active call record to transfer. Apologize.";
-                     }
-
-                     // Fix for Fly.io: Agent runs in separate VM, so localhost doesn't reach API.
-                     // Use NEXT_PUBLIC_API_URL if available (Prod), else localhost (Local Dev).
-                     const API_BASE = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3001}`;
-                     
-                     console.log(`🔗 [${INSTANCE_ID}] Calling Transfer API at: ${API_BASE}/api/calls/${callId}/transfer`);
-                     
-                     const response = await fetch(`${API_BASE}/api/calls/${callId}/transfer`, {
-                         method: "POST",
-                         headers: { "Content-Type": "application/json" },
-                         body: JSON.stringify({ staffPhone: targetPhone })
-                     });
-
-                     if (!response.ok) {
-                        const errText = await response.text();
-                        throw new Error(`API Error ${response.status}: ${errText}`);
-                     }
-
-                     return "System: Transfer initiated. Tell the user: 'I play classical music while I transfer you to a manager. Please hold.' then wait.";
-                } catch (err) {
-                    console.error(`❌ [${INSTANCE_ID}] Transfer API failed:`, err);
-                    return "System: Unable to transfer due to technical error. Apologize.";
-                }
-            }
-        }),
-    };
+    // Store meta-data for use in tools
+    this.callRecord = callRecord;
+    this.finalizeCallback = finalizeCallback;
+    this.lastProcessedHash = null; // Guard for duplicate adds in a single turn
+    this.activeAllergies = new Set(); // Track session-level allergies
+  }
 }
