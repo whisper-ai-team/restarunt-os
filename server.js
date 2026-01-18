@@ -20,7 +20,6 @@ import { reviewService } from "./services/reviewService.js";
 import { feedbackService } from "./services/feedbackService.js";
 import { PrismaClient } from "@prisma/client";
 
-console.log("🔍 DATABASE_URL:", process.env.DATABASE_URL ? "✅ Loaded" : "❌ Missing");
 const prisma = new PrismaClient({ errorFormat: "minimal" });
 
 const app = express();

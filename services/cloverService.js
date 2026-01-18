@@ -71,11 +71,29 @@ export async function getMenu(credentials, restaurantId) {
 
 
   try {
-    console.log(`🍔 [${INSTANCE_ID}] Fetching menu from Clover...`);
-    const data = await cloverRequest("/items?limit=1000&expand=categories", {}, credentials, fetchWithTimeout);
-    const items = data.elements || [];
+    console.log(`🍔 [${INSTANCE_ID}] Fetching menu from Clover (Recursive)...`);
+    
+    let allItems = [];
+    let offset = 0;
+    const limit = 1000;
+    let keepFetching = true;
+
+    while (keepFetching) {
+        console.log(`   🔄 Fetching page offset=${offset}...`);
+        const data = await cloverRequest(`/items?limit=${limit}&offset=${offset}&expand=categories`, {}, credentials, fetchWithTimeout);
+        const pageItems = data.elements || [];
+        allItems = allItems.concat(pageItems);
+
+        if (pageItems.length < limit) {
+            keepFetching = false;
+        } else {
+            offset += limit;
+        }
+    }
+
+    const items = allItems;
     menuCache = { items, lastFetch: now };
-    console.log(`🍔 [${INSTANCE_ID}] Menu fetch success: ${items.length} items.`);
+    console.log(`🍔 [${INSTANCE_ID}] Menu fetch success: ${items.length} TOTAL items.`);
     
     // --- AI SENTINEL TRIGGER ---
     if (items.length > 0 && restaurantId) {

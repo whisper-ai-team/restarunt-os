@@ -57,7 +57,7 @@ export function createRestaurantPrompt({
       instructions: restaurantConfig.instructions + personalizedContext + "\n" + personaFlavor + "\n" + upsellContext,
       menuContext: initialMenu,
       tone: "friendly",
-    }) + "\n\nCRITICAL: Be extremely concise. Use short sentences for speed.";
+    }) + "\n\nCRITICAL: Be extremely concise. Use short sentences for speed.\n\nCRITICAL MENU LOOKUP RULE: The menu context provided below might be partial. If a user asks for an item and you do not see it in your context, you MUST use the 'searchMenu' tool to check the full database before saying you don't have it. NEVER say 'we don't have that' without checking 'searchMenu' first.";
 
     // CLOSED STATE OVERRIDE
     const isClosed = !isOpen(restaurantConfig.businessHours, restaurantConfig.timezone);

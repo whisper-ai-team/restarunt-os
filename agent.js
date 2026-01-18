@@ -195,10 +195,17 @@ const agent = defineAgent({
            if (cloverConfig?.apiKey && cloverConfig?.merchantId) {
                const menuData = await getMenu(cloverConfig, restaurantConfig.id);
                initialMenu = menuData.items;
-               
-               if (initialMenu.length > 0) {
+                              if (initialMenu.length > 0) {
                    menuLoadSuccess = true;
                    console.log(`🍔 [${INSTANCE_ID}] Initial Menu Loaded: ${initialMenu.length} items`);
+                   // DEBUG: Check for specific missing items
+                   const chickenItems = initialMenu.filter(i => i.name.toLowerCase().includes("chicken")).map(i => i.name);
+                   const kormaItems = initialMenu.filter(i => i.name.toLowerCase().includes("korma")).map(i => i.name);
+                   const fishItems = initialMenu.filter(i => i.name.toLowerCase().includes("fish")).map(i => i.name);
+                   
+                   console.log(`🔍 [DEBUG-MENU] Found ${chickenItems.length} 'Chicken' items:`, chickenItems.slice(0, 10)); 
+                   console.log(`🔍 [DEBUG-MENU] Found ${kormaItems.length} 'Korma' items:`, kormaItems);
+                   console.log(`🔍 [DEBUG-MENU] Found ${fishItems.length} 'Fish' items:`, fishItems);
                } else {
                    console.warn(`⚠️ [${INSTANCE_ID}] STRICT MODE: Menu fetch returned 0 items. Disabling ordering.`);
                    menuLoadSuccess = false;

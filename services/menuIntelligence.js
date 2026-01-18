@@ -66,18 +66,46 @@ export const MenuIntelligenceService = {
       ${JSON.stringify(batch.map(b => `${b.name} (${b.description || ''})`))}
       `;
 
-      const completion = await openai.beta.chat.completions.parse({
-        model: "gpt-5.2-chat-latest",
-        messages: [{ role: "system", content: "You represent strict food safety data." }, { role: "user", content: prompt }],
-        response_format: zodResponseFormat(BatchAnalysisSchema, "analysis"),
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+            { role: "system", content: "You represent strict food safety data. Output Valid JSON only." }, 
+            { role: "user", content: prompt + "\n\nOUTPUT FORMAT: Return a JSON object with a single key 'items'. Each item MUST have: 'originalName' (exact match), 'analysis' object with keys: 'dietary_tags' (array of strings), 'ingredients_implied' (array of strings), 'phonetic_correction' (STRING, single value), 'stt_keywords' (array of strings)." }
+        ],
+        response_format: { type: "json_object" },
       });
 
-      const results = completion.choices[0].message.parsed;
+      const resContent = completion.choices[0].message.content;
+      if (!resContent) throw new Error("Empty OpenAI response");
+
+      let results;
+      try {
+        results = JSON.parse(resContent);
+      } catch (e) {
+        throw new Error("Failed to parse OpenAI JSON: " + resContent);
+      }
 
       // Upsert into DB
-      for (const result of results.items) {
-        // Find matching original item from batch (by fuzzy name or index is risky, let's match by name)
-        const originalItem = batch.find(b => b.name === result.originalName || result.originalName.includes(b.name));
+      const items = results.items || [];
+      for (const result of items) {
+        // Validation Guard
+        if (!result.originalName) {
+            console.warn(`⚠️ [MenuSentinel] Skipping item with missing originalName`);
+            continue;
+        }
+
+        // Safe Type Casting (Fix Prisma Error)
+        const analysis = result.analysis || {};
+        const safePhonetic = Array.isArray(analysis.phonetic_correction) 
+            ? analysis.phonetic_correction[0] 
+            : (analysis.phonetic_correction || "");
+
+        // Find matching original item from batch
+        const originalItem = batch.find(b => 
+            b.name === result.originalName || 
+            (result.originalName && result.originalName.includes(b.name)) ||
+            (b.name && b.name.includes(result.originalName))
+        );
         
         if (originalItem) {
           // 1. Ensure MenuItem exists
@@ -92,7 +120,7 @@ export const MenuIntelligenceService = {
               restaurantId,
               cloverId: originalItem.id,
               name: originalItem.name,
-              price: 0, // We update price in real sync, this is just intelligence placeholder if needed
+              price: 0, 
               description: originalItem.description,
               hidden: false
             },
@@ -106,21 +134,21 @@ export const MenuIntelligenceService = {
             where: { menuItemId: menuItem.id },
             create: {
               menuItemId: menuItem.id,
-              dietaryTags: result.analysis.dietary_tags,
-              ingredients: result.analysis.ingredients_implied,
-              phoneticName: result.analysis.phonetic_correction,
-              sttKeywords: result.analysis.stt_keywords
+              dietaryTags: analysis.dietary_tags || [],
+              ingredients: analysis.ingredients_implied || [],
+              phoneticName: safePhonetic,
+              sttKeywords: analysis.stt_keywords || []
             },
             update: {
-              dietaryTags: result.analysis.dietary_tags,
-              ingredients: result.analysis.ingredients_implied,
-              phoneticName: result.analysis.phonetic_correction,
-              sttKeywords: result.analysis.stt_keywords,
+              dietaryTags: analysis.dietary_tags || [],
+              ingredients: analysis.ingredients_implied || [],
+              phoneticName: safePhonetic,
+              sttKeywords: analysis.stt_keywords || [],
               processedAt: new Date()
             }
           });
           
-          console.log(`   ✅ Enriched: ${originalItem.name} -> [${result.analysis.dietary_tags.join(", ")}]`);
+          console.log(`   ✅ Enriched: ${originalItem.name} -> [${(analysis.dietary_tags || []).join(", ")}]`);
         }
       }
 

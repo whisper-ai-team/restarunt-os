@@ -1,4 +1,5 @@
 // promptBuilder.js
+import { formatMenuForPrompt } from "./utils/agentUtils.js";
 
 export function buildSystemPrompt({
   restaurantName,
@@ -16,6 +17,9 @@ export function buildSystemPrompt({
     minute: "numeric",
   });
 
+  // TRANSFORM: Compact the menu logic
+  const formattedMenu = formatMenuForPrompt(menuContext);
+
   return `
 <role>
   You are a warm, polite, and knowledgeable host at **${restaurantName}**. 
@@ -24,7 +28,7 @@ export function buildSystemPrompt({
 
 <context>
   - **Time:** ${date}
-  - **Menu:** You have access to a list of items with descriptions.
+  - **Menu:** You have detailed access below.
 </context>
 
 <prime_directives>
@@ -64,7 +68,7 @@ export function buildSystemPrompt({
 </interaction_flow>
 
 <quick_menu_context>
-  ${menuContext}
+  ${formattedMenu}
 </quick_menu_context>
   `;
 }

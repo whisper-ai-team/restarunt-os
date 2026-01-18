@@ -9,94 +9,11 @@ const WEIGHTS = {
 };
 
 const THRESHOLDS = {
-  MIN_SCORE: 0.78,
+  MIN_SCORE: 0.65, // Relaxed from 0.78
   AMBIGUOUS_MARGIN: 0.10
 };
 
-/**
- * Normalizes text for comparison (Indian accent friendly)
- * @param {string} text 
- */
-function normalizeText(text) {
-  if (!text) return "";
-  return text.toLowerCase()
-    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "") // Remove punctuation
-    .replace(/\s{2,}/g, " ") // Collapse spaces
-    .replace(/ph/g, "f") // Indian accent normalization
-    .replace(/kh/g, "k")
-    .replace(/th/g, "t")
-    .replace(/dh/g, "d")
-    .trim();
-}
-
-/**
- * Calculates Jaccard Similarity between two token sets
- */
-function calculateTokenScore(transcript, target) {
-  const transTokens = new Set(normalizeText(transcript).split(" "));
-  const targetTokens = new Set(normalizeText(target).split(" "));
-  
-  if (targetTokens.size === 0) return 0;
-  
-  let intersection = 0;
-  transTokens.forEach(t => {
-    if (targetTokens.has(t)) intersection++;
-  });
-  
-  return intersection / (transTokens.size + targetTokens.size - intersection);
-}
-
-/**
- * Levenshtein Distance Algorithm
- */
-function levenshtein(a, b) {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
-  
-  const matrix = [];
-  for (let i = 0; i <= b.length; i++) matrix[i] = [i];
-  for (let j = 0; j <= a.length; j++) matrix[0][j] = j;
-
-  for (let i = 1; i <= b.length; i++) {
-    for (let j = 1; j <= a.length; j++) {
-      if (b.charAt(i - 1) === a.charAt(j - 1)) {
-        matrix[i][j] = matrix[i - 1][j - 1];
-      } else {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j - 1] + 1,
-          Math.min(matrix[i][j - 1] + 1, matrix[i - 1][j] + 1)
-        );
-      }
-    }
-  }
-  return matrix[b.length][a.length];
-}
-
-/**
- * Calculates Phonetic Similarity (0-1) using Hybrid Logic
- */
-function calculatePhoneticScore(transcript, targetPhoneticName) {
-  if (!targetPhoneticName) return 0;
-  const tNorm = normalizeText(transcript);
-  const pNorm = normalizeText(targetPhoneticName);
-  
-  if (tNorm === pNorm) return 1.0;
-  
-  // 1. Levenshtein Similarity
-  const dist = levenshtein(tNorm, pNorm);
-  const maxLength = Math.max(tNorm.length, pNorm.length);
-  const levScore = 1 - (dist / maxLength);
-  
-  // 2. Metaphone Boost (Optional check)
-  let metaBonus = 0;
-  try {
-     const tCodes = metaphone.process(tNorm);
-     const pCodes = metaphone.process(pNorm);
-     if (tCodes[0] && pCodes[0] && tCodes[0] === pCodes[0]) metaBonus = 0.1;
-  } catch(e) {}
-  
-  return Math.min(levScore + metaBonus, 1.0);
-}
+// ... (helper functions)
 
 export const MenuMatcher = {
   /**
@@ -106,36 +23,46 @@ export const MenuMatcher = {
    */
   findMatch(transcript, menuItems) {
     const candidates = menuItems.map(item => {
+      const normItem = normalizeText(item.name);
+      const normTrans = normalizeText(transcript);
+
+      // 0. SUBSTRING/PREFIX BOOST (The "Fish Curry" Fix)
+      // If the user says "Fish Curry" and item is "Fish Curry Boneless", this should be a match.
+      let directMatchBonus = 0;
+      if (normItem === normTrans) {
+          directMatchBonus = 1.0; // Perfect
+      } else if (normItem.startsWith(normTrans) || normTrans.startsWith(normItem)) {
+          directMatchBonus = 0.95; // Strong Prefix Match
+      } else if (normItem.includes(normTrans)) {
+          directMatchBonus = 0.85; // Substring Match
+      }
+
       // 1. Phonetic Score
-      // Use the AI-provided phonetic name if available, else original name
       let phoneticScore = calculatePhoneticScore(transcript, item.phoneticName || item.name);
       
-      // 2. Keyword Score (SttKeywords from Sentinel)
+      // 2. Keyword Score
       let keywordScore = 0;
       if (item.sttKeywords && item.sttKeywords.length > 0) {
-        // Exact match on any keyword is huge
-        const normTrans = normalizeText(transcript);
-        if (item.sttKeywords.some(k => normalizeText(k) === normTrans)) {
-          keywordScore = 1.0;
-        } else if (item.sttKeywords.some(k => normalizeText(k).includes(normTrans))) {
-          keywordScore = 0.8;
-        }
-      } else {
-        // Fallback: Name match
-        if (normalizeText(item.name).includes(normalizeText(transcript))) keywordScore = 0.6;
+        if (item.sttKeywords.some(k => normalizeText(k) === normTrans)) keywordScore = 1.0;
+        else if (item.sttKeywords.some(k => normalizeText(k).includes(normTrans))) keywordScore = 0.8;
       }
 
       // 3. Token Score
       let tokenScore = calculateTokenScore(transcript, item.name);
 
       // Weighted Final Score
-      const finalScore = (
+      let finalScore = (
         (phoneticScore * WEIGHTS.PHONETIC) +
         (keywordScore * WEIGHTS.KEYWORD) +
         (tokenScore * WEIGHTS.TOKEN)
       );
 
-      return { item, score: finalScore, debug: { phoneticScore, keywordScore, tokenScore } };
+      // Apply Override from Direct Match
+      if (directMatchBonus > finalScore) {
+          finalScore = directMatchBonus;
+      }
+
+      return { item, score: finalScore, debug: { phoneticScore, keywordScore, tokenScore, directMatchBonus } };
     });
 
     // Sort descending

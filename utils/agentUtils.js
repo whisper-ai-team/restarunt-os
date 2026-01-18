@@ -44,3 +44,52 @@ export function startHeartbeat() {
     console.log(`💓 [${INSTANCE_ID}] Heartbeat: Worker ${process.pid} is alive and waiting for calls...`);
   }, 30000);
 }
+
+/**
+ * Compacts the menu into a token-efficient Markdown format for the System Prompt.
+ * Prevents "Menu Blindness" by fitting 200+ items into context.
+ */
+export function formatMenuForPrompt(items) {
+  if (!items || items.length === 0) return "No menu items available.";
+
+  // 1. Group by Category
+  const categories = {};
+  items.forEach(item => {
+    const catName = item.categories && item.categories.length > 0 
+        ? item.categories[0].name 
+        : "Main";
+    
+    if (!categories[catName]) categories[catName] = [];
+    categories[catName].push(item);
+  });
+
+  // 2. Build String
+  let output = [];
+  const sortedCats = Object.keys(categories).sort();
+
+  for (const cat of sortedCats) {
+    output.push(`### ${cat.toUpperCase()}`);
+    const catItems = categories[cat];
+    
+    catItems.forEach(item => {
+       const priceStr = item.price ? `($${(item.price / 100).toFixed(0)})` : "";
+       // Truncate description to save tokens
+       let desc = item.description ? `: ${item.description.substring(0, 40)}...` : ""; 
+       // Clean up title
+       const cleanName = item.name.replace(/\s+/g, " ").trim();
+       
+       output.push(`- ${cleanName} ${priceStr}${desc}`);
+    });
+    output.push(""); // Newline between categories
+  }
+
+  // 3. Safety Check: If too long, return a truncated version with a warning
+  // 1 token ~= 4 chars. 100k tokens is huge, but let's be safe (~15k chars).
+  const finalStr = output.join("\n");
+  if (finalStr.length > 20000) {
+      console.warn(`⚠️ [MENU] Menu Prompt Context too large (${finalStr.length} chars). Truncating.`);
+      return finalStr.substring(0, 20000) + "\n...[MENU TRUNCATED - USE SEARCH TOOL]...";
+  }
+
+  return finalStr;
+}
