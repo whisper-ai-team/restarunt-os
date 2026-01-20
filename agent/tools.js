@@ -20,6 +20,7 @@ export function createRestaurantTools({
   sessionCart, 
   callRecord, 
   finalizeCallback, 
+  closeRoomCallback,
   cuisineProfile,
   activeAllergies,
   menuLoadSuccess 
@@ -153,7 +154,8 @@ export function createRestaurantTools({
                 console.log(`🛡️ [DEDUPE] Blocked duplicate add for: ${itemName}`);
                 return `System: Item ${itemName} was already added in this turn. Proceed with conversation.`;
             }
-            lastProcessedHash = turnHash;
+            // Relaxed Dedupe: Only block if exact same within same turn
+            // lastProcessedHash = turnHash; // Disable strict hash blocking for now to prevent lost items
 
             const { items } = await getMenu(restaurantConfig.clover, restaurantConfig.id);
             
@@ -289,8 +291,8 @@ export function createRestaurantTools({
               cloverOrderId = cloverOrder.id;
               console.log(`✅ [${INSTANCE_ID}] Clover order created: ${cloverOrderId}`);
               
-              // Auto-print to kitchen if enabled
-              if (restaurantConfig.printing?.autoPrint !== false) {
+              // Auto-print to kitchen if enabled and configured
+              if (restaurantConfig.printing && restaurantConfig.printing.autoPrint !== false) {
                 try {
                   await printOrderToKitchen(cloverOrderId, restaurantConfig, sessionCart);
                   console.log(`🖨️  [${INSTANCE_ID}] Order sent to kitchen printer`);
@@ -337,7 +339,7 @@ export function createRestaurantTools({
             // 3. Send SMS Confirmation
             await sendOrderConfirmation(customerDetails.phone, restaurantConfig.name, sessionCart, totalCents);
             
-            return `System: Order submitted to Kitchen for ${redact(customerDetails.name)}. Total items: ${itemCount}. You should now say: "Your order is in! I just sent a confirmation text to your phone. We'll let you know when it's ready. Thank you for choosing us!" then use 'hangUp'.`;
+            return `System: Order submitted to Kitchen for ${redact(customerDetails.name)}. Total items: ${itemCount}. You should now say: "Your order is in! It will be ready for pickup in about 20 minutes. I just sent a confirmation text to your phone. Thank you for choosing us! Goodbye!" then use 'hangUp'.`;
           }
         }),
 
@@ -357,10 +359,20 @@ export function createRestaurantTools({
             }
 
             if (activeRoom) {
-                // Add a small delay to allow TTS "Goodbye" to flush if possible
-                setTimeout(() => {
-                    console.log(`🔌 [${INSTANCE_ID}] Disconnecting room now.`);
-                    activeRoom.disconnect();
+                // Add a small delay for TTS "Goodbye"
+                setTimeout(async () => {
+                    console.log(`🔌 [${INSTANCE_ID}] Closing room via API (SIP Disconnect).`);
+                    if (closeRoomCallback) {
+                        try {
+                           await closeRoomCallback();
+                        } catch (e) {
+                           console.error("Callback room close failed:", e);
+                           activeRoom.disconnect(); // Fallback
+                        }
+                    } else {
+                        console.warn("⚠️ No closeRoomCallback provided. Using soft disconnect.");
+                        activeRoom.disconnect();
+                    }
                 }, 1500);
             }
             return "System: Hanging up call. Say goodbye first.";

@@ -23,7 +23,7 @@ export function createRestaurantPrompt({
        
        Your Instructions:
        1. Politely apologize to ${customerDetails.name}.
-       2. State clearly: "I apologize, but our menu system is currently offline, so I cannot take orders or check prices right now."
+       2. State clearly: "I apologize, but our menu system is currently offline, so I cannot take orders or check prices right now.{}"
        3. If they ask to order anyway, refuse firmly but politely.
        4. Suggest they call back later or visit the website.
        5. Do NOT hallucinate menu items.

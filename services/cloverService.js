@@ -80,7 +80,7 @@ export async function getMenu(credentials, restaurantId) {
 
     while (keepFetching) {
         console.log(`   🔄 Fetching page offset=${offset}...`);
-        const data = await cloverRequest(`/items?limit=${limit}&offset=${offset}&expand=categories`, {}, credentials, fetchWithTimeout);
+        const data = await cloverRequest(`/items?limit=${limit}&offset=${offset}&expand=categories,modifierGroups`, {}, credentials, fetchWithTimeout);
         const pageItems = data.elements || [];
         allItems = allItems.concat(pageItems);
 

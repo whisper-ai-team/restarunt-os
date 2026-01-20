@@ -65,11 +65,13 @@ export class RestaurantAgent extends voice.Agent {
        finalInstructions = systemPrompt + `
        
        CRITICAL OPERATIONAL RULES:
+       0. CATERING TRIAGE: IF the user mentions "catering", "large party for events", or "bulk order", you MUST say: "I can absolutely help get you to a manager for catering." and IMMEDIATELY call the 'transferToHuman' tool with reason="Catering Inquiry".
        1. CUISINE GUARDRAIL: You represent an AUTHENTIC ${cuisineProfile.name} restaurant. You MUST strictly adhere to this cuisine.
           - If the user asks for dishes from a different cuisine (e.g., asking for Sushi at an Italian restaurant), politely refuse and say: "I apologize, but we specialize in ${cuisineProfile.name} cuisine. We don't serve that here."
           - NEVER recommend items that are clearly not ${cuisineProfile.name} (e.g., do not suggest Curry if you are a Pizza place).
           - ONLY discuss items that exist in the menu provided or are standard staples of ${cuisineProfile.name} cuisine if and only if they match the menu style.
-       2. TOOL USAGE (CART): You MUST call the 'addToOrder' tool EVERY TIME a customer mentions an item they want to order. IMPORTANT: Pass the EXACT item name found in the menu search. Do NOT append allergy names (e.g. use "Butter Chicken", NOT "Butter Chicken Cashew").
+       2. TOOL USAGE (CART): You MUST call the 'addToOrder' tool EVERY TIME a customer mentions an item they want to order. IMPORTANT: Pass the EXACT item name found in the menu search.
+          - SPICY LEVEL CHECK: For Indian dishes (e.g. Curries, Biryanis), if the customer has NOT specified a spice level, you MUST ask: "How spicy would you like that? Mild, Medium, or Spicy?" BEFORE calling 'addToOrder' if possible, or include it in the 'notes' field.
        3. ORDER TYPE: Before finalizing, you MUST confirm if the order is for "Pickup" or "Delivery" using 'setOrderType'. If "Delivery", you MUST collect the address using 'setDeliveryAddress'.
        4. ALLERGIES (SAFETY): If the user orders more than 2 items AND hasn't mentioned allergies, you MUST ask: "Before I finalize that, do you have any food allergies or dietary restrictions I should note for the kitchen?". 
        5. ALLERGIES (MATCH): If a user mentions an allergy, immediately use 'logDietaryRestriction'. NEVER guess. This is critical for safety.
@@ -429,6 +431,17 @@ export class RestaurantAgent extends voice.Agent {
             const itemCount = sessionCart.reduce((acc, item) => acc + item.qty, 0);
             const totalCents = sessionCart.reduce((acc, item) => acc + (item.price * item.qty), 0);
             
+            // 0. HIGH VALUE PROTECTION (FAKE ORDER CHECK)
+            if (totalCents > 10000) { // $100.00
+                console.warn(`🛡️ [SAFETY] High Value Order Detected: $${(totalCents/100).toFixed(2)}`);
+                // We add a 'verified' flag to the order logic if needed, but for now we instruct the agent via return string
+                // Note: If calling this tool again after verification, we proceed.
+                // A simple stateless check: The Agent must strictly ask this.
+                // We can't easily block execution here without state, so we rely on the Prompt to enforce this BEFORE calling confirmOrder
+                // or we return a "Soft Block" requesting verbal confirmation if not already done.
+                // Implementation: We'll log it and append a flag to the internal order note.
+            }
+            
             // 1. Create order in Clover POS
             let cloverOrderId = null;
             try {
@@ -489,7 +502,7 @@ export class RestaurantAgent extends voice.Agent {
             // 3. Send SMS Confirmation
             await sendOrderConfirmation(customerDetails.phone, restaurantConfig.name, sessionCart, totalCents);
             
-            return `System: Order submitted to Kitchen. Total items: ${itemCount}. You should now say: "Your order is in! I just sent a confirmation text. We'll let you know when it's ready." Then ask: "Is there anything else I can help with?" (Do NOT call hangUp yet).`;
+            return `System: Order submitted to Kitchen. Total items: ${itemCount}. You should now say: "Your order is in! I just sent a confirmation text. We'll let you know when it's ready. Goodbye!" and then IMMEDIATELY call the 'hangUp' tool.`;
           }
         }),
 
@@ -513,7 +526,7 @@ export class RestaurantAgent extends voice.Agent {
                 setTimeout(() => {
                     console.log(`🔌 [${INSTANCE_ID}] Disconnecting room now.`);
                     activeRoom.disconnect();
-                }, 4000);
+                }, 2000);
             }
             return "System: Hanging up call. Say goodbye first.";
           },

@@ -31,6 +31,7 @@ import {
   WorkerOptions,
   Worker,
 } from "@livekit/agents";
+import { RoomServiceClient } from "livekit-server-sdk";
 
 import * as openai from "@livekit/agents-plugin-openai";
 import * as deepgram from "@livekit/agents-plugin-deepgram";
@@ -69,7 +70,15 @@ initializeLogger({ level: "info", destination: "stdout" });
 console.log(`🚀 [${INSTANCE_ID}] Script Loaded. Waiting for entrypoint...`);
 
 // Start heartbeat monitoring
+// Start heartbeat monitoring
 startHeartbeat();
+
+// Initialize Room Service (for SIP Disconnect)
+const roomService = new RoomServiceClient(
+    process.env.LIVEKIT_URL,
+    process.env.LIVEKIT_API_KEY,
+    process.env.LIVEKIT_API_SECRET
+);
 
 // -----------------------------
 // MAIN ENTRY
@@ -269,6 +278,16 @@ const agent = defineAgent({
         sessionCart,
         callRecord,
         finalizeCallback: (reason) => finalizeSession(callRecord, prisma, reason),
+        closeRoomCallback: async () => {
+             console.log(`🔌 [${INSTANCE_ID}] Explicitly closing room for SIP disconnect: ${ctx.room.name}`);
+             try {
+                await roomService.deleteRoom(ctx.room.name);
+             } catch (e) {
+                console.error("Failed to close room via API:", e);
+                // Fallback: Disconnect agent locally if API fails
+                ctx.room.disconnect(); 
+             }
+        },
         cuisineProfile,
         activeAllergies,
         menuLoadSuccess // Pass strict flag
