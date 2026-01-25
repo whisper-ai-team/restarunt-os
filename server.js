@@ -18,13 +18,21 @@ import {
 import { getCloverDevices } from "./cloverPrint.js";
 import { reviewService } from "./services/reviewService.js";
 import { feedbackService } from "./services/feedbackService.js";
+import { sendSMS, sendEmail, sendTemplateEmail, sendOrderTemplateEmail } from "./services/email-service/index.js";
+import { createStripeCheckoutSession, parseStripeWebhook, isStripeConfigured } from "./services/payment-service/index.js";
+import { processOrder } from "./services/order-service/index.js";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient({ errorFormat: "minimal" });
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.json());
+// Stripe webhooks require raw body, so skip JSON parsing for that route.
+const jsonParser = bodyParser.json();
+app.use((req, res, next) => {
+  if (req.originalUrl === "/api/webhooks/stripe") return next();
+  return jsonParser(req, res, next);
+});
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: { origin: "*" },
@@ -380,41 +388,72 @@ app.get("/api/restaurants/:id/orders", async (req, res) => {
 
 app.post("/api/orders", async (req, res) => {
   try {
-    const { customerName, customerPhone, items, totalAmount, cloverOrderId, restaurantId } = req.body;
+    const { customerName, customerPhone, items, totalAmount, cloverOrderId, restaurantId, orderType, deliveryAddress, deliveryInstructions, customerEmail } = req.body;
     
     if (!restaurantId) {
       return res.status(400).json({ error: "restaurantId is required" });
     }
+
+    // Load full config for the service
+    const restaurantConfig = await getRestaurantConfigInternal(restaurantId);
     
-    // Create Order Transaction
-    const order = await prisma.order.create({
-      data: {
-        customerName,
-        customerPhone,
-        totalAmount: Math.round(totalAmount), // ensure integer cents
-        cloverOrderId: cloverOrderId || null, // Link to Clover POS order
-        restaurantId, // Multi-tenant link
-        items: {
-          create: items.map((item) => ({
-             name: item.name,
-             quantity: item.qty, // Note: agent uses 'qty', db has 'quantity'
-             price: item.price,
-             notes: item.notes || "",
-          })),
-        },
-      },
-      include: { items: true },
-    });
-    
-    console.log(`📝 Order Saved: ${order.id} for ${customerName}`);
+    // Delegate to Order Service
+    const order = await processOrder(req.body, { prisma, restaurantConfig });
     
     // Broadcast to all connected dashboards
     io.emit("order:new", order);
-    
+
     res.json(order);
   } catch (err) {
     console.error("Failed to save order:", err);
     res.status(500).json({ error: "Failed to save order" });
+  }
+});
+
+// Stripe webhook handler (raw body required)
+app.post("/api/webhooks/stripe", bodyParser.raw({ type: "application/json" }), async (req, res) => {
+  try {
+    const event = await parseStripeWebhook(req);
+    const data = event.data?.object;
+    const orderId = data?.metadata?.orderId;
+
+    // Only handle checkout session events; ignore others.
+    const handledTypes = new Set([
+      "checkout.session.completed",
+      "checkout.session.async_payment_succeeded",
+      "checkout.session.async_payment_failed",
+      "checkout.session.expired"
+    ]);
+    if (!handledTypes.has(event.type)) {
+      return res.status(200).json({ ok: true, ignored: true });
+    }
+
+    if (!orderId) {
+      return res.status(200).json({ ok: false, error: "orderId missing in Stripe metadata" });
+    }
+
+    let paymentStatus = "FAILED";
+    if (event.type === "checkout.session.completed") paymentStatus = "PAID";
+    if (event.type === "checkout.session.async_payment_succeeded") paymentStatus = "PAID";
+    if (event.type === "checkout.session.async_payment_failed") paymentStatus = "FAILED";
+    if (event.type === "checkout.session.expired") paymentStatus = "EXPIRED";
+
+    const updated = await prisma.order.update({
+      where: { id: orderId },
+      data: {
+        paymentStatus,
+        paymentLastEvent: data
+      }
+    });
+
+    res.json({ ok: true, orderId: updated.id, paymentStatus });
+  } catch (err) {
+    console.error("Stripe webhook failed:", err);
+    const message = err?.message || "Stripe webhook error";
+    if (message.toLowerCase().includes("signature")) {
+      return res.status(400).json({ error: "Invalid Stripe signature" });
+    }
+    res.status(500).json({ error: message });
   }
 });
 
@@ -442,6 +481,21 @@ app.get("/health", (req, res) => {
 });
 
 // --- ADMIN API ---
+
+// --- TOOLS CONFIGURATION API ---
+app.get("/api/config/tools", async (req, res) => {
+    // Return the tools configuration for the admin UI
+    // For now we return a default structure or fetch from DB if we had a global config
+    // We'll mimic a "Tools Registry"
+    res.json({
+        tools: [
+            { id: "stripe_payment", name: "Stripe Payment Links", description: "Send automated payment links via SMS/Email", enabled: true, configurable: true },
+            { id: "email_notifications", name: "Order Confirmation Emails", description: "Send SendGrid templates for pickups & deliveries", enabled: true, configurable: true },
+            { id: "clover_sync", name: "Clover POS Sync", description: "Real-time menu & inventory sync", enabled: true, configurable: true }
+        ]
+    });
+});
+
 
 // Internal API for Agent to fetch context (Metadata fallback)
 app.get("/api/internal/room-context/:roomName", async (req, res) => {
@@ -855,6 +909,33 @@ app.post("/api/restaurants/:id/test-sms", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error("Failed to send test SMS:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Test Email Endpoint
+app.post("/api/restaurants/:id/test-email", async (req, res) => {
+  try {
+    const { email, subject, message, templateData, templateId } = req.body;
+    if (!email) {
+      return res.status(400).json({ error: "email is required" });
+    }
+
+    if (templateData) {
+      const resolvedTemplateId = templateId || process.env.SENDGRID_ORDER_TEMPLATE_ID;
+      if (!resolvedTemplateId) {
+        return res.status(400).json({ error: "templateId is required for template emails" });
+      }
+      await sendTemplateEmail(email, resolvedTemplateId, templateData);
+    } else {
+      if (!subject || !message) {
+        return res.status(400).json({ error: "subject and message are required" });
+      }
+      await sendEmail(email, subject, message);
+    }
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Failed to send test email:", err);
     res.status(500).json({ error: err.message });
   }
 });

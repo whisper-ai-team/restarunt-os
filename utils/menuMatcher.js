@@ -209,6 +209,12 @@ export const MenuMatcher = {
       return { match: null, ambiguous: null, suggestions: [], candidates: candidates.slice(0,3) };
     }
 
+    // Gate 1.5: Perfect Match Override
+    if (top1.score >= 1.0) {
+        console.log(`✅ [MenuMatcher] Perfect Match Override: "${top1.item.name}"`);
+        return { match: top1.item, ambiguous: null, suggestions: [], candidates: candidates.slice(0,3) };
+    }
+
     // Gate 2: Ambiguity Margin
     if (top2 && (top1.score - top2.score) < THRESHOLDS.AMBIGUOUS_MARGIN) {
       console.log(`🛡️ [MenuMatcher] Ambiguous: "${top1.item.name}" vs "${top2.item.name}" (Margin: ${(top1.score - top2.score).toFixed(2)})`);

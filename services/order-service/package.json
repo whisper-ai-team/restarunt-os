@@ -1,0 +1,10 @@
+{
+    "name": "restaurant-os-order-service",
+    "version": "1.0.0",
+    "description": "Order Orchestration Service for Restaurant OS",
+    "main": "index.js",
+    "type": "module",
+    "dependencies": {
+        "luxon": "^3.7.2"
+    }
+}

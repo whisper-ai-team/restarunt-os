@@ -222,6 +222,10 @@ export async function getRestaurantConfigInternal(id) {
       defaultPrinterId: restaurant.defaultPrinterId,
       deviceId: restaurant.deviceId,
       printers: restaurant.printers || []
+    },
+    tools: {
+        stripe: { enabled: true },
+        email: { enabled: true }
     }
   };
 }

@@ -1,7 +1,7 @@
 // sessionManager.js - Session lifecycle management
 import { PrismaClient } from "@prisma/client";
-import { sendOrderConfirmation, sendSMS } from "./notificationService.js";
-import { createPaymentLink } from "./cloverPaymentService.js";
+import { sendOrderConfirmation, sendSMS, sendOrderTemplateEmail, sendWhatsApp } from "./notificationService.js";
+import { createStripeCheckoutSession, isStripeConfigured } from "./stripePaymentService.js";
 
 const prisma = new PrismaClient();
 
@@ -39,6 +39,9 @@ export async function finalizeSession(reason, sessionCart, customerDetails, rest
       data: {
         customerName: customerDetails.name || "Phone Customer",
         customerPhone: customerDetails.phone || "Unknown",
+        orderType: customerDetails.orderType || "pickup",
+        deliveryAddress: customerDetails.address || null,
+        deliveryInstructions: customerDetails.deliveryInstructions || null,
         status: "PENDING",
         totalAmount,
         cloverOrderId: customerDetails.cloverOrderId || null,
@@ -62,24 +65,47 @@ export async function finalizeSession(reason, sessionCart, customerDetails, rest
     // --- PHASE 6: TEXT-TO-PAY ---
     try {
         const fullConfig = await import("../restaurantConfig.js").then(m => m.getRestaurantConfigInternal(restaurantId));
-        if (fullConfig && fullConfig.clover?.ecommToken) {
-            console.log(`💳 [PHASE 6] Generating Payment Link for Order: ${order.id}`);
-            const paymentUrl = await createPaymentLink(sessionCart, customerDetails, fullConfig.clover);
-            
-            if (paymentUrl) {
+        const paymentProvider = (process.env.PAYMENT_PROVIDER || "stripe").toLowerCase();
+
+        if (paymentProvider === "stripe" && isStripeConfigured()) {
+            console.log(`💳 [STRIPE] Generating Checkout Session for Order: ${order.id}`);
+            const stripeResult = await createStripeCheckoutSession(
+                order,
+                sessionCart,
+                customerDetails,
+                fullConfig?.name,
+                fullConfig?.stripeAccountId
+            );
+            if (stripeResult?.url) {
                 await prisma.order.update({
                     where: { id: order.id },
-                    data: { paymentUrl }
+                    data: {
+                        paymentUrl: stripeResult.url,
+                        paymentProvider: "stripe",
+                        paymentStatus: "PENDING",
+                        paymentReference: stripeResult.sessionId
+                    }
                 });
-                console.log(`🔗 Payment Link Generated & Saved: ${paymentUrl}`);
-                
-                // Send SMS with Link
-                const smsMessage = `Thanks for ordering from ${fullConfig.name}! Total: $${(totalAmount/100).toFixed(2)}. Please pay here to confirm: ${paymentUrl}`;
+                const smsMessage = `Thanks for ordering from ${fullConfig.name}! Total: $${(totalAmount/100).toFixed(2)}. Please pay here to confirm: ${stripeResult.url}`;
                 await sendSMS(customerDetails.phone, smsMessage);
+                await sendWhatsApp(customerDetails.phone, smsMessage); // Add WhatsApp
+                if (customerDetails.email) {
+                  await sendOrderTemplateEmail({
+                    to: customerDetails.email,
+                    order,
+                    restaurant: fullConfig,
+                    items: sessionCart,
+                    customerDetails,
+                    paymentUrl: stripeResult.url
+                  });
+                }
+            } else {
+                await sendOrderConfirmation(customerDetails.phone, fullConfig.name || "Restaurant", sessionCart, totalAmount);
+                // sendOrderConfirmation handles WhatsApp internally now
             }
         } else {
-            // Fallback to standard confirmation if no payment setup
             await sendOrderConfirmation(customerDetails.phone, fullConfig.name || "Restaurant", sessionCart, totalAmount);
+            // sendOrderConfirmation handles WhatsApp internally now
         }
     } catch (payErr) {
         console.error("⚠️ Failed to generate/send payment link:", payErr.message);

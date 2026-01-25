@@ -32,6 +32,28 @@ export function createRestaurantTools({
     return {
         // ... (other tools remain same)
 
+        // --- IDENTITY & CONTEXT TOOLS ---
+        setEmail: llm.tool({
+            description: "Save the customer's email address. Required for all orders.",
+            parameters: {
+                type: "object",
+                properties: { email: { type: "string" } },
+                required: ["email"]
+            },
+            execute: async ({ email }) => {
+                const cleanEmail = email ? email.trim() : "";
+                if (!cleanEmail || cleanEmail.length < 5 || !cleanEmail.includes("@")) {
+                    console.warn(`⚠️ [${INSTANCE_ID}] Invalid email provided: "${email}"`);
+                    return "System: The email provided seems invalid. Please ask the user to repeat it clearly, spelling it out if necessary.";
+                }
+                customerDetails.email = cleanEmail;
+                console.log(`📧 [${INSTANCE_ID}] Email Captured: ${cleanEmail}`);
+                return `System: Email saved: ${cleanEmail}. You may now proceed with the order.`;
+            }
+        }),
+
+        ...createDeliveryTools(sessionCart, customerDetails, restaurantConfig),
+
         // --- SMARTEST MENU SEARCH (Minimalist Output) ---
         // --- INTELLIGENT MENU SEARCH (With Descriptions) ---
         searchMenu: llm.tool({
@@ -276,6 +298,13 @@ export function createRestaurantTools({
                return "System: The cart is empty. You cannot verify or place an order. Ask the user what they would like to order first.";
              }
 
+             // 2. Guard Clause: Mandatory Email Collection
+             const hasEmail = customerDetails.email && customerDetails.email.trim().includes("@");
+             if (!hasEmail) {
+               console.warn(`⚠️ [${INSTANCE_ID}] confirmOrder blocked: Missing Email.`);
+               return "System: BLOCKED. You CANNOT finalize the order because the email address is missing. You MUST ask: 'I need your email address to send you the receipt and payment link.' Use 'setEmail' logic.";
+             }
+
             const itemCount = sessionCart.reduce((acc, item) => acc + item.qty, 0);
             const totalCents = sessionCart.reduce((acc, item) => acc + (item.price * item.qty), 0);
             
@@ -284,8 +313,7 @@ export function createRestaurantTools({
             try {
               const cloverOrder = await createCloverOrder(
                 sessionCart,
-                customerDetails.name,
-                customerDetails.phone,
+                customerDetails,
                 restaurantConfig.clover // Use restaurant-specific credentials from DB
               );
               cloverOrderId = cloverOrder.id;
@@ -325,7 +353,11 @@ export function createRestaurantTools({
                 body: JSON.stringify({
                   customerName: customerDetails.name,
                   customerPhone: customerDetails.phone,
+                  orderType: customerDetails.orderType || "pickup",
+                  deliveryAddress: customerDetails.address || null,
+                  deliveryInstructions: customerDetails.deliveryInstructions || null,
                   items: sessionCart,
+                  customerEmail: customerDetails.email || null,
                   totalAmount: totalCents,
                   cloverOrderId, // Store Clover reference
                   restaurantId: restaurantConfig.id // Multi-tenant link
@@ -336,8 +368,11 @@ export function createRestaurantTools({
               console.error(`❌ [${INSTANCE_ID}] Failed to persist order:`, err.message);
             }
 
-            // 3. Send SMS Confirmation
-            await sendOrderConfirmation(customerDetails.phone, restaurantConfig.name, sessionCart, totalCents);
+            // 3. Send SMS Confirmation (skip if Stripe flow is enabled and configured to avoid duplicate texts)
+            const stripeEnabled = (process.env.PAYMENT_PROVIDER || "stripe").toLowerCase() === "stripe" && !!process.env.STRIPE_SECRET_KEY;
+            if (!stripeEnabled) {
+              await sendOrderConfirmation(customerDetails.phone, restaurantConfig.name, sessionCart, totalCents);
+            }
             
             return `System: Order submitted to Kitchen for ${redact(customerDetails.name)}. Total items: ${itemCount}. You should now say: "Your order is in! It will be ready for pickup in about 20 minutes. I just sent a confirmation text to your phone. Thank you for choosing us! Goodbye!" then use 'hangUp'.`;
           }

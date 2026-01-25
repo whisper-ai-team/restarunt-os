@@ -8,7 +8,14 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-let menuCache = { items: [], lastFetch: 0 };
+// Per-restaurant (or per-merchant) cache to prevent cross-tenant menu leakage.
+const menuCache = new Map(); // cacheKey -> { items: [], lastFetch: number }
+
+function getCacheKey(credentials, restaurantId) {
+  if (restaurantId) return `restaurant:${restaurantId}`;
+  if (credentials?.merchantId) return `merchant:${credentials.merchantId}`;
+  return "default";
+}
 
 // -----------------------------
 // CLOVER SERVICE
@@ -41,11 +48,10 @@ export async function cloverRequest(path, { method = "GET", body } = {}, credent
 
 export async function getMenu(credentials, restaurantId) {
   const now = Date.now();
-  if (
-    menuCache.items.length > 0 &&
-    now - menuCache.lastFetch < CONFIG.menuCacheTtl
-  ) {
-    return menuCache;
+  const cacheKey = getCacheKey(credentials, restaurantId);
+  const cached = menuCache.get(cacheKey);
+  if (cached?.items?.length > 0 && now - cached.lastFetch < CONFIG.menuCacheTtl) {
+    return cached;
   }
   
   // Timeout wrapper for fetch
@@ -92,7 +98,7 @@ export async function getMenu(credentials, restaurantId) {
     }
 
     const items = allItems;
-    menuCache = { items, lastFetch: now };
+    menuCache.set(cacheKey, { items, lastFetch: now });
     console.log(`🍔 [${INSTANCE_ID}] Menu fetch success: ${items.length} TOTAL items.`);
     
     // --- AI SENTINEL TRIGGER ---
@@ -105,24 +111,32 @@ export async function getMenu(credentials, restaurantId) {
        // 2. Try to merge existing intelligence immediately
        try {
            const enrichedItems = await MenuIntelligenceService.mergeIntelligence(restaurantId, items);
-           menuCache = { items: enrichedItems, lastFetch: now };
+           menuCache.set(cacheKey, { items: enrichedItems, lastFetch: now });
            console.log(`🍔 [${INSTANCE_ID}] Menu fetch success: ${items.length} items (Enriched).`);
-           return menuCache;
+           return menuCache.get(cacheKey);
        } catch (err) {
            console.warn(`⚠️ [MenuSentinel] Merge failed, returning raw items:`, err);
        }
     }
     
-    return menuCache;
+    return menuCache.get(cacheKey);
   } catch (err) {
     console.error("❌ Menu Fetch Failed:", err.message);
-    return { items: [], lastFetch: now };
+    const fallback = { items: [], lastFetch: now };
+    menuCache.set(cacheKey, fallback);
+    return fallback;
   }
 }
 
 
 // Helper: Create order in Clover POS
-export async function createCloverOrder(cart, customerName, customerPhone, credentials) {
+export async function createCloverOrder(cart, customerDetails, credentials) {
+  const customerName = customerDetails?.name;
+  const customerPhone = customerDetails?.phone;
+  const orderType = customerDetails?.orderType || "pickup";
+  const deliveryAddress = customerDetails?.address;
+  const deliveryInstructions = customerDetails?.deliveryInstructions;
+
   console.log(`🔧 [createCloverOrder] Starting with:`, {
     itemCount: cart.length,
     customerName,
@@ -149,7 +163,9 @@ export async function createCloverOrder(cart, customerName, customerPhone, crede
     console.log(`   Step 2: Adding ${cart.length} line items...`);
     
     // Ensure we have menu items to check against for authoritative pricing
-    const menuItems = menuCache?.items || [];
+    const cacheKey = getCacheKey(credentials);
+    const cached = menuCache.get(cacheKey);
+    const menuItems = cached?.items || [];
     let calculatedTotal = 0;
     
     for (const item of cart) {
@@ -197,7 +213,9 @@ export async function createCloverOrder(cart, customerName, customerPhone, crede
     // REQUIRED: Ad-Hoc/Atomic items often result in $0.00 Dashboard Totals without this.
     console.log(`   Step 3: Updating order total to $${(calculatedTotal/100).toFixed(2)}...`);
     
-    const noteText = `Phone Order from ${customerName || "Customer"} (${customerPhone || "Unknown"})\nType: Pickup`;
+    const addressLine = deliveryAddress ? `\nAddress: ${deliveryAddress}` : "";
+    const instructionsLine = deliveryInstructions ? `\nNotes: ${deliveryInstructions}` : "";
+    const noteText = `Phone Order from ${customerName || "Customer"} (${customerPhone || "Unknown"})\nType: ${orderType}${addressLine}${instructionsLine}`;
 
     await cloverRequest(`/orders/${order.id}`, {
       method: "POST", // Updates existing order

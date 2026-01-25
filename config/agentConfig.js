@@ -34,6 +34,8 @@ export const COMMON_WORD_BLACKLIST = [
   'this', 'what', 'when', 'where', 'which'
 ];
 
+import { normalizeCuisineKey } from "../cuisines/cuisineRegistry.js";
+
 export function parseJobMetadata(metadataString) {
   let data = {};
   try {
@@ -64,6 +66,6 @@ export function parseJobMetadata(metadataString) {
       merchantId: config.cloverMerchantId || data.cloverMerchantId 
     },
     printing: config.printing || {},
-    cuisine: config.cuisineType || "american"
+    cuisine: normalizeCuisineKey(config.cuisineType || "american")
   };
 }

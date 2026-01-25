@@ -42,7 +42,7 @@ import { isOpen, redact, INSTANCE_ID, startHeartbeat } from "./utils/agentUtils.
 import { parseJobMetadata } from "./config/agentConfig.js";
 import { getMenu } from "./services/cloverService.js";
 import { finalizeSession } from "./services/sessionManager.js";
-import { getCuisineProfile } from "./cuisines/cuisineRegistry.js";
+import { getCuisineProfile, normalizeCuisineKey } from "./cuisines/cuisineRegistry.js";
 import { getVoiceFromSelection } from "./voiceMap.js";
 import { PrismaClient } from "@prisma/client";
 
@@ -247,7 +247,13 @@ const agent = defineAgent({
     ctx.room.on("disconnected", async () => {
         console.log(`🔌 [${INSTANCE_ID}] Room Disconnected. Cleaning up...`);
         try {
-            await finalizeSession(callRecord, prisma);
+            await finalizeSession(
+                "Room Disconnected",
+                sessionCart,
+                finalCustomerDetails,
+                restaurantConfig.id,
+                callRecord?.id
+            );
         } catch(e) {
             console.error("Finalize error:", e);
         }
@@ -268,7 +274,8 @@ const agent = defineAgent({
     };
 
     // 2. Prepare Tools & Prompt
-    const cuisineProfile = getCuisineProfile(restaurantConfig.cuisine || "generic");
+    const cuisineKey = normalizeCuisineKey(restaurantConfig.cuisine || restaurantConfig.cuisineType || "american");
+    const cuisineProfile = getCuisineProfile(cuisineKey);
     
     // Create Tools Object Map
     const tools = createRestaurantTools({
@@ -277,7 +284,13 @@ const agent = defineAgent({
         customerDetails: finalCustomerDetails,
         sessionCart,
         callRecord,
-        finalizeCallback: (reason) => finalizeSession(callRecord, prisma, reason),
+        finalizeCallback: (reason) => finalizeSession(
+            reason,
+            sessionCart,
+            finalCustomerDetails,
+            restaurantConfig.id,
+            callRecord?.id
+        ),
         closeRoomCallback: async () => {
              console.log(`🔌 [${INSTANCE_ID}] Explicitly closing room for SIP disconnect: ${ctx.room.name}`);
              try {
@@ -330,6 +343,20 @@ const agent = defineAgent({
     if (!ctx.room) console.error(`❌ [${INSTANCE_ID}] CRITICAL: Room is undefined!`);
     else console.log(`🔍 [${INSTANCE_ID}] Room State: Name=${ctx.room.name}, SID=${ctx.room.sid}`);
 
+    // --- PREPARE STT KEYWORDS ---
+    const sttKeywords = initialMenu.length > 0 ? 
+        initialMenu
+          .map(i => i.name.replace(/[^a-zA-Z\s]/g, "").trim()) 
+          .filter(n => n.length > 3) 
+          .map(name => [name, "3.0"]) 
+        : [];
+
+    if (customerName && customerName !== "Guest") {
+        const nameParts = customerName.split(" ").filter(p => p.length > 2);
+        nameParts.forEach(part => sttKeywords.push([part, "10.0"]));
+    }
+    ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com"].forEach(d => sttKeywords.push([d, "5.0"]));
+
     const session = new voice.AgentSession({
         agent: restaurantAgent,
         
@@ -350,15 +377,7 @@ const agent = defineAgent({
             model: "nova-2-general", 
             smartFormat: true,
             interimResults: true, // Important for interruption detection
-            // ASR TUNING: Boost menu item recognition
-            // Plugin expects Array<[string, string]> -> joins with ":"
-            keywords: initialMenu.length > 0 ? 
-                initialMenu
-                  .map(i => i.name.replace(/[^a-zA-Z\s]/g, "").trim()) // Remove special chars
-                  .filter(n => n.length > 3) 
-                  // DEEPGRAM FORMAT: [Word, BoostValue]
-                  .map(name => [name, "3.0"]) 
-                : []
+            keywords: sttKeywords
         }),
         llm: new openai.LLM({
             model: "gpt-4o-mini", // Low latency model

@@ -1,0 +1,10 @@
+{
+    "name": "restaurant-os-payment-service",
+    "version": "1.0.0",
+    "description": "Payment Service for Restaurant OS",
+    "main": "index.js",
+    "type": "module",
+    "dependencies": {
+        "stripe": "^14.16.0"
+    }
+}

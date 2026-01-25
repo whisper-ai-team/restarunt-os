@@ -72,15 +72,16 @@ export class RestaurantAgent extends voice.Agent {
           - ONLY discuss items that exist in the menu provided or are standard staples of ${cuisineProfile.name} cuisine if and only if they match the menu style.
        2. TOOL USAGE (CART): You MUST call the 'addToOrder' tool EVERY TIME a customer mentions an item they want to order. IMPORTANT: Pass the EXACT item name found in the menu search.
           - SPICY LEVEL CHECK: For Indian dishes (e.g. Curries, Biryanis), if the customer has NOT specified a spice level, you MUST ask: "How spicy would you like that? Mild, Medium, or Spicy?" BEFORE calling 'addToOrder' if possible, or include it in the 'notes' field.
-       3. ORDER TYPE: Before finalizing, you MUST confirm if the order is for "Pickup" or "Delivery" using 'setOrderType'. If "Delivery", you MUST collect the address using 'setDeliveryAddress'.
-       4. ALLERGIES (SAFETY): If the user orders more than 2 items AND hasn't mentioned allergies, you MUST ask: "Before I finalize that, do you have any food allergies or dietary restrictions I should note for the kitchen?". 
-       5. ALLERGIES (MATCH): If a user mentions an allergy, immediately use 'logDietaryRestriction'. NEVER guess. This is critical for safety.
-       6. ORDER SUMMARY: Before finalizing, you MUST read back the entire order summary (items, quantities, total) and ask "Is this correct?".
-       7. PAYMENT: If the customer asks how to pay, use 'getPaymentInfo'. Inform them they can pay at the restaurant for pickup or via an SMS link for delivery.
-       8. CONFIRM ORDER: After the user confirms ('yes', 'correct'), you MUST call 'confirmOrder'.
-       9. HUMAN HAND-OFF: If the user is frustrated, use 'transferToHuman'.
-       10. ENDING CALL: When done, say exactly: "${restaurantConfig.endCallMessage || "Goodbye! Have a great day."}" and call 'hangUp'.
-       `;
+             // 3. ORDER TYPE: Before finalizing, you MUST confirm if the order is for "Pickup" or "Delivery" using 'setOrderType'. If "Delivery", you MUST collect the address using 'setDeliveryAddress'.
+        4. EMAIL COLLECTION (MANDATORY): You MUST ask for the customer's email address for every order (both Pickup and Delivery) to send the receipt and payment link. Use 'setEmail' to save it. Say: "I need your email address to send you the receipt and secure payment link."
+        5. ALLERGIES (SAFETY): If the user orders more than 2 items AND hasn't mentioned allergies, you MUST ask: "Before I finalize that, do you have any food allergies or dietary restrictions I should note for the kitchen?". 
+        6. ALLERGIES (MATCH): If a user mentions an allergy, immediately use 'logDietaryRestriction'. NEVER guess. This is critical for safety.
+        7. ORDER SUMMARY: Before finalizing, you MUST read back the entire order summary (items, quantities, total) and ask "Is this correct?".
+        8. PAYMENT: If the customer asks how to pay, use 'getPaymentInfo'. Inform them they can pay at the restaurant for pickup or via an SMS link for delivery.
+        9. CONFIRM ORDER: After the user confirms ('yes', 'correct'), you MUST call 'confirmOrder'.
+        10. HUMAN HAND-OFF: If the user is frustrated, use 'transferToHuman'.
+        11. ENDING CALL: When done, say exactly: "${restaurantConfig.endCallMessage || "Goodbye! Have a great day."}" and call 'hangUp'.
+        `;
     }
 
     super({
@@ -122,6 +123,29 @@ export class RestaurantAgent extends voice.Agent {
           execute: async () => {
              return "Pickup orders: Pay at the restaurant when you arrive. Delivery orders: We will send you an SMS link for secure online payment after the order is confirmed.";
           }
+        }),
+        
+        setEmail: llm.tool({
+            description: "Save the customer's email address. Required for all orders.",
+            parameters: {
+                type: "object",
+                properties: { email: { type: "string" } },
+                required: ["email"]
+            },
+            execute: async ({ email }) => {
+                // Basic validation could go here
+                // Strip spaces
+                const cleanEmail = email ? email.trim() : "";
+                
+                if (!cleanEmail || cleanEmail.length < 5 || !cleanEmail.includes("@")) {
+                    console.warn(`⚠️ [${INSTANCE_ID}] Invalid email provided: "${email}"`);
+                    return "System: The email provided seems invalid. Please ask the user to repeat it clearly, spelling it out if necessary.";
+                }
+
+                customerDetails.email = cleanEmail;
+                console.log(`📧 [${INSTANCE_ID}] Email Captured: ${cleanEmail}`);
+                return `System: Email saved: ${cleanEmail}. You may now proceed with the order.`;
+            }
         }),
 
         ...createDeliveryTools(sessionCart, customerDetails, restaurantConfig),
@@ -427,6 +451,12 @@ export class RestaurantAgent extends voice.Agent {
                console.warn(`⚠️ [${INSTANCE_ID}] confirmOrder called with empty cart. Rejection sent.`);
                return "System: The cart is empty. You cannot verify or place an order. Ask the user what they would like to order first.";
              }
+             
+             // 2. Guard Clause: Mandatory Email Collection
+             if (!customerDetails.email || customerDetails.email.trim() === "") {
+               console.warn(`⚠️ [${INSTANCE_ID}] confirmOrder blocked: Missing Email.`);
+               return "System: BLOCKED. You CANNOT finalize the order because the email address is missing. You MUST ask: 'I need your email address to send you the receipt and payment link.' Use 'setEmail' logic.";
+             }
 
             const itemCount = sessionCart.reduce((acc, item) => acc + item.qty, 0);
             const totalCents = sessionCart.reduce((acc, item) => acc + (item.price * item.qty), 0);
@@ -476,7 +506,8 @@ export class RestaurantAgent extends voice.Agent {
               // Continue anyway - order will still show in our dashboard
             }
             
-            // 2. Persist to our Database
+            // 2. Persist to our Database via API (Delegates to OrderService on server)
+            // UPDATED: Now including customerEmail for receipt/payment links
             try {
               // FIX: Use Public URL for Fly.io inter-process communication
               const API_BASE = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
@@ -488,6 +519,7 @@ export class RestaurantAgent extends voice.Agent {
                 body: JSON.stringify({
                   customerName: customerDetails.name,
                   customerPhone: customerDetails.phone,
+                  customerEmail: customerDetails.email || null, // Capture email from state
                   items: sessionCart,
                   totalAmount: totalCents,
                   cloverOrderId, // Store Clover reference
@@ -499,10 +531,9 @@ export class RestaurantAgent extends voice.Agent {
               console.error(`❌ [${INSTANCE_ID}] Failed to persist order:`, err.message);
             }
 
-            // 3. Send SMS Confirmation
-            await sendOrderConfirmation(customerDetails.phone, restaurantConfig.name, sessionCart, totalCents);
+            // Note: SMS/Email is now handled by the API (OrderService)
             
-            return `System: Order submitted to Kitchen. Total items: ${itemCount}. You should now say: "Your order is in! I just sent a confirmation text. We'll let you know when it's ready. Goodbye!" and then IMMEDIATELY call the 'hangUp' tool.`;
+            return `System: Order submitted to Kitchen. Total items: ${itemCount}. You should now say: "Your order is in! I just sent a confirmation text and email. We'll let you know when it's ready. Goodbye!" and then IMMEDIATELY call the 'hangUp' tool.`;
           }
         }),
 

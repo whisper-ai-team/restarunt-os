@@ -1,0 +1,11 @@
+{
+    "name": "restaurant-os-email-service",
+    "version": "1.0.0",
+    "description": "Email and Notification Service used by Restaurant OS",
+    "main": "index.js",
+    "type": "module",
+    "dependencies": {
+        "@sendgrid/mail": "^8.1.6",
+        "twilio": "^5.11.1"
+    }
+}
