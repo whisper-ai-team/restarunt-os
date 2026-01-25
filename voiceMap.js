@@ -4,12 +4,18 @@ import path from "path";
 
 // 1. The List of High-Performance OpenAI Voices
 const PROFESSIONAL_VOICES = [
-  { name: "Nova", id: "nova", tags: ["female", "energetic", "hospitality"] },
-  { name: "Shimmer", id: "shimmer", tags: ["female", "soft", "clear"] },
+  // Standard/Old Voices
   { name: "Alloy", id: "alloy", tags: ["neutral", "balanced", "professional"] },
   { name: "Echo", id: "echo", tags: ["male", "warm", "deep"] },
-  { name: "Onyx", id: "onyx", tags: ["male", "authoritative", "confidence"] },
-  { name: "Fable", id: "fable", tags: ["neutral", "dynamic", "storyteller"] },
+  { name: "Shimmer", id: "shimmer", tags: ["female", "soft", "clear"] },
+  
+  // New Realtime Voices
+  { name: "Ash", id: "ash", tags: ["male", "gentle", "soft"] },
+  { name: "Ballad", id: "ballad", tags: ["male", "storytelling", "warm"] },
+  { name: "Cedar", id: "cedar", tags: ["female", "calm", "grounded"] },
+  { name: "Coral", id: "coral", tags: ["female", "bright", "clear"] },
+  { name: "Sage", id: "sage", tags: ["female", "authoritative", "sharp"] },
+  { name: "Verse", id: "verse", tags: ["neutral", "expressive", "lyrical"] },
 ];
 
 const STATE_FILE = path.resolve("./voice_state.json");
@@ -44,7 +50,8 @@ function getNextRotatedVoice() {
  */
 export function getVoiceFromSelection(selection) {
   if (!selection || (Array.isArray(selection) && selection.length === 0)) {
-    return getNextRotatedVoice();
+    // Default to Sage as requested
+    return PROFESSIONAL_VOICES.find(v => v.id === "sage") || PROFESSIONAL_VOICES[0];
   }
 
   const preferences = Array.isArray(selection) ? selection : [selection];
@@ -65,5 +72,6 @@ export function getVoiceFromSelection(selection) {
     return selected;
   }
 
-  return getNextRotatedVoice();
+  // Fallback to Sage if no match found
+  return PROFESSIONAL_VOICES.find(v => v.id === "sage") || PROFESSIONAL_VOICES[0];
 }

@@ -93,3 +93,48 @@ export function formatMenuForPrompt(items) {
 
   return finalStr;
 }
+
+/**
+ * EXTRACTS KEYWORDS for Input Transcription Prompt (Whisper).
+ * Logic:
+ * 1. Tokenizes all item names
+ * 2. Removes common stop words (chicken, curry, rice, etc - keep unique ones)
+ * 3. Keeps specific ethnic terms (Tikka, Masala, Biryani, Chettinad, Guntur)
+ * 4. Deduplicates
+ */
+export function extractMenuKeywords(items) {
+    if (!items || items.length === 0) return "";
+
+    const stopWords = new Set(["with", "and", "the", "a", "an", "or", "combo", "special", "plate", "bowl", "side", "extra", "large", "medium", "small", "regular", "full", "half", "pcs", "piece", "pieces"]);
+    
+    // Terms we explicitly want to KEEP because they are hard to spell/hear
+    // (Actually, we want to keep almost everything properly noun-based)
+    const uniqueTerms = new Set();
+
+    items.forEach(item => {
+        // "Chicken Chettinad" -> ["Chicken", "Chettinad"]
+        const parts = item.name.split(/[\s\-\(\)]+/); 
+        parts.forEach(p => {
+            const clean = p.trim().replace(/[^a-zA-Z]/g, ""); // Remove non-alpha
+            if (clean.length > 2 && !stopWords.has(clean.toLowerCase())) {
+                uniqueTerms.add(clean);
+            }
+        });
+        
+        // Also add category names
+        if (Array.isArray(item.categories)) {
+            item.categories.forEach(c => {
+                 if (!c.name) return;
+                 const catParts = c.name.split(/[\s\-]+/);
+                 catParts.forEach(cp => {
+                     const cleanC = cp.trim().replace(/[^a-zA-Z]/g, "");
+                     if (cleanC.length > 2 && !stopWords.has(cleanC.toLowerCase())) {
+                         uniqueTerms.add(cleanC);
+                     }
+                 });
+            });
+        }
+    });
+
+    return Array.from(uniqueTerms).sort().join(", ");
+}
