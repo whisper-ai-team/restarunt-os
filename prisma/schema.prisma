@@ -18,11 +18,19 @@ model Restaurant {
   phoneNumber       String    @unique
   transferPhoneNumber String? // For call handoff (staff mobile)
   
-  // Clover Integration (encrypted)
-  cloverMerchantId  String
-  cloverApiKey      String    // Encrypted with AES-256
+  // POS Integrations (JSON for flexibility)
+  clover            Json?     // { apiKey, merchantId, environment }
+  square            Json?     // { accessToken, merchantId, locationId, expiresAt, environment }
+  
+  // Legacy Clover Integration (keep for backward compatibility)
+  cloverMerchantId  String?
+  cloverApiKey      String?   // Encrypted with AES-256
   cloverEcommerceToken String? // Encrypted with AES-256
   cloverEnvironment String    @default("production")
+  
+  // Menu Caching
+  menuCache         Json?     // Cached menu from POS
+  menuLastSynced    DateTime?
   
   // Location
   address           String

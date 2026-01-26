@@ -860,26 +860,61 @@ app.get("/", async (req, res) => {
     console.log(`   Code: ${code.substring(0, 20)}...`);
     
     try {
+      // Determine if sandbox based on APP_ID prefix
+      const appId = process.env.CLOVER_APP_ID || client_id;
+      const appSecret = process.env.CLOVER_APP_SECRET;
+      const isSandbox = appId.startsWith('E5ED'); // Your sandbox app starts with E5ED
+      const tokenUrl = isSandbox 
+        ? "https://sandbox.dev.clover.com/oauth/token"
+        : "https://www.clover.com/oauth/token";
+      
+      console.log(`🔧 Using ${isSandbox ? 'SANDBOX' : 'PRODUCTION'} Clover environment`);
+      console.log(`   Token URL: ${tokenUrl}`);
+      console.log(`   App ID: ${appId}`);
+      
+      if (!appSecret) {
+        console.error("❌ CLOVER_APP_SECRET not set!");
+        return res.status(500).send(`
+          <html>
+            <body style="font-family: Arial; padding: 50px; text-align: center;">
+              <h1>❌ Configuration Error</h1>
+              <p>CLOVER_APP_SECRET environment variable not set.</p>
+              <p>Run: <code>flyctl secrets set CLOVER_APP_SECRET=your_secret</code></p>
+            </body>
+          </html>
+        `);
+      }
+      
       // Exchange authorization code for access token
-      const tokenResponse = await fetch("https://www.clover.com/oauth/token", {
+      const tokenResponse = await fetch(tokenUrl, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          client_id: process.env.CLOVER_APP_ID || client_id,
-          client_secret: process.env.CLOVER_APP_SECRET,
+          client_id: appId,
+          client_secret: appSecret,
           code: code
         }).toString()
       });
       
       if (!tokenResponse.ok) {
         const errorText = await tokenResponse.text();
-        console.error("❌ Token exchange failed:", errorText);
+        console.error("❌ Token exchange failed:");
+        console.error("   Status:", tokenResponse.status);
+        console.error("   Response:", errorText);
+        console.error("   App ID used:", appId);
+        console.error("   Token URL:", tokenUrl);
         return res.status(500).send(`
           <html>
             <body style="font-family: Arial; padding: 50px; text-align: center;">
               <h1>❌ OAuth Failed</h1>
               <p>Could not exchange authorization code for access token.</p>
-              <p style="color: red;">${errorText}</p>
+              <p style="color: red; font-family: monospace;">${errorText}</p>
+              <hr/>
+              <p style="font-size: 12px;">
+                Environment: ${isSandbox ? 'Sandbox' : 'Production'}<br/>
+                App ID: ${appId}<br/>
+                Status: ${tokenResponse.status}
+              </p>
             </body>
           </html>
         `);
@@ -915,25 +950,26 @@ app.get("/", async (req, res) => {
         console.log(`💾 Updated restaurant: ${restaurant.name}`);
       } else {
         // Create new restaurant
+        const restaurantSlug = `clover-${merchant_id.toLowerCase()}`;
         restaurant = await prisma.restaurant.create({
           data: {
             id: `clover-${merchant_id}`,
             name: `Restaurant (${merchant_id})`,
-            phoneNumber: "+10000000000", // Placeholder
+            slug: restaurantSlug,
+            phoneNumber: "+10000000000", // Placeholder - merchant should update
             clover: {
               apiKey: access_token,
               merchantId: merchant_id,
-              environment: "production"
+              environment: isSandbox ? "sandbox" : "production"
             },
-            location: {
-              address: "TBD",
-              city: "TBD",
-              state: "TBD",
-              zip: "00000"
-            }
+            address: "TBD",
+            city: "TBD",
+            state: "TBD",
+            zipCode: "00000",
+            cuisineType: "General"
           }
         });
-        console.log(`🆕 Created new restaurant for merchant: ${merchant_id}`);
+        console.log(`🆕 Created new restaurant for Clover merchant: ${merchant_id}`);
       }
       
       // Success page
