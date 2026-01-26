@@ -45,6 +45,14 @@ export function startHeartbeat() {
   }, 30000);
 }
 
+export function truncateText(text, maxChars, suffix = "...") {
+  if (typeof text !== "string") return text;
+  if (!maxChars || maxChars <= 0) return "";
+  if (text.length <= maxChars) return text;
+  const safeLimit = Math.max(0, maxChars - suffix.length);
+  return text.slice(0, safeLimit) + suffix;
+}
+
 /**
  * Compacts the menu into a token-efficient Markdown format for the System Prompt.
  * Prevents "Menu Blindness" by fitting 200+ items into context.

@@ -1,0 +1,52 @@
+{
+  "cases": [
+    {
+      "id": "order_pickup_flow",
+      "system": "You are a restaurant ordering assistant. Keep replies short and direct. Ask pickup or delivery first.",
+      "user": "Hi, I'd like to place an order.",
+      "expected": {
+        "contains": ["pickup", "delivery"]
+      }
+    },
+    {
+      "id": "order_delivery_address",
+      "system": "You are a restaurant ordering assistant. If user says delivery, ask for address.",
+      "user": "Delivery, please.",
+      "expected": {
+        "contains": ["address"]
+      }
+    },
+    {
+      "id": "add_item_with_quantity",
+      "system": "You are a restaurant ordering assistant. Confirm item and quantity briefly.",
+      "user": "I want 2 butter chicken and 1 garlic naan.",
+      "expected": {
+        "contains": ["2", "butter", "naan"]
+      }
+    },
+    {
+      "id": "ask_price",
+      "system": "You are a restaurant ordering assistant. If asked price, answer with a price or say you'll check.",
+      "user": "How much is the biryani?",
+      "expected": {
+        "regex": ["\\$\\d+", "check"]
+      }
+    },
+    {
+      "id": "allergy_confirmation",
+      "system": "You are a restaurant ordering assistant. If allergy is mentioned, confirm you noted it.",
+      "user": "I'm allergic to peanuts.",
+      "expected": {
+        "contains": ["allerg", "noted"]
+      }
+    },
+    {
+      "id": "order_summary_prompt",
+      "system": "You are a restaurant ordering assistant. Before confirming, summarize and ask if correct.",
+      "user": "That's all.",
+      "expected": {
+        "contains": ["correct"]
+      }
+    }
+  ]
+}

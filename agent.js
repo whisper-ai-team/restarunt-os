@@ -30,6 +30,7 @@ import {
   voice,
   WorkerOptions,
   Worker,
+  metrics,
 } from "@livekit/agents";
 import { RoomServiceClient } from "livekit-server-sdk";
 
@@ -37,7 +38,10 @@ import { RoomServiceClient } from "livekit-server-sdk";
 import * as openai from "@livekit/agents-plugin-openai";
 
 // Import our modular components
-import { isOpen, redact, INSTANCE_ID, startHeartbeat, extractMenuKeywords } from "./utils/agentUtils.js";
+import { isOpen, redact, INSTANCE_ID, startHeartbeat, extractMenuKeywords, truncateText } from "./utils/agentUtils.js";
+import { getPlanLimits, getUsageStatus } from "./utils/billing.js";
+import { getModelRouting } from "./utils/modelRouting.js";
+import { getDeterministicReply } from "./utils/intentRouting.js";
 
 // Suppress benign cleanup race conditions in LiveKit SDK
 process.on('unhandledRejection', (reason) => {
@@ -67,15 +71,28 @@ process.on("uncaughtException", (err) => {
 
 process.on("unhandledRejection", (reason, promise) => {
   const errStr = (reason?.message || reason?.toString() || "").toLowerCase();
-  if (errStr.includes("samplerate") || errStr.includes("vad")) {
-     // Benign error during shutdown race condition
-     return;
+  // Suppress benign cleanup errors (SDK race conditions during session teardown)
+  if (errStr.includes("samplerate") || 
+      errStr.includes("vad") ||
+      errStr.includes("writable") ||
+      errStr.includes("err_internal_assertion")) {
+     return; // Silent ignore - these are harmless cleanup race conditions
   }
   console.error("🚨 CRITICAL: Unhandled Rejection in Agent Process:", reason);
 });
 
 initializeLogger({ level: "info", destination: "stdout" });
 console.log(`🚀 [${INSTANCE_ID}] Script Loaded. Waiting for entrypoint...`);
+
+const MAX_TRANSCRIPTION_PROMPT_CHARS = parseInt(process.env.AI_MAX_TRANSCRIPTION_PROMPT_CHARS || "800", 10);
+const MAX_SYSTEM_PROMPT_CHARS = parseInt(process.env.AI_MAX_SYSTEM_PROMPT_CHARS || "22000", 10);
+const DEFAULT_MAX_TOOL_CALLS = parseInt(process.env.AI_MAX_TOOL_CALLS || "40", 10);
+const DEFAULT_MENU_CACHE_MS = parseInt(process.env.AI_MENU_CACHE_MS || "30000", 10);
+const INTENT_ROUTER_ENABLED = process.env.AI_INTENT_ROUTER_ENABLED !== "0";
+const DETERMINISTIC_TTS_ENABLED = process.env.AI_DETERMINISTIC_TTS_ENABLED !== "0";
+const DETERMINISTIC_TTS_MODEL = process.env.AI_DETERMINISTIC_TTS_MODEL || "tts-1";
+const DETERMINISTIC_TTS_VOICE = process.env.AI_DETERMINISTIC_TTS_VOICE || "alloy";
+const DETERMINISTIC_TTS_SPEED = parseFloat(process.env.AI_DETERMINISTIC_TTS_SPEED || "1");
 
 // Start heartbeat monitoring
 startHeartbeat();
@@ -95,6 +112,37 @@ const agent = defineAgent({
 
   entry: async (ctx) => {
     console.log("🔌 Parallel Boot: Connecting room & loading menu...");
+    class RoutedAgent extends voice.Agent {
+      constructor(opts, routing) {
+        super(opts);
+        this._routing = routing;
+      }
+
+      async onUserTurnCompleted(_chatCtx, userMessage) {
+        if (!this._routing?.enabled) return;
+        const transcript = typeof userMessage?.content === "string" ? userMessage.content : "";
+        const route = getDeterministicReply(transcript, { chatCtx: this.session.chatCtx });
+        if (!route) return;
+
+        if (!this._routing.ttsEnabled) {
+          console.warn(`⚠️ [${INSTANCE_ID}] Deterministic route matched (${route.id}) but TTS disabled.`);
+          return;
+        }
+
+        try {
+          let reply = route.reply;
+          if (route.id === "repeat_summary" && typeof this._routing.getOrderSummary === "function") {
+            reply = this._routing.getOrderSummary();
+          }
+          console.log(`🧭 [${INSTANCE_ID}] Deterministic route: ${route.id} -> "${reply}"`);
+          this.session.say(reply, { addToChatCtx: true });
+          throw new voice.StopResponse();
+        } catch (err) {
+          if (err instanceof voice.StopResponse) throw err;
+          console.error("Deterministic reply failed; falling back to LLM:", err.message || err);
+        }
+      }
+    }
     
     // 1. Kick off parallel tasks immediately
     const connectPromise = ctx.connect();
@@ -194,62 +242,83 @@ const agent = defineAgent({
         };
     }
 
+    const planLimits = getPlanLimits(restaurantConfig.subscriptionPlan);
+    const { planKey, monthlyMinutes, maxCallSeconds } = planLimits;
+    const modelRouting = getModelRouting(planKey, maxCallSeconds);
+    let usageExceeded = false;
+
+    if (restaurantConfig.id && monthlyMinutes >= 0) {
+        try {
+            const usageStatus = await getUsageStatus(prisma, restaurantConfig, planLimits);
+            usageExceeded = usageStatus.usageExceeded;
+            if (usageExceeded) {
+                console.warn(`⚠️ [${INSTANCE_ID}] Usage limit reached: ${usageStatus.usedMinutes}/${monthlyMinutes} minutes for plan ${planKey}.`);
+            }
+        } catch (err) {
+            console.error("⚠️ Usage limit check failed; allowing call to proceed:", err.message);
+        }
+    }
+
+    // Normalize Clover Config for downstream tools
+    if (restaurantConfig.id) {
+        const cloverConfig = restaurantConfig.cloverMerchantId ? {
+            merchantId: restaurantConfig.cloverMerchantId,
+            apiKey: restaurantConfig.cloverApiKey,
+            ecommerceToken: restaurantConfig.cloverEcommerceToken,
+            environment: restaurantConfig.cloverEnvironment || "production"
+        } : restaurantConfig.clover;
+        restaurantConfig.clover = cloverConfig;
+    }
+
     // Load Menu & Config
     let initialMenu = [];
     let menuLoadSuccess = false;
 
-    try {
-        if (restaurantConfig.id) {
-           // ADAPTER: Map flat Prisma fields to nested config expected by services
-           const cloverConfig = restaurantConfig.cloverMerchantId ? {
-               merchantId: restaurantConfig.cloverMerchantId,
-               apiKey: restaurantConfig.cloverApiKey,
-               ecommerceToken: restaurantConfig.cloverEcommerceToken,
-               environment: restaurantConfig.cloverEnvironment || "production"
-           } : restaurantConfig.clover; // Fallback for default object
+    if (!usageExceeded) {
+        try {
+            if (restaurantConfig.id) {
+               if (restaurantConfig.clover?.apiKey && restaurantConfig.clover?.merchantId) {
+                   const menuData = await getMenu(restaurantConfig.clover, restaurantConfig.id);
+                   initialMenu = menuData.items;
+                   if (initialMenu.length > 0) {
+                       menuLoadSuccess = true;
+                       console.log(`🍔 [${INSTANCE_ID}] Initial Menu Loaded: ${initialMenu.length} items`);
+                       // DEBUG: Check for specific missing items
+                       const chickenItems = initialMenu.filter(i => i.name.toLowerCase().includes("chicken")).map(i => i.name);
+                       const kormaItems = initialMenu.filter(i => i.name.toLowerCase().includes("korma")).map(i => i.name);
+                       const fishItems = initialMenu.filter(i => i.name.toLowerCase().includes("fish")).map(i => i.name);
+                       
+                       console.log(`🔍 [DEBUG-MENU] Found ${chickenItems.length} 'Chicken' items:`, chickenItems.slice(0, 10)); 
+                       console.log(`🔍 [DEBUG-MENU] Found ${kormaItems.length} 'Korma' items:`, kormaItems);
+                       console.log(`🔍 [DEBUG-MENU] Found ${fishItems.length} 'Fish' items:`, fishItems);
+                       
+                       // VERIFICATION: Dump ALL items for user check (COMMENTED OUT FOR PRODUCTION/DEBUGGING)
+                       // const allNames = initialMenu.map(i => i.name).sort();
+                       // console.log("📜 [FULL MENU DUMP] Starting...");
+                       // console.log(JSON.stringify(allNames, null, 2));
+                       // console.log("📜 [FULL MENU DUMP] End.");
 
-           // FIX: Update the main config object so tools see the resolved credentials
-           restaurantConfig.clover = cloverConfig;
-
-           if (cloverConfig?.apiKey && cloverConfig?.merchantId) {
-               const menuData = await getMenu(cloverConfig, restaurantConfig.id);
-               initialMenu = menuData.items;
-               if (initialMenu.length > 0) {
-                   menuLoadSuccess = true;
-                   console.log(`🍔 [${INSTANCE_ID}] Initial Menu Loaded: ${initialMenu.length} items`);
-                   // DEBUG: Check for specific missing items
-                   const chickenItems = initialMenu.filter(i => i.name.toLowerCase().includes("chicken")).map(i => i.name);
-                   const kormaItems = initialMenu.filter(i => i.name.toLowerCase().includes("korma")).map(i => i.name);
-                   const fishItems = initialMenu.filter(i => i.name.toLowerCase().includes("fish")).map(i => i.name);
-                   
-                   console.log(`🔍 [DEBUG-MENU] Found ${chickenItems.length} 'Chicken' items:`, chickenItems.slice(0, 10)); 
-                   console.log(`🔍 [DEBUG-MENU] Found ${kormaItems.length} 'Korma' items:`, kormaItems);
-                   console.log(`🔍 [DEBUG-MENU] Found ${fishItems.length} 'Fish' items:`, fishItems);
-                   
-                   // VERIFICATION: Dump ALL items for user check (COMMENTED OUT FOR PRODUCTION/DEBUGGING)
-                   // const allNames = initialMenu.map(i => i.name).sort();
-                   // console.log("📜 [FULL MENU DUMP] Starting...");
-                   // console.log(JSON.stringify(allNames, null, 2));
-                   // console.log("📜 [FULL MENU DUMP] End.");
-
-                   // DEBUG: Check API Key
-                   if (!process.env.OPENAI_API_KEY) {
-                       console.error("🚨 [CRITICAL] OPENAI_API_KEY is MISSING in environment variables!");
+                       // DEBUG: Check API Key
+                       if (!process.env.OPENAI_API_KEY) {
+                           console.error("🚨 [CRITICAL] OPENAI_API_KEY is MISSING in environment variables!");
+                       } else {
+                           console.log(`✅ [${INSTANCE_ID}] OPENAI_API_KEY is present (${process.env.OPENAI_API_KEY.substring(0, 5)}...)`);
+                       }
                    } else {
-                       console.log(`✅ [${INSTANCE_ID}] OPENAI_API_KEY is present (${process.env.OPENAI_API_KEY.substring(0, 5)}...)`);
+                       console.warn(`⚠️ [${INSTANCE_ID}] STRICT MODE: Menu fetch returned 0 items. Disabling ordering.`);
+                       menuLoadSuccess = false;
                    }
                } else {
-                   console.warn(`⚠️ [${INSTANCE_ID}] STRICT MODE: Menu fetch returned 0 items. Disabling ordering.`);
+                   console.warn(`⚠️ [${INSTANCE_ID}] STRICT MODE: Missing API Key or Merchant ID. Disabling ordering.`);
                    menuLoadSuccess = false;
                }
-           } else {
-               console.warn(`⚠️ [${INSTANCE_ID}] STRICT MODE: Missing API Key or Merchant ID. Disabling ordering.`);
-               menuLoadSuccess = false;
-           }
+            }
+        } catch (err) {
+            console.error("❌ Menu Load Failed (Strict Mode):", err.message);
+            menuLoadSuccess = false;
         }
-    } catch (err) {
-        console.error("❌ Menu Load Failed (Strict Mode):", err.message);
-        menuLoadSuccess = false;
+    } else {
+        console.warn(`⚠️ [${INSTANCE_ID}] Usage exceeded; skipping menu load.`);
     }
 
     // Wait for room connection
@@ -257,8 +326,67 @@ const agent = defineAgent({
     console.log(`🔗 [${INSTANCE_ID}] Connected to room: ${ctx.room.name}`);
 
     // Cleanup Listeners
+    let callTimeoutHandle = null;
+    let callStartedAt = null;
+    let usagePersisted = false;
+    const usageCollector = new metrics.UsageCollector();
+
+    const effectiveMaxSessionDurationMs = modelRouting.maxSessionDurationMs || null;
+
+    const getUsageSnapshot = () => {
+        const summary = usageCollector.getSummary();
+        const durationMs = callStartedAt ? Math.max(0, Date.now() - callStartedAt) : 0;
+        const totalTokens = summary.llmPromptTokens + summary.llmCompletionTokens;
+        const tokensPerMinute = durationMs > 0 ? Math.round((totalTokens / (durationMs / 60000)) * 100) / 100 : 0;
+        return {
+            ...summary,
+            totalTokens,
+            tokensPerMinute,
+            durationMs
+        };
+    };
+
+    const persistCallUsage = async (reason) => {
+        if (usagePersisted) return;
+        usagePersisted = true;
+        if (!prisma || !callRecord?.id) return;
+
+        const snapshot = getUsageSnapshot();
+        try {
+            await prisma.call.update({
+                where: { id: callRecord.id },
+                data: {
+                    duration: Math.round(snapshot.durationMs / 1000),
+                    endedAt: new Date(),
+                    aiUsage: {
+                        reason,
+                        llmPromptTokens: snapshot.llmPromptTokens,
+                        llmPromptCachedTokens: snapshot.llmPromptCachedTokens,
+                        llmCompletionTokens: snapshot.llmCompletionTokens,
+                        totalTokens: snapshot.totalTokens,
+                        tokensPerMinute: snapshot.tokensPerMinute,
+                        sttAudioDurationMs: snapshot.sttAudioDurationMs,
+                        ttsCharactersCount: snapshot.ttsCharactersCount
+                    },
+                    modelConfig: {
+                        planKey,
+                        realtimeModel: modelRouting.realtimeModel,
+                        transcriptionModel: modelRouting.transcriptionModel,
+                        temperature: modelRouting.temperature,
+                        maxResponseOutputTokens: modelRouting.maxResponseOutputTokens,
+                        maxSessionDurationMs: effectiveMaxSessionDurationMs
+                    }
+                }
+            });
+        } catch (err) {
+            console.error("❌ Failed to persist call usage:", err.message);
+        }
+    };
+
     ctx.room.on("disconnected", async () => {
         console.log(`🔌 [${INSTANCE_ID}] Room Disconnected. Cleaning up...`);
+        await persistCallUsage("Room Disconnected");
+        if (callTimeoutHandle) clearTimeout(callTimeoutHandle);
         try {
             await finalizeSession(
                 "Room Disconnected",
@@ -281,9 +409,19 @@ const agent = defineAgent({
     // 1. Prepare State
     const sessionCart = [];
     const activeAllergies = new Set();
+    const lastUserTranscriptRef = { text: "", createdAt: 0 };
     const finalCustomerDetails = {
         name: customerName || "Guest",
         phone: customerPhone || "Unknown"
+    };
+    const getOrderSummary = () => {
+        if (!sessionCart.length) {
+            return "I don't have any items in your order yet. What would you like to add?";
+        }
+        const summary = sessionCart.map(item => `${item.qty} ${item.name}`).join(", ");
+        const totalCents = sessionCart.reduce((acc, item) => acc + ((item.price || 0) * item.qty), 0);
+        const totalText = totalCents > 0 ? ` The total so far is $${(totalCents / 100).toFixed(2)}.` : "";
+        return `Here is your order: ${summary}.${totalText} Is that correct?`;
     };
 
     // 2. Prepare Tools & Prompt
@@ -316,21 +454,44 @@ const agent = defineAgent({
         },
         cuisineProfile,
         activeAllergies,
-        menuLoadSuccess // Pass strict flag
+        menuLoadSuccess, // Pass strict flag
+        lastUserTranscriptRef,
+        maxToolCalls: DEFAULT_MAX_TOOL_CALLS,
+        menuCacheMs: DEFAULT_MENU_CACHE_MS
     });
 
-    const systemPrompt = createRestaurantPrompt({
-        restaurantConfig,
-        initialMenu,
-        cuisineProfile,
-        customerDetails: finalCustomerDetails,
-        menuLoadSuccess // Pass strict flag
-    });
+    const systemPromptBase = usageExceeded
+        ? `You are the answering system for ${restaurantConfig.name}.
+CRITICAL: The customer's plan has reached its monthly minutes.
+Instructions:
+1. Apologize briefly.
+2. Say their plan limit has been reached for this billing period.
+3. Ask them to contact support or upgrade.
+4. Say "Goodbye" and call 'hangUp'.`
+        : createRestaurantPrompt({
+            restaurantConfig,
+            initialMenu,
+            cuisineProfile,
+            customerDetails: finalCustomerDetails,
+            menuLoadSuccess // Pass strict flag
+        });
+    const systemPrompt = truncateText(systemPromptBase, MAX_SYSTEM_PROMPT_CHARS, "\n...[PROMPT TRUNCATED]");
 
     const selectedVoice = getVoiceFromSelection(restaurantConfig.voiceSelection);
+    const deterministicTts = DETERMINISTIC_TTS_ENABLED
+        ? new openai.TTS({
+            model: DETERMINISTIC_TTS_MODEL,
+            voice: DETERMINISTIC_TTS_VOICE,
+            speed: DETERMINISTIC_TTS_SPEED
+        })
+        : undefined;
+    if (DETERMINISTIC_TTS_ENABLED && !deterministicTts) {
+        console.warn(`⚠️ [${INSTANCE_ID}] Deterministic TTS enabled but failed to initialize.`);
+    }
 
     // 3. Initialize OpenAI Realtime Model
     console.log(`🤖 [${INSTANCE_ID}] Initializing OpenAI Realtime Model with Voice: ${selectedVoice?.id}`);
+    console.log(`🧭 [${INSTANCE_ID}] Model routing: plan=${planKey}, realtime=${modelRouting.realtimeModel}, stt=${modelRouting.transcriptionModel}, temp=${modelRouting.temperature}, maxOut=${modelRouting.maxResponseOutputTokens}, maxSessionMs=${effectiveMaxSessionDurationMs ?? "default"}, intentRouter=${INTENT_ROUTER_ENABLED}, deterministicTts=${!!deterministicTts}`);
     
     if (!selectedVoice?.id) throw new Error("Voice Selection Failed");
 
@@ -339,37 +500,59 @@ const agent = defineAgent({
     // OPTIMIZATION: Use extracted keywords instead of full list to save tokens (~90% reduction)
     const menuKeywords = initialMenu.length > 0 ? extractMenuKeywords(initialMenu) : "";
     
-    const transcriptionPrompt = menuKeywords 
+    const transcriptionPromptRaw = menuKeywords 
         ? `Vocabulary: ${menuKeywords}. Context: Restaurant ordering for ${restaurantConfig.name}.`
         : `Context: Restaurant ordering for ${restaurantConfig.name}.`;
+    const transcriptionPrompt = truncateText(transcriptionPromptRaw, MAX_TRANSCRIPTION_PROMPT_CHARS, "...");
 
     console.log(`📝 [${INSTANCE_ID}] Transcription Prompt: ${transcriptionPrompt.substring(0, 100)}...`);
 
+    const maxSessionDurationMs = effectiveMaxSessionDurationMs || undefined;
+    const maxResponseOutputTokens = modelRouting.maxResponseOutputTokens > 0 ? modelRouting.maxResponseOutputTokens : undefined;
+
     const model = new openai.realtime.RealtimeModel({
-        model: "gpt-4o-realtime-preview",
+        model: modelRouting.realtimeModel,
         inputAudioTranscription: { 
-            model: "gpt-4o-mini-transcribe",
+            model: modelRouting.transcriptionModel,
             prompt: transcriptionPrompt // GUIDE THE MODEL WITH MENU ITEMS
         },
         instructions: systemPrompt,
         voice: selectedVoice.id,
         modalities: ["audio", "text"],
         toolChoice: "auto",
-        temperature: 0.8,
+        temperature: modelRouting.temperature,
+        ...(maxSessionDurationMs ? { maxSessionDuration: maxSessionDurationMs } : {}),
+        ...(maxResponseOutputTokens ? { maxResponseOutputTokens } : {})
     });
 
     // 4. Initialize Voice Agent & Session
     // We must create AgentSession manually because accessing agent.session throws if not managed by Worker
-    const restaurantAgent = new voice.Agent({
+    const restaurantAgent = new RoutedAgent({
         llm: model,
         instructions: systemPrompt,
         tools: tools,
+        tts: deterministicTts
+    }, {
+        enabled: INTENT_ROUTER_ENABLED,
+        ttsEnabled: !!deterministicTts,
+        getOrderSummary
     });
 
     const session = new voice.AgentSession({
         llm: model,
         instructions: systemPrompt,
         tools: tools,
+        tts: deterministicTts
+    });
+    session.on(voice.AgentSessionEventTypes.UserInputTranscribed, (ev) => {
+        if (!ev) return;
+        const transcript = typeof ev.transcript === "string" ? ev.transcript : "";
+        if (!transcript && !ev.isFinal) return;
+        lastUserTranscriptRef.text = transcript;
+        lastUserTranscriptRef.createdAt = ev.createdAt || Date.now();
+    });
+    session.on(voice.AgentSessionEventTypes.MetricsCollected, (ev) => {
+        usageCollector.collect(ev.metrics);
     });
 
     // 5. Start Session
@@ -378,8 +561,11 @@ const agent = defineAgent({
         
         // Start the high-level AgentSession
         await session.start({ agent: restaurantAgent, room: ctx.room });
+        callStartedAt = Date.now();
         
-        const initialGreeting = `Hello${customerName && customerName !== "Guest" ? " " + customerName : ""}! Welcome to ${restaurantConfig.name}. Would you like to place an order for pickup or delivery?`;
+        const initialGreeting = usageExceeded
+            ? `Hello${customerName && customerName !== "Guest" ? " " + customerName : ""}. I'm sorry, but your plan has reached its monthly minutes for this billing period. Please contact support or upgrade your plan. Goodbye.`
+            : `Hello${customerName && customerName !== "Guest" ? " " + customerName : ""}! Welcome to ${restaurantConfig.name}. Would you like to place an order for pickup or delivery?`;
         
         // Send initial greeting (Realtime API pattern requires explicit item creation)
         session.chatCtx.addMessage({
@@ -389,6 +575,31 @@ const agent = defineAgent({
         
         // Trigger response generation for the greeting
         session.generateReply();
+
+        const hardStopSeconds = usageExceeded ? Math.min(30, maxCallSeconds) : maxCallSeconds;
+        if (hardStopSeconds > 0) {
+            callTimeoutHandle = setTimeout(async () => {
+                console.warn(`⏱️ [${INSTANCE_ID}] Call duration cap reached (${hardStopSeconds}s). Ending call.`);
+                await persistCallUsage("Call duration cap reached");
+                try {
+                    await finalizeSession(
+                        "Call duration cap reached",
+                        sessionCart,
+                        finalCustomerDetails,
+                        restaurantConfig.id,
+                        callRecord?.id
+                    );
+                } catch (err) {
+                    console.error("Finalize error during timeout:", err);
+                }
+                try {
+                    await roomService.deleteRoom(ctx.room.name);
+                } catch (err) {
+                    console.error("Room close failed during timeout:", err);
+                    ctx.room.disconnect();
+                }
+            }, hardStopSeconds * 1000);
+        }
 
         console.log(`✅ [${INSTANCE_ID}] Session Started. Triggered Greeting.`);
     } catch (e) {

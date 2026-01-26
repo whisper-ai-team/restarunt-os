@@ -38,7 +38,8 @@
     "socket.io-client": "^4.8.3",
     "string-similarity": "^4.0.4",
     "stripe": "^20.2.0",
-    "twilio": "^5.11.1"
+    "twilio": "^5.11.1",
+    "yaml": "^2.8.2"
   },
   "devDependencies": {
     "dotenv": "^17.2.3",

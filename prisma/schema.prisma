@@ -100,6 +100,8 @@ model Call {
   twilioCallSid   String?     @unique // Twilio SID for call redirection/handoff
   roomName        String?     @unique // LiveKit Room Name (Persistent Context Key)
   isTakeoverActive Boolean   @default(false) // Whether a human has taken over the call
+  aiUsage         Json?       // Token, STT, and TTS usage metrics
+  modelConfig     Json?       // Model selection metadata for this call
   
   // Relations
   restaurantId    String

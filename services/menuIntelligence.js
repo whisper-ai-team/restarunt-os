@@ -5,6 +5,7 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+const MENU_INTELLIGENCE_MODEL = process.env.AI_MENU_INTELLIGENCE_MODEL || "gpt-4o";
 
 // Schema for Chef Intelligence
 const MenuItemAnalysisSchema = z.object({
@@ -67,7 +68,7 @@ export const MenuIntelligenceService = {
       `;
 
       const completion = await openai.chat.completions.create({
-        model: "gpt-4o",
+        model: MENU_INTELLIGENCE_MODEL,
         messages: [
             { role: "system", content: "You represent strict food safety data. Output Valid JSON only." }, 
             { role: "user", content: prompt + "\n\nOUTPUT FORMAT: Return a JSON object with a single key 'items'. Each item MUST have: 'originalName' (exact match), 'analysis' object with keys: 'dietary_tags' (array of strings), 'ingredients_implied' (array of strings), 'phonetic_correction' (STRING, single value), 'stt_keywords' (array of strings)." }

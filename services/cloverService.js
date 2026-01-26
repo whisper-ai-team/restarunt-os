@@ -222,7 +222,8 @@ export async function createCloverOrder(cart, customerDetails, credentials) {
       body: {
         total: calculatedTotal,
         note: noteText,
-        title: "Phone Order"
+        title: "Phone Order",
+        orderType: orderType === "delivery" ? "online" : null
       }
     }, credentials);
     

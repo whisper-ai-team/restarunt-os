@@ -1,7 +1,7 @@
 
 import { llm } from "@livekit/agents";
 import Fuse from "fuse.js";
-import { metaphone, redact, INSTANCE_ID } from "../utils/agentUtils.js";
+import { metaphone, redact, INSTANCE_ID, truncateText } from "../utils/agentUtils.js";
 import { validateOrder } from "../utils/dietaryHelpers.js";
 import { DIETARY_MAP } from "../config/agentConfig.js";
 import { getMenu, createCloverOrder } from "../services/cloverService.js";
@@ -9,6 +9,65 @@ import { sendOrderConfirmation } from "../services/notificationService.js";
 import { printOrderToKitchen } from "../cloverPrint.js";
 import { createDeliveryTools } from "./tools/DeliveryTools.js";
 import { MenuMatcher } from "../utils/menuMatcher.js";
+
+const ADD_TO_ORDER_WINDOW_MS = parseInt(process.env.AI_ADD_TO_ORDER_WINDOW_MS || "10000", 10);
+const ADD_TO_ORDER_MAX_PER_WINDOW = parseInt(process.env.AI_ADD_TO_ORDER_MAX_PER_WINDOW || "6", 10);
+const ADD_TO_ORDER_TRANSCRIPT_MAX_AGE_MS = parseInt(process.env.AI_ADD_TO_ORDER_TRANSCRIPT_MAX_AGE_MS || "15000", 10);
+
+const ORDER_INTENT_REGEX = /\b(order|add|get|have|want|like|take|give me|can i get|could i get|i(?:'d| would)? like|i(?:'ll| will) take|we(?:'ll| will) take|put in|make it)\b/i;
+const MENU_BROWSE_REGEX = /\b(menu|list|options|specials|repeat|say again|read back|what do you have|whats available|what can i get|show the menu|your menu)\b/i;
+const TOKEN_STOPWORDS = new Set([
+  "and",
+  "with",
+  "the",
+  "a",
+  "an",
+  "of",
+  "to",
+  "for",
+  "in",
+  "on",
+  "please",
+  "combo",
+  "platter",
+  "regular",
+  "large",
+  "small",
+  "medium",
+  "family",
+  "party",
+  "pcs",
+  "pc",
+  "piece",
+  "pieces",
+  "oz",
+  "cup",
+  "cups"
+]);
+
+function normalizeText(text) {
+  return String(text || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenizeItemName(itemName) {
+  const normalized = normalizeText(itemName);
+  if (!normalized) return [];
+  return normalized
+    .split(" ")
+    .filter(token => token.length > 1 && !TOKEN_STOPWORDS.has(token));
+}
+
+function isMenuBrowseRequest(text) {
+  return MENU_BROWSE_REGEX.test(text || "");
+}
+
+function hasOrderIntent(text) {
+  return ORDER_INTENT_REGEX.test(text || "");
+}
 
 /**
  * Factory function to create tools with closure context
@@ -23,11 +82,46 @@ export function createRestaurantTools({
   closeRoomCallback,
   cuisineProfile,
   activeAllergies,
-  menuLoadSuccess 
+  menuLoadSuccess,
+  lastUserTranscriptRef,
+  maxToolCalls = 0,
+  menuCacheMs = 30000
 }) {
     
     // Helper to guard against duplicate adds
     let lastProcessedHash = null;
+    let toolCallCount = 0;
+    let cachedMenu = { items: null, fetchedAt: 0 };
+    let addToOrderWindowStart = 0;
+    let addToOrderCount = 0;
+
+    const isRoomActive = () => activeRoom && activeRoom.state !== "disconnected";
+
+    const checkToolBudget = async () => {
+      toolCallCount += 1;
+      if (maxToolCalls > 0 && toolCallCount > maxToolCalls) {
+        console.warn(`⚠️ [${INSTANCE_ID}] Tool call budget exceeded (${toolCallCount}/${maxToolCalls}). Ending session.`);
+        if (isRoomActive() && closeRoomCallback) {
+          try {
+            await closeRoomCallback();
+          } catch (err) {
+            console.error("Tool budget closeRoomCallback failed:", err);
+          }
+        }
+        return true;
+      }
+      return false;
+    };
+
+    const getMenuCached = async () => {
+      const now = Date.now();
+      if (cachedMenu.items && (now - cachedMenu.fetchedAt) < menuCacheMs) {
+        return cachedMenu.items;
+      }
+      const { items } = await getMenu(restaurantConfig.clover, restaurantConfig.id);
+      cachedMenu = { items, fetchedAt: now };
+      return items;
+    };
 
     return {
         // ... (other tools remain same)
@@ -41,6 +135,9 @@ export function createRestaurantTools({
                 required: ["email"]
             },
             execute: async ({ email }) => {
+                if (await checkToolBudget()) {
+                    return "System: Tool budget exceeded. The call is ending.";
+                }
                 const cleanEmail = email ? email.trim() : "";
                 if (!cleanEmail || cleanEmail.length < 5 || !cleanEmail.includes("@")) {
                     console.warn(`⚠️ [${INSTANCE_ID}] Invalid email provided: "${email}"`);
@@ -64,6 +161,9 @@ export function createRestaurantTools({
             required: ["query"],
           },
           execute: async ({ query }) => {
+            if (await checkToolBudget()) {
+                return "System: Tool budget exceeded. The call is ending.";
+            }
             if (activeRoom.state === "disconnected") return;
             
             // STRICT MODE CHECK
@@ -87,10 +187,7 @@ export function createRestaurantTools({
             }
 
             try {
-              const { items: cloverItems } = await getMenu(
-                restaurantConfig.clover,
-                restaurantConfig.id
-              );
+              const cloverItems = await getMenuCached();
               
               const matchResult = MenuMatcher.findMatch(fixedQuery, cloverItems);
 
@@ -104,7 +201,8 @@ export function createRestaurantTools({
               if (matchResult.match) {
                  const item = matchResult.match;
                  const price = item.price ? `$${(item.price / 100).toFixed(2)}` : "Price varies";
-                 return `System: Found "${item.name}" (${price}). Description: ${item.description || "No description"}. You can answer the user's question now.`;
+                 const desc = truncateText(item.description || "No description", 200);
+                 return `System: Found "${item.name}" (${price}). Description: ${desc}. You can answer the user's question now.`;
               }
 
               // 3. Medium Confidence (Suggestions) - THE FIX
@@ -132,6 +230,9 @@ export function createRestaurantTools({
             required: ["itemName"],
           },
           execute: async ({ itemName, quantityToRemove }) => {
+            if (await checkToolBudget()) {
+                return "System: Tool budget exceeded. The call is ending.";
+            }
             const query = itemName.toLowerCase();
             const index = sessionCart.findIndex(i => i.name.toLowerCase().includes(query));
             
@@ -165,9 +266,50 @@ export function createRestaurantTools({
             required: ["itemName", "quantity", "turn_id"],
           },
           execute: async ({ itemName, quantity, notes, turn_id }) => {
+            if (await checkToolBudget()) {
+                return "System: Tool budget exceeded. The call is ending.";
+            }
             // STRICT MODE CHECK
             if (!menuLoadSuccess) {
                 return "System: CRITICAL - The menu system is offline. You CANNOT add items to the order. Apologize to the user.";
+            }
+
+            const now = Date.now();
+            if (!addToOrderWindowStart || (now - addToOrderWindowStart) > ADD_TO_ORDER_WINDOW_MS) {
+                addToOrderWindowStart = now;
+                addToOrderCount = 0;
+            }
+            addToOrderCount += 1;
+            if (ADD_TO_ORDER_MAX_PER_WINDOW > 0 && addToOrderCount > ADD_TO_ORDER_MAX_PER_WINDOW) {
+                console.warn(`⚠️ [${INSTANCE_ID}] addToOrder rate limit hit (${addToOrderCount}/${ADD_TO_ORDER_MAX_PER_WINDOW}).`);
+                return "System: Too many items were added at once. Ask the customer to confirm items one by one.";
+            }
+
+            if (lastUserTranscriptRef) {
+                const transcript = normalizeText(lastUserTranscriptRef.text || "");
+                const transcriptAgeMs = lastUserTranscriptRef.createdAt ? now - lastUserTranscriptRef.createdAt : Number.POSITIVE_INFINITY;
+                if (!transcript || transcriptAgeMs > ADD_TO_ORDER_TRANSCRIPT_MAX_AGE_MS) {
+                    console.warn(`⚠️ [${INSTANCE_ID}] addToOrder blocked: missing or stale transcript (${transcriptAgeMs}ms).`);
+                    return "System: I didn't catch the specific item. Please ask the customer to repeat the item they want to order.";
+                }
+
+                const itemTokens = tokenizeItemName(itemName);
+                const tokenHits = itemTokens.filter(token => transcript.includes(token));
+                
+                // Extract base name (remove parentheses content like "(6 pcs)", "(Large)", etc.)
+                const baseItemName = itemName.replace(/\s*\([^)]*\)/g, '').trim();
+                const baseTokens = tokenizeItemName(baseItemName);
+                const allCoreWordsPresent = baseTokens.length > 0 && baseTokens.every(token => transcript.includes(token));
+                
+                const hasItemMention = tokenHits.length > 0 || allCoreWordsPresent;
+                if (isMenuBrowseRequest(transcript) && !hasOrderIntent(transcript) && !hasItemMention) {
+                    console.warn(`⚠️ [${INSTANCE_ID}] addToOrder blocked: menu browsing intent detected.`);
+                    return "System: The customer is browsing or asking to repeat the menu. Do NOT add items. Offer menu categories or ask what they'd like.";
+                }
+                if (!hasItemMention) {
+                    console.warn(`⚠️ [${INSTANCE_ID}] addToOrder blocked: item not mentioned in transcript.`);
+                    return "System: The customer did not mention that item. Ask them to repeat the item they want to order.";
+                }
             }
 
             // --- TURN DEDUPLICATION ---
@@ -179,7 +321,7 @@ export function createRestaurantTools({
             // Relaxed Dedupe: Only block if exact same within same turn
             // lastProcessedHash = turnHash; // Disable strict hash blocking for now to prevent lost items
 
-            const { items } = await getMenu(restaurantConfig.clover, restaurantConfig.id);
+            const items = await getMenuCached();
             
             // --- LAYER B: MENU MATCHER ENGINE ---
             const matchResult = MenuMatcher.findMatch(itemName, items);
@@ -232,7 +374,18 @@ export function createRestaurantTools({
 
             console.log(`🛒 Added to Order: ${itemData.name} x${quantity} (Score: ${matchResult.score?.toFixed(2) || 'N/A'})`);
             sessionCart.push({ name: itemData.name, qty: quantity, price: itemData.price, notes: notes || "" });
-            return `System: Added ${quantity}x ${itemData.name} to order. Total items in cart: ${sessionCart.length}. IMPORTANT: Read back the item name to confirm: "Okay, ${quantity} ${itemData.name}. Is that correct?"`;
+            
+            // Natural confirmation variations
+            const confirmations = [
+                `Got it! ${quantity} ${itemData.name} coming up.`,
+                `Perfect! Added ${quantity} ${itemData.name}.`,
+                `You got it! ${quantity} ${itemData.name} on the order.`,
+                `Sure thing! ${quantity} ${itemData.name} added.`,
+                `Alright! ${quantity} ${itemData.name} is in.`
+            ];
+            const randomConfirm = confirmations[Math.floor(Math.random() * confirmations.length)];
+            
+            return `System: Added ${quantity}x ${itemData.name} to order. Total items: ${sessionCart.length}. Respond naturally: "${randomConfirm}"`;
           },
         }),
 
@@ -246,6 +399,9 @@ export function createRestaurantTools({
             required: ["restriction"]
           },
           execute: async ({ restriction }) => {
+             if (await checkToolBudget()) {
+                 return "System: Tool budget exceeded. The call is ending.";
+             }
              const normalized = restriction.toLowerCase();
              activeAllergies.add(normalized);
              console.log(`🛡️ [SAFETY] Logged allergy: ${normalized}. Active: ${Array.from(activeAllergies).join(", ")}`);
@@ -264,6 +420,9 @@ export function createRestaurantTools({
             required: ["itemName"],
           },
           execute: async ({ itemName, concern }) => {
+            if (await checkToolBudget()) {
+                return "System: Tool budget exceeded. The call is ending.";
+            }
             console.log(`⚠️ [${INSTANCE_ID}] ALLERGY CHECK: ${itemName} for ${concern}`);
             const query = itemName.toLowerCase();
             const restriction = (concern || "").toLowerCase();
@@ -292,6 +451,9 @@ export function createRestaurantTools({
           description: "IMMEDIATELY CALL THIS FUNCTION when the user confirms their order (says 'yes', 'correct', 'that's right'). DO NOT just say you're finalizing - CALL THIS NOW.",
           parameters: { type: "object", properties: {} },
           execute: async () => {
+             if (await checkToolBudget()) {
+                 return "System: Tool budget exceeded. The call is ending.";
+             }
              // 1. Guard Clause: Prevent empty orders
              if (sessionCart.length === 0) {
                console.warn(`⚠️ [${INSTANCE_ID}] confirmOrder called with empty cart. Rejection sent.`);
@@ -374,6 +536,9 @@ export function createRestaurantTools({
               await sendOrderConfirmation(customerDetails.phone, restaurantConfig.name, sessionCart, totalCents);
             }
             
+            // Mark that order was already created to prevent duplicate in hangUp
+            customerDetails.orderAlreadyCreated = true;
+            
             return `System: Order submitted to Kitchen for ${redact(customerDetails.name)}. Total items: ${itemCount}. You should now say: "Your order is in! It will be ready for pickup in about 20 minutes. I just sent a confirmation text to your phone. Thank you for choosing us! Goodbye!" then use 'hangUp'.`;
           }
         }),
@@ -382,15 +547,21 @@ export function createRestaurantTools({
           description: "End the call gracefully.",
           parameters: { type: "object", properties: {} },
           execute: async () => {
+            if (await checkToolBudget()) {
+                return "System: Tool budget exceeded. The call is ending.";
+            }
             console.log(`🔌 [${INSTANCE_ID}] 'hangUp' tool triggered. saving state...`);
             
-            // CRITICAL: Save state BEFORE disconnecting using the callback passed from entrypoint
-            if (finalizeCallback) { // Accessing from constructor argument scope is safer
+            // CRITICAL: Save state BEFORE disconnecting
+            // BUT: Only if order wasn't already created by confirmOrder
+            if (finalizeCallback && !customerDetails.orderAlreadyCreated) {
                 try {
                     await finalizeCallback("Agent Triggered Hangup");
                 } catch (err) {
                     console.error(`⚠️ [${INSTANCE_ID}] Finalize callback failed in hangUp:`, err);
                 }
+            } else if (customerDetails.orderAlreadyCreated) {
+                console.log(`ℹ️ [${INSTANCE_ID}] Skipping finalizeSession - order already created`);
             }
 
             if (activeRoom) {
@@ -418,6 +589,9 @@ export function createRestaurantTools({
             description: "Use this tool to physically transfer the call to a human agent. You MUST call this tool if you say you are transferring. Do NOT just say you will transfer. Execute this tool.",
             parameters: { type: "object", properties: { reason: { type: "string" } } },
             execute: async ({ reason }) => {
+                if (await checkToolBudget()) {
+                    return "System: Tool budget exceeded. The call is ending.";
+                }
                 // Fix: Prioritize 'transferPhoneNumber' (DB) -> 'phoneNumber' (API Identity) -> 'phone'
                 const targetPhone = restaurantConfig.transferPhoneNumber || restaurantConfig.phoneNumber || restaurantConfig.phone; 
                 

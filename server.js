@@ -3,6 +3,9 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import { createServer } from "http";
+import fs from "node:fs";
+import path from "node:path";
+import { spawn } from "node:child_process";
 import { Server } from "socket.io";
 import { WebhookReceiver, AgentDispatchClient, RoomServiceClient, SipClient } from "livekit-server-sdk";
 import { 
@@ -22,6 +25,7 @@ import { sendSMS, sendEmail, sendTemplateEmail, sendOrderTemplateEmail } from ".
 import { createStripeCheckoutSession, parseStripeWebhook, isStripeConfigured } from "./services/payment-service/index.js";
 import { processOrder } from "./services/order-service/index.js";
 import { PrismaClient } from "@prisma/client";
+import menuService from "./pos/menuService.js";
 
 const prisma = new PrismaClient({ errorFormat: "minimal" });
 
@@ -38,6 +42,8 @@ const io = new Server(httpServer, {
   cors: { origin: "*" },
 });
 const port = process.env.PORT || 3001;
+const BENCHMARK_REPORT_PATH = process.env.AI_BENCHMARK_REPORT_PATH || "benchmarks/latest.json";
+const BENCHMARK_REPORT_DIR = process.env.AI_BENCHMARK_REPORT_DIR || "benchmarks/reports";
 
 // Global WebSocket state
 const activeAgents = new Map(); // agentId -> { status, roomName, startTime }
@@ -364,11 +370,384 @@ app.post("/api/webhook", async (req, res) => {
       }
     }
 
+    // 2c. Agent safety: if agent drops unexpectedly, close the room to avoid silent calls
+    if (event.event === "participant_left") {
+      const participant = event.participant || {};
+      const roomName = event.room?.name;
+      const isAgent = participant.kind === "AGENT" || participant.identity?.startsWith("agent-");
+
+      if (isAgent && roomName) {
+        // Delay briefly to allow a reconnect if it's transient
+        setTimeout(async () => {
+          try {
+            const callRecord = await prisma.call.findFirst({ where: { roomName } });
+            if (callRecord?.isTakeoverActive) {
+              console.log(`🛟 Agent left but takeover active; leaving room ${roomName} open.`);
+              return;
+            }
+
+            const participants = await roomService.listParticipants(roomName);
+            const hasAgent = participants.some(p => p.kind === "AGENT" || p.identity?.startsWith("agent-"));
+            if (!hasAgent) {
+              console.warn(`🚨 Agent disconnected from ${roomName}. Closing room to avoid silent call.`);
+              await roomService.deleteRoom(roomName);
+            }
+          } catch (err) {
+            console.error("Failed to close room after agent disconnect:", err);
+          }
+        }, 3000);
+      }
+    }
+
     res.status(200).send("ok");
   } catch (error) {
     console.error("Webhook Error:", error);
     res.status(500).send("Error processing webhook");
   }
+});
+
+// ============================================
+// CLOVER WEBHOOK ENDPOINT
+// ============================================
+
+app.post("/api/webhooks/clover", bodyParser.json(), async (req, res) => {
+  try {
+    console.log("🔔 Clover Webhook Received");
+    console.log("Headers:", req.headers);
+    console.log("Body:", JSON.stringify(req.body, null, 2));
+
+    const event = req.body;
+
+    // Clover sends verification requests - respond with 200
+    if (req.headers['x-clover-webhook-verification']) {
+      console.log("✅ Clover webhook verification successful");
+      return res.status(200).send("OK");
+    }
+
+    // Handle actual webhook events
+    const eventType = event.type;
+    
+    switch (eventType) {
+      case "ORDER_CREATED":
+        console.log(`📋 New order created in Clover: ${event.objectId}`);
+        // You can sync this to your database if needed
+        break;
+        
+      case "ORDER_UPDATED":
+        console.log(`📝 Order updated in Clover: ${event.objectId}`);
+        break;
+        
+      case "ORDER_DELETED":
+        console.log(`🗑️ Order deleted in Clover: ${event.objectId}`);
+        break;
+        
+      case "ITEM_CREATED":
+      case "ITEM_UPDATED":
+      case "ITEM_DELETED":
+        console.log(`🍔 Menu item ${eventType} in Clover`);
+        // Clear menu cache when items change
+        const restaurant = await prisma.restaurant.findFirst({
+          where: { clover: { path: ['merchantId'], equals: event.merchantId } }
+        });
+        if (restaurant) {
+          menuService.invalidateCache(restaurant.id);
+          console.log(`🔄 Menu cache invalidated for ${restaurant.name}`);
+        }
+        break;
+        
+      default:
+        console.log(`ℹ️ Unhandled Clover webhook: ${eventType}`);
+    }
+
+    res.status(200).json({ received: true });
+  } catch (err) {
+    console.error("❌ Clover webhook error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Health check endpoint for Clover verification
+app.get("/api/webhooks/clover", (req, res) => {
+  res.status(200).json({ 
+    status: "ready",
+    message: "Clover webhook endpoint active" 
+  });
+});
+
+// ============================================
+// SQUARE OAUTH ENDPOINTS
+// ============================================
+
+// Square OAuth - Initiate
+app.get("/api/square/auth", async (req, res) => {
+  try {
+    const { restaurantId } = req.query;
+    
+    if (!restaurantId) {
+      return res.status(400).json({ error: "restaurantId is required" });
+    }
+    
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId }
+    });
+    
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+    
+    const squareAuthUrl = new URL("https://connect.squareup.com/oauth2/authorize");
+    squareAuthUrl.searchParams.set("client_id", process.env.SQUARE_APP_ID);
+    squareAuthUrl.searchParams.set("scope", "MERCHANT_PROFILE_READ ORDERS_READ ORDERS_WRITE ITEMS_READ PAYMENTS_WRITE");
+    squareAuthUrl.searchParams.set("state", restaurantId);
+    
+    console.log(`🔗 Redirecting to Square OAuth for restaurant: ${restaurant.name}`);
+    
+    res.redirect(squareAuthUrl.toString());
+  } catch (err) {
+    console.error("Square OAuth init failed:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Square OAuth - Callback
+app.get("/api/square/callback", async (req, res) => {
+  try {
+    const { code, state: restaurantId } = req.query;
+    
+    if (!code) {
+      console.error("❌ Square OAuth callback missing authorization code");
+      return res.redirect(`/dashboard?error=square_oauth_failed`);
+    }
+    
+    console.log(`✅ Square OAuth callback received for restaurant: ${restaurantId}`);
+    
+    const tokenResponse = await fetch("https://connect.squareup.com/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: process.env.SQUARE_APP_ID,
+        client_secret: process.env.SQUARE_APP_SECRET,
+        code: code,
+        grant_type: "authorization_code"
+      })
+    });
+    
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error("❌ Square token exchange failed:", errorText);
+      return res.redirect(`/dashboard?error=square_token_failed`);
+    }
+    
+    const tokenData = await tokenResponse.json();
+    const { access_token, merchant_id, expires_at } = tokenData;
+    
+    console.log(`🔑 Square access token received for merchant: ${merchant_id}`);
+    
+    let restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId }
+    });
+    
+    if (restaurant) {
+      await prisma.restaurant.update({
+        where: { id: restaurant.id },
+        data: {
+          square: {
+            accessToken: access_token,
+            merchantId: merchant_id,
+            expiresAt: expires_at,
+            environment: "production"
+          }
+        }
+      });
+      console.log(`💾 Updated restaurant with Square credentials: ${restaurant.name}`);
+    }
+    
+    return res.send(`
+      <html>
+        <head>
+          <style>
+            body { font-family: Arial; padding: 50px; text-align: center; background: #f5f5f5; }
+            .container { background: white; padding: 40px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            h1 { color: #006aff; }
+            .info { background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 20px 0; }
+            .code { font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 3px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>✅ Square Connected Successfully!</h1>
+            <p>Your restaurant is now connected to Square.</p>
+            <div class="info">
+              <strong>Merchant ID:</strong> <span class="code">${merchant_id}</span><br/>
+              <strong>Restaurant:</strong> ${restaurant.name}
+            </div>
+            <p>You can now:</p>
+            <ul style="text-align: left;">
+              <li>Create orders via voice calls</li>
+              <li>Sync menu items automatically</li>
+              <li>Process payments</li>
+            </ul>
+            <p style="margin-top: 30px; color: #666;">
+              <small>You can close this window.</small>
+            </p>
+          </div>
+        </body>
+      </html>
+    `);
+    
+  } catch (err) {
+    console.error("❌ Square OAuth callback error:", err);
+    return res.status(500).send(`
+      <html>
+        <body style="font-family: Arial; padding: 50px; text-align: center;">
+          <h1>❌ Square Connection Failed</h1>
+          <p>An error occurred while connecting to Square.</p>
+          <p style="color: red;">${err.message}</p>
+        </body>
+      </html>
+    `);
+  }
+});
+
+// Square Webhook Handler
+app.post("/api/webhooks/square", bodyParser.json(), async (req, res) => {
+  try {
+    console.log("🔔 Square Webhook Received");
+    console.log("Body:", JSON.stringify(req.body, null, 2));
+
+    const event = req.body;
+    const eventType = event.type;
+    
+    switch (eventType) {
+      case "order.created":
+        console.log(`📋 New order created in Square: ${event.data?.object?.order?.id}`);
+        break;
+        
+      case "order.updated":
+        console.log(`📝 Order updated in Square: ${event.data?.object?.order?.id}`);
+        break;
+        
+      case "catalog.version.updated":
+        console.log(`🍔 Menu catalog updated in Square`);
+        // Clear menu cache when catalog changes
+        const merchantId = event.merchant_id || event.data?.object?.merchant_id;
+        if (merchantId) {
+          const restaurant = await prisma.restaurant.findFirst({
+            where: { square: { path: ['merchantId'], equals: merchantId } }
+          });
+          if (restaurant) {
+            menuService.invalidateCache(restaurant.id);
+            console.log(`🔄 Menu cache invalidated for ${restaurant.name}`);
+          }
+        }
+        break;
+        
+      default:
+        console.log(`ℹ️ Unhandled Square webhook: ${eventType}`);
+    }
+
+    res.status(200).json({ received: true });
+  } catch (err) {
+    console.error("❌ Square webhook error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Square locations endpoint
+app.get("/api/square/locations", async (req, res) => {
+  try {
+    const { restaurantId } = req.query;
+    
+    if (!restaurantId) {
+      return res.status(400).json({ error: "restaurantId is required" });
+    }
+    
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: restaurantId }
+    });
+    
+    if (!restaurant || !restaurant.square?.accessToken) {
+      return res.status(400).json({ error: "Square not connected for this restaurant" });
+    }
+    
+    const response = await fetch("https://connect.squareup.com/v2/locations", {
+      headers: {
+        "Authorization": `Bearer ${restaurant.square.accessToken}`,
+        "Square-Version": "2024-01-18"
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch Square locations");
+    }
+    
+    const data = await response.json();
+    console.log(`📍 Found ${data.locations?.length || 0} locations for ${restaurant.name}`);
+    
+    res.json({ locations: data.locations || [] });
+  } catch (err) {
+    console.error("Failed to fetch Square locations:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// ============================================
+// UNIVERSAL MENU API
+// ============================================
+
+// Get menu in universal format (works with any POS)
+app.get("/api/restaurants/:id/menu", async (req, res) => {
+  try {
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: req.params.id }
+    });
+    
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+    
+    const menu = await menuService.getMenu(restaurant, prisma);
+    
+    res.json(menu);
+  } catch (err) {
+    console.error("Failed to fetch menu:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Refresh menu cache (force re-fetch from POS)
+app.post("/api/restaurants/:id/menu/refresh", async (req, res) => {
+  try {
+    const invalidated = menuService.invalidateCache(req.params.id);
+    
+    const restaurant = await prisma.restaurant.findUnique({
+      where: { id: req.params.id }
+    });
+    
+    if (!restaurant) {
+      return res.status(404).json({ error: "Restaurant not found" });
+    }
+    
+    // Fetch fresh menu
+    const menu = await menuService.getMenu(restaurant, prisma);
+    
+    res.json({ 
+      success: true, 
+      message: `Menu refreshed${invalidated ? ' (cache invalidated)' : ''}`,
+      itemCount: menuService.countItems(menu),
+      categories: menu.categories.length
+    });
+  } catch (err) {
+    console.error("Failed to refresh menu:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get menu cache statistics
+app.get("/api/menu/cache/stats", (req, res) => {
+  const stats = menuService.getCacheStats();
+  res.json(stats);
 });
 
 // --- ORDERS API (For Dashboard & Agent) ---
@@ -470,7 +849,167 @@ app.post("/api/orders/:id/status", async (req, res) => {
   }
 });
 
-// --- MANAGEMENT ENDPOINTS ---
+// --- ROOT ENDPOINT (OAuth Callback Handler) ---
+app.get("/", async (req, res) => {
+  const { code, merchant_id, employee_id, client_id } = req.query;
+  
+  // Check if this is a Clover OAuth callback
+  if (code && merchant_id && client_id) {
+    console.log("🔐 Clover OAuth callback received");
+    console.log(`   Merchant: ${merchant_id}`);
+    console.log(`   Code: ${code.substring(0, 20)}...`);
+    
+    try {
+      // Exchange authorization code for access token
+      const tokenResponse = await fetch("https://www.clover.com/oauth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: process.env.CLOVER_APP_ID || client_id,
+          client_secret: process.env.CLOVER_APP_SECRET,
+          code: code
+        }).toString()
+      });
+      
+      if (!tokenResponse.ok) {
+        const errorText = await tokenResponse.text();
+        console.error("❌ Token exchange failed:", errorText);
+        return res.status(500).send(`
+          <html>
+            <body style="font-family: Arial; padding: 50px; text-align: center;">
+              <h1>❌ OAuth Failed</h1>
+              <p>Could not exchange authorization code for access token.</p>
+              <p style="color: red;">${errorText}</p>
+            </body>
+          </html>
+        `);
+      }
+      
+      const tokenData = await tokenResponse.json();
+      const { access_token } = tokenData;
+      
+      console.log(`✅ Access token received for merchant: ${merchant_id}`);
+      
+      // Find or create restaurant with this merchant ID
+      let restaurant = await prisma.restaurant.findFirst({
+        where: { 
+          OR: [
+            { clover: { path: ['merchantId'], equals: merchant_id } },
+            { id: merchant_id } // Fallback to ID match
+          ]
+        }
+      });
+      
+      if (restaurant) {
+        // Update existing restaurant with Clover credentials
+        await prisma.restaurant.update({
+          where: { id: restaurant.id },
+          data: {
+            clover: {
+              apiKey: access_token,
+              merchantId: merchant_id,
+              environment: "production"
+            }
+          }
+        });
+        console.log(`💾 Updated restaurant: ${restaurant.name}`);
+      } else {
+        // Create new restaurant
+        restaurant = await prisma.restaurant.create({
+          data: {
+            id: `clover-${merchant_id}`,
+            name: `Restaurant (${merchant_id})`,
+            phoneNumber: "+10000000000", // Placeholder
+            clover: {
+              apiKey: access_token,
+              merchantId: merchant_id,
+              environment: "production"
+            },
+            location: {
+              address: "TBD",
+              city: "TBD",
+              state: "TBD",
+              zip: "00000"
+            }
+          }
+        });
+        console.log(`🆕 Created new restaurant for merchant: ${merchant_id}`);
+      }
+      
+      // Success page
+      return res.send(`
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial; padding: 50px; text-align: center; background: #f5f5f5; }
+              .container { background: white; padding: 40px; border-radius: 10px; max-width: 500px; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+              h1 { color: #4CAF50; }
+              .info { background: #e8f5e9; padding: 15px; border-radius: 5px; margin: 20px 0; }
+              .code { font-family: monospace; background: #f5f5f5; padding: 5px; border-radius: 3px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <h1>✅ Clover Connected Successfully!</h1>
+              <p>Your restaurant is now connected to Clover.</p>
+              <div class="info">
+                <strong>Merchant ID:</strong> <span class="code">${merchant_id}</span><br/>
+                <strong>Restaurant:</strong> ${restaurant.name}
+              </div>
+              <p>You can now:</p>
+              <ul style="text-align: left;">
+                <li>Create orders via voice calls</li>
+                <li>Sync menu items automatically</li>
+                <li>Print to Clover printers</li>
+              </ul>
+              <p style="margin-top: 30px; color: #666;">
+                <small>You can close this window.</small>
+              </p>
+            </div>
+          </body>
+        </html>
+      `);
+      
+    } catch (err) {
+      console.error("❌ OAuth callback error:", err);
+      return res.status(500).send(`
+        <html>
+          <body style="font-family: Arial; padding: 50px; text-align: center;">
+            <h1>❌ Connection Failed</h1>
+            <p>An error occurred while connecting to Clover.</p>
+            <p style="color: red;">${err.message}</p>
+          </body>
+        </html>
+      `);
+    }
+  }
+  
+  // Regular landing page (no OAuth parameters)
+  res.send(`
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial; padding: 50px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+          .container { background: rgba(255,255,255,0.95); color: #333; padding: 50px; border-radius: 15px; max-width: 600px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+          h1 { margin: 0 0 20px 0; }
+          .status { background: #4CAF50; color: white; padding: 10px 20px; border-radius: 5px; display: inline-block; margin: 20px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <h1>🎙️ Restaurant Voice AI</h1>
+          <div class="status">✅ Server Running</div>
+          <p>Backend API for voice-powered phone ordering</p>
+          <p style="margin-top: 30px; color: #666; font-size: 14px;">
+            Powered by OpenAI Realtime API + Clover POS
+          </p>
+        </div>
+      </body>
+    </html>
+  `);
+});
+
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.status(200).json({
     status: "healthy",
@@ -681,6 +1220,18 @@ app.get("/api/restaurants/:id/call-metrics", async (req, res) => {
 
         const todayCalls = calls.filter(c => c.createdAt >= today);
         const totalDuration = calls.reduce((sum, c) => sum + (c.duration || 0), 0);
+        const usageTotals = calls.reduce(
+            (acc, call) => {
+                const usage = call.aiUsage || {};
+                acc.totalTokens += usage.totalTokens || 0;
+                acc.promptTokens += usage.llmPromptTokens || 0;
+                acc.completionTokens += usage.llmCompletionTokens || 0;
+                acc.sttAudioDurationMs += usage.sttAudioDurationMs || 0;
+                acc.ttsCharactersCount += usage.ttsCharactersCount || 0;
+                return acc;
+            },
+            { totalTokens: 0, promptTokens: 0, completionTokens: 0, sttAudioDurationMs: 0, ttsCharactersCount: 0 }
+        );
         
         // Calculate success rate (calls with orders / total calls)
         const successfulCalls = calls.filter(c => c.order).length;
@@ -748,6 +1299,14 @@ app.get("/api/restaurants/:id/call-metrics", async (req, res) => {
             totalMinutes: Math.round(totalDuration / 60),
             successRate,
             activeCalls: activeCallsCount,
+            aiUsage: {
+                totalTokens: usageTotals.totalTokens,
+                promptTokens: usageTotals.promptTokens,
+                completionTokens: usageTotals.completionTokens,
+                tokensPerMinute: totalDuration > 0 ? Math.round((usageTotals.totalTokens / (totalDuration / 60)) * 100) / 100 : 0,
+                sttAudioMinutes: Math.round((usageTotals.sttAudioDurationMs || 0) / 60000),
+                ttsCharactersCount: usageTotals.ttsCharactersCount
+            },
             
             // Detailed analytics
             hourlyData,
@@ -1007,6 +1566,215 @@ app.get("/api/restaurants/:id/subscription", async (req, res) => {
   } catch (err) {
     console.error("Failed to fetch subscription:", err);
     res.status(500).json({ error: err.message });
+  }
+});
+
+// Get per-customer AI usage (grouped by customerPhone)
+app.get("/api/restaurants/:id/customer-usage", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { from, to, limit } = req.query;
+    const max = Math.min(parseInt(limit || "50", 10) || 50, 500);
+
+    const createdAt = {};
+    if (from) {
+      const fromDate = new Date(from);
+      if (!Number.isNaN(fromDate.getTime())) createdAt.gte = fromDate;
+    }
+    if (to) {
+      const toDate = new Date(to);
+      if (!Number.isNaN(toDate.getTime())) createdAt.lte = toDate;
+    }
+
+    const where = {
+      restaurantId: id,
+      ...(Object.keys(createdAt).length ? { createdAt } : {})
+    };
+
+    const calls = await prisma.call.findMany({
+      where,
+      select: {
+        customerPhone: true,
+        duration: true,
+        createdAt: true,
+        aiUsage: true
+      }
+    });
+
+    const customerMap = new Map();
+    calls.forEach(call => {
+      const key = normalizePhone(call.customerPhone || "") || "Unknown";
+      const usage = call.aiUsage || {};
+      const entry = customerMap.get(key) || {
+        customerPhone: key,
+        totalCalls: 0,
+        totalMinutes: 0,
+        totalTokens: 0,
+        promptTokens: 0,
+        completionTokens: 0,
+        sttAudioDurationMs: 0,
+        ttsCharactersCount: 0,
+        lastCallAt: null
+      };
+
+      entry.totalCalls += 1;
+      entry.totalMinutes += Math.round((call.duration || 0) / 60);
+      entry.totalTokens += usage.totalTokens || 0;
+      entry.promptTokens += usage.llmPromptTokens || 0;
+      entry.completionTokens += usage.llmCompletionTokens || 0;
+      entry.sttAudioDurationMs += usage.sttAudioDurationMs || 0;
+      entry.ttsCharactersCount += usage.ttsCharactersCount || 0;
+      if (!entry.lastCallAt || (call.createdAt && call.createdAt > entry.lastCallAt)) {
+        entry.lastCallAt = call.createdAt;
+      }
+
+      customerMap.set(key, entry);
+    });
+
+    const customers = Array.from(customerMap.values()).map(entry => ({
+      ...entry,
+      tokensPerMinute: entry.totalMinutes > 0 ? Math.round((entry.totalTokens / entry.totalMinutes) * 100) / 100 : 0,
+      sttAudioMinutes: Math.round((entry.sttAudioDurationMs || 0) / 60000)
+    })).sort((a, b) => b.totalTokens - a.totalTokens);
+
+    res.json({
+      totalCustomers: customers.length,
+      customers: customers.slice(0, max)
+    });
+  } catch (err) {
+    console.error("Customer usage error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Latest benchmark report (JSON file)
+app.get("/api/benchmarks/latest", async (_req, res) => {
+  try {
+    const reportPath = path.resolve(process.cwd(), BENCHMARK_REPORT_PATH);
+    if (!fs.existsSync(reportPath)) {
+      return res.status(404).json({ error: "Benchmark report not found" });
+    }
+    const raw = fs.readFileSync(reportPath, "utf8");
+    const data = JSON.parse(raw);
+    return res.json(data);
+  } catch (err) {
+    console.error("Benchmark report error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Benchmark history list
+app.get("/api/benchmarks/history", async (req, res) => {
+  try {
+    const { from, to, limit } = req.query;
+    const max = Math.min(parseInt(limit || "20", 10) || 20, 200);
+    const dirPath = path.resolve(process.cwd(), BENCHMARK_REPORT_DIR);
+    if (!fs.existsSync(dirPath)) {
+      return res.json({ reports: [] });
+    }
+    const files = fs.readdirSync(dirPath).filter((file) => file.endsWith(".json"));
+    const reports = files.map((file) => {
+      const fullPath = path.join(dirPath, file);
+      try {
+        const raw = fs.readFileSync(fullPath, "utf8");
+        const data = JSON.parse(raw);
+        return {
+          file,
+          completedAt: data.completedAt || null,
+          startedAt: data.startedAt || null,
+          suite: data.suite || null,
+          models: Object.keys(data.models || {}),
+          path: fullPath,
+        };
+      } catch {
+        const stat = fs.statSync(fullPath);
+        return {
+          file,
+          completedAt: stat.mtime.toISOString(),
+          startedAt: stat.mtime.toISOString(),
+          suite: null,
+          models: [],
+          path: fullPath,
+        };
+      }
+    });
+
+    const fromDate = from ? new Date(from) : null;
+    const toDate = to ? new Date(to) : null;
+
+    const filtered = reports.filter((r) => {
+      const dateStr = r.completedAt || r.startedAt;
+      if (!dateStr) return true;
+      const date = new Date(dateStr);
+      if (fromDate && !Number.isNaN(fromDate.getTime()) && date < fromDate) return false;
+      if (toDate && !Number.isNaN(toDate.getTime()) && date > toDate) return false;
+      return true;
+    });
+
+    filtered.sort((a, b) => {
+      const aDate = new Date(a.completedAt || a.startedAt || 0).getTime();
+      const bDate = new Date(b.completedAt || b.startedAt || 0).getTime();
+      return bDate - aDate;
+    });
+
+    return res.json({ reports: filtered.slice(0, max) });
+  } catch (err) {
+    console.error("Benchmark history error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// Run benchmark suite
+app.post("/api/benchmarks/run", async (req, res) => {
+  try {
+    const { models, suite, temperature, maxTokens } = req.body || {};
+    if (!models || typeof models !== "string") {
+      return res.status(400).json({ error: "models is required (comma-separated string)" });
+    }
+
+    const suitePath = suite === "ordering"
+      ? "scripts/model_benchmark_ordering_cases.json"
+      : "scripts/model_benchmark_cases.json";
+
+    const args = [
+      "scripts/benchmark_models.js",
+      "--models",
+      models,
+      "--suite",
+      suite === "ordering" ? "ordering" : "default",
+      "--cases",
+      suitePath,
+      "--out",
+      BENCHMARK_REPORT_PATH
+    ];
+
+    if (temperature !== undefined && temperature !== null) {
+      args.push("--temperature", String(temperature));
+    }
+    if (maxTokens !== undefined && maxTokens !== null) {
+      args.push("--maxTokens", String(maxTokens));
+    }
+
+    const proc = spawn("node", args, {
+      cwd: process.cwd(),
+      env: process.env,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+
+    let stderr = "";
+    proc.stderr.on("data", (chunk) => {
+      stderr += chunk.toString();
+    });
+
+    proc.on("close", (code) => {
+      if (code !== 0) {
+        return res.status(500).json({ error: `Benchmark failed (${code})`, details: stderr });
+      }
+      return res.json({ status: "ok", reportPath: BENCHMARK_REPORT_PATH });
+    });
+  } catch (err) {
+    console.error("Benchmark run error:", err);
+    return res.status(500).json({ error: err.message });
   }
 });
 

@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "id": "pickup_flow",
+      "system": "You are a restaurant ordering assistant. Keep replies short and direct.",
+      "user": "Hi, I want to place a pickup order.",
+      "expected": {
+        "contains": ["pickup"],
+        "notContains": ["delivery only"]
+      }
+    },
+    {
+      "id": "menu_unavailable",
+      "system": "You are a restaurant ordering assistant. If the menu is unavailable, apologize and ask the customer to call back.",
+      "user": "Do you have butter chicken?",
+      "expected": {
+        "contains": ["apolog"],
+        "notContains": ["we do have"]
+      }
+    },
+    {
+      "id": "allergy_prompt",
+      "system": "You are a restaurant ordering assistant. If the user has an allergy, acknowledge and confirm you will note it.",
+      "user": "I'm allergic to nuts.",
+      "expected": {
+        "contains": ["allergy", "noted"]
+      }
+    }
+  ]
+}

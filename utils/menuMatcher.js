@@ -257,9 +257,26 @@ export const MenuMatcher = {
     candidates.sort((a, b) => b.score - a.score);
     
     // Return items that are "close but not close enough"
-    return candidates
-        .filter(c => c.score >= 0.4 && c.score < THRESHOLDS.MIN_SCORE)
+    const suggestions = candidates
+        .filter(c => c.score >= THRESHOLDS.SUGGESTION_MIN && c.score < THRESHOLDS.MIN_SCORE)
         .slice(0, 2)
         .map(c => c.item);
+
+    if (suggestions.length > 0) {
+      return suggestions;
+    }
+
+    // Fallback: Fuse fuzzy match for misspellings
+    try {
+      const fuse = new Fuse(menuItems, {
+        keys: ["name"],
+        includeScore: true,
+        threshold: 0.5,
+        ignoreLocation: true
+      });
+      return fuse.search(transcript).slice(0, 2).map(r => r.item);
+    } catch {
+      return [];
+    }
   }
 };

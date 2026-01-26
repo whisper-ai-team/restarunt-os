@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { 
   Phone, 
   Clock, 
@@ -11,7 +11,7 @@ import {
   Calendar,
   Loader2
 } from "lucide-react";
-import { useRestaurantMetrics } from "@/hooks";
+import { useRestaurantMetrics, useCustomerUsage, useBenchmarkReport, useBenchmarkHistory } from "@/hooks";
 
 interface AnalyticsViewProps {
   restaurantId: string;
@@ -19,6 +19,34 @@ interface AnalyticsViewProps {
 
 export default function AnalyticsView({ restaurantId }: AnalyticsViewProps) {
   const { metrics, loading, error } = useRestaurantMetrics(restaurantId);
+  const [usageFrom, setUsageFrom] = useState("");
+  const [usageTo, setUsageTo] = useState("");
+  const [usageLimit, setUsageLimit] = useState(10);
+  const [benchmarkFrom, setBenchmarkFrom] = useState("");
+  const [benchmarkTo, setBenchmarkTo] = useState("");
+  const [benchmarkLimit, setBenchmarkLimit] = useState(10);
+  const [benchmarkModelsInput, setBenchmarkModelsInput] = useState("gpt-4o,gpt-4o-mini");
+  const [benchmarkSuite, setBenchmarkSuite] = useState("default");
+  const [benchmarkTemperature, setBenchmarkTemperature] = useState("0");
+  const [benchmarkMaxTokens, setBenchmarkMaxTokens] = useState("256");
+  const [benchmarkStatus, setBenchmarkStatus] = useState<string | null>(null);
+  const [benchmarkRunning, setBenchmarkRunning] = useState(false);
+  const [benchmarkRefresh, setBenchmarkRefresh] = useState(0);
+
+  const usageFilters = useMemo(() => ({
+    from: usageFrom || undefined,
+    to: usageTo || undefined,
+    limit: usageLimit
+  }), [usageFrom, usageTo, usageLimit]);
+
+  const { usage, loading: usageLoading, error: usageError } = useCustomerUsage(restaurantId, usageFilters);
+  const { report, loading: reportLoading, error: reportError } = useBenchmarkReport(benchmarkRefresh);
+  const benchmarkHistoryFilters = useMemo(() => ({
+    from: benchmarkFrom || undefined,
+    to: benchmarkTo || undefined,
+    limit: benchmarkLimit
+  }), [benchmarkFrom, benchmarkTo, benchmarkLimit]);
+  const { history, loading: historyLoading, error: historyError } = useBenchmarkHistory(benchmarkHistoryFilters, benchmarkRefresh);
 
   if (loading) {
     return (
@@ -39,6 +67,43 @@ export default function AnalyticsView({ restaurantId }: AnalyticsViewProps) {
   // Static data for features not yet dynamic
   // Use dynamic top items or fallback to empty
   const topItems = metrics.topItems || [];
+  const topCustomers = usage?.customers || [];
+  const benchmarkModels = report?.models ? Object.values(report.models) : [];
+  const historyReports = history?.reports || [];
+
+  const formatPhone = (phone: string) => {
+    if (!phone || phone === "Unknown") return "Unknown";
+    const digits = phone.replace(/\D/g, "");
+    if (digits.length < 4) return phone;
+    return `***-***-${digits.slice(-4)}`;
+  };
+
+  const runBenchmark = async () => {
+    setBenchmarkRunning(true);
+    setBenchmarkStatus(null);
+    try {
+      const response = await fetch("/api/benchmarks/run", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          models: benchmarkModelsInput,
+          suite: benchmarkSuite === "ordering" ? "ordering" : "default",
+          temperature: benchmarkTemperature ? Number(benchmarkTemperature) : undefined,
+          maxTokens: benchmarkMaxTokens ? Number(benchmarkMaxTokens) : undefined
+        })
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || "Benchmark run failed");
+      }
+      setBenchmarkStatus("Benchmark completed successfully.");
+      setBenchmarkRefresh((prev) => prev + 1);
+    } catch (err) {
+      setBenchmarkStatus(err instanceof Error ? err.message : "Benchmark failed");
+    } finally {
+      setBenchmarkRunning(false);
+    }
+  };
 
   const faqData = [
     { category: "Hours & Location", percentage: 45, color: "bg-amber-500" },
@@ -209,6 +274,288 @@ export default function AnalyticsView({ restaurantId }: AnalyticsViewProps) {
               ))}
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Customer Usage */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Top Customers by AI Usage</h2>
+            <p className="text-sm text-gray-500 mt-1">Token and minute usage by caller.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <label className="font-semibold">From</label>
+              <input
+                type="date"
+                value={usageFrom}
+                onChange={(e) => setUsageFrom(e.target.value)}
+                className="border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-700"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <label className="font-semibold">To</label>
+              <input
+                type="date"
+                value={usageTo}
+                onChange={(e) => setUsageTo(e.target.value)}
+                className="border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-700"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <label className="font-semibold">Limit</label>
+              <select
+                value={usageLimit}
+                onChange={(e) => setUsageLimit(Number(e.target.value))}
+                className="border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-700"
+              >
+                {[5, 10, 20, 50, 100].map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+            <span className="text-xs text-gray-400">{usage?.totalCustomers ?? 0} customers</span>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          {usageLoading ? (
+            <div className="p-6 text-sm text-gray-500">Loading customer usage...</div>
+          ) : usageError ? (
+            <div className="p-6 text-sm text-red-600">Failed to load customer usage: {usageError}</div>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-3 font-semibold">Caller</th>
+                  <th className="px-6 py-3 font-semibold text-right">Calls</th>
+                  <th className="px-6 py-3 font-semibold text-right">Minutes</th>
+                  <th className="px-6 py-3 font-semibold text-right">Tokens</th>
+                  <th className="px-6 py-3 font-semibold text-right">Tokens/Min</th>
+                  <th className="px-6 py-3 font-semibold text-right">Last Call</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {topCustomers.length > 0 ? (
+                  topCustomers.slice(0, 10).map((customer) => (
+                    <tr key={customer.customerPhone} className="group hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 font-mono text-gray-600">{formatPhone(customer.customerPhone)}</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{customer.totalCalls}</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{customer.totalMinutes}</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{customer.totalTokens.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{customer.tokensPerMinute}</td>
+                      <td className="px-6 py-4 text-right text-gray-500">
+                        {customer.lastCallAt ? new Date(customer.lastCallAt).toLocaleDateString() : "—"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500 italic">
+                      No customer usage data yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
+      {/* Benchmark Report */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Model Benchmark Report</h2>
+            <p className="text-sm text-gray-500 mt-1">Latest accuracy/latency/cost comparison.</p>
+          </div>
+          <div className="text-xs text-gray-400">
+            {report?.completedAt ? `Last run: ${new Date(report.completedAt).toLocaleString()}` : "No report yet"}
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          {reportLoading ? (
+            <div className="p-6 text-sm text-gray-500">Loading benchmark report...</div>
+          ) : reportError ? (
+            <div className="p-6 text-sm text-gray-500">
+              No benchmark report found. Run `node scripts/benchmark_models.js --models ... --out benchmarks/latest.json`.
+            </div>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-3 font-semibold">Model</th>
+                  <th className="px-6 py-3 font-semibold text-right">Pass Rate</th>
+                  <th className="px-6 py-3 font-semibold text-right">Avg Latency</th>
+                  <th className="px-6 py-3 font-semibold text-right">Avg Tokens</th>
+                  <th className="px-6 py-3 font-semibold text-right">Avg Cost</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {benchmarkModels.length > 0 ? (
+                  benchmarkModels.map((model) => (
+                    <tr key={model.model} className="group hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 font-mono text-gray-700">{model.model}</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{model.passRate ?? "—"}%</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{model.avgLatencyMs ?? "—"} ms</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{model.avgTokens ?? "—"}</td>
+                      <td className="px-6 py-4 text-right text-gray-900">{model.avgCost ?? "—"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500 italic">
+                      No benchmark data available yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+
+      {/* Benchmark Runner */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100">
+          <h2 className="text-lg font-bold text-gray-900">Run Benchmark</h2>
+          <p className="text-sm text-gray-500 mt-1">Trigger a benchmark run from the dashboard.</p>
+        </div>
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Models (comma-separated)</label>
+              <input
+                type="text"
+                value={benchmarkModelsInput}
+                onChange={(e) => setBenchmarkModelsInput(e.target.value)}
+                className="mt-2 w-full border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700"
+                placeholder="gpt-4o,gpt-4o-mini"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Suite</label>
+              <select
+                value={benchmarkSuite}
+                onChange={(e) => setBenchmarkSuite(e.target.value)}
+                className="mt-2 w-full border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700"
+              >
+                <option value="default">Default</option>
+                <option value="ordering">Ordering Flow</option>
+              </select>
+            </div>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Temperature</label>
+              <input
+                type="number"
+                step="0.1"
+                value={benchmarkTemperature}
+                onChange={(e) => setBenchmarkTemperature(e.target.value)}
+                className="mt-2 w-full border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Max Tokens</label>
+              <input
+                type="number"
+                value={benchmarkMaxTokens}
+                onChange={(e) => setBenchmarkMaxTokens(e.target.value)}
+                className="mt-2 w-full border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-700"
+              />
+            </div>
+          </div>
+        </div>
+        <div className="px-6 pb-6 flex items-center justify-between">
+          <button
+            onClick={runBenchmark}
+            disabled={benchmarkRunning}
+            className={`px-4 py-2 rounded-md text-sm font-semibold ${benchmarkRunning ? "bg-gray-200 text-gray-500" : "bg-indigo-600 text-white hover:bg-indigo-700"}`}
+          >
+            {benchmarkRunning ? "Running..." : "Run Benchmark"}
+          </button>
+          {benchmarkStatus && (
+            <span className="text-xs text-gray-500">{benchmarkStatus}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Benchmark History */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-gray-100 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h2 className="text-lg font-bold text-gray-900">Benchmark History</h2>
+            <p className="text-sm text-gray-500 mt-1">Previous benchmark runs for comparison.</p>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <label className="font-semibold">From</label>
+              <input
+                type="date"
+                value={benchmarkFrom}
+                onChange={(e) => setBenchmarkFrom(e.target.value)}
+                className="border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-700"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <label className="font-semibold">To</label>
+              <input
+                type="date"
+                value={benchmarkTo}
+                onChange={(e) => setBenchmarkTo(e.target.value)}
+                className="border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-700"
+              />
+            </div>
+            <div className="flex items-center gap-2 text-xs text-gray-500">
+              <label className="font-semibold">Limit</label>
+              <select
+                value={benchmarkLimit}
+                onChange={(e) => setBenchmarkLimit(Number(e.target.value))}
+                className="border border-gray-200 rounded-md px-2 py-1 text-xs text-gray-700"
+              >
+                {[5, 10, 20, 50].map((opt) => (
+                  <option key={opt} value={opt}>{opt}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          {historyLoading ? (
+            <div className="p-6 text-sm text-gray-500">Loading benchmark history...</div>
+          ) : historyError ? (
+            <div className="p-6 text-sm text-gray-500">Failed to load benchmark history.</div>
+          ) : (
+            <table className="w-full text-left text-sm">
+              <thead className="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                  <th className="px-6 py-3 font-semibold">Suite</th>
+                  <th className="px-6 py-3 font-semibold">Models</th>
+                  <th className="px-6 py-3 font-semibold text-right">Completed</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {historyReports.length > 0 ? (
+                  historyReports.map((entry) => (
+                    <tr key={entry.file} className="group hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-gray-700">{entry.suite || "default"}</td>
+                      <td className="px-6 py-4 text-gray-500">{entry.models?.join(", ") || "—"}</td>
+                      <td className="px-6 py-4 text-right text-gray-500">
+                        {entry.completedAt ? new Date(entry.completedAt).toLocaleString() : "—"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="px-6 py-8 text-center text-gray-500 italic">
+                      No history available.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
