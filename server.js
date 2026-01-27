@@ -386,11 +386,21 @@ app.post("/api/webhook", async (req, res) => {
               return;
             }
 
-            const participants = await roomService.listParticipants(roomName);
-            const hasAgent = participants.some(p => p.kind === "AGENT" || p.identity?.startsWith("agent-"));
-            if (!hasAgent) {
-              console.warn(`🚨 Agent disconnected from ${roomName}. Closing room to avoid silent call.`);
-              await roomService.deleteRoom(roomName);
+            // Check if room still exists before querying participants
+            try {
+              const participants = await roomService.listParticipants(roomName);
+              const hasAgent = participants.some(p => p.kind === "AGENT" || p.identity?.startsWith("agent-"));
+              if (!hasAgent) {
+                console.warn(`🚨 Agent disconnected from ${roomName}. Closing room to avoid silent call.`);
+                await roomService.deleteRoom(roomName);
+              }
+            } catch (roomErr) {
+              // Room might already be deleted - that's fine
+              if (roomErr.status === 404 || roomErr.code === 'not_found') {
+                console.log(`✅ Room ${roomName} already deleted, nothing to clean up.`);
+              } else {
+                console.error("Unexpected error checking room participants:", roomErr);
+              }
             }
           } catch (err) {
             console.error("Failed to close room after agent disconnect:", err);

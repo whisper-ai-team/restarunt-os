@@ -521,6 +521,13 @@ Instructions:
         modalities: ["audio", "text"],
         toolChoice: "auto",
         temperature: modelRouting.temperature,
+        // OpenAI's recommended turn detection settings for natural conversations
+        turnDetection: {
+            type: "server_vad", // Voice Activity Detection
+            threshold: 0.5,      // Sensitivity (0.0-1.0, default 0.5)
+            prefixPaddingMs: 300, // Audio before speech starts  
+            silenceDurationMs: 500 // Silence duration before turn ends
+        },
         ...(maxSessionDurationMs ? { maxSessionDuration: maxSessionDurationMs } : {}),
         ...(maxResponseOutputTokens ? { maxResponseOutputTokens } : {})
     });
@@ -549,7 +556,7 @@ Instructions:
         const transcript = typeof ev.transcript === "string" ? ev.transcript : "";
         if (!transcript && !ev.isFinal) return;
         lastUserTranscriptRef.text = transcript;
-        lastUserTranscriptRef.createdAt = ev.createdAt || Date.now();
+        lastUserTranscriptRef.createdAt = Date.now(); // Always use current time for accurate age calculation
     });
     session.on(voice.AgentSessionEventTypes.MetricsCollected, (ev) => {
         usageCollector.collect(ev.metrics);
